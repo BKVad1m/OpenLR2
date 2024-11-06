@@ -15222,7 +15222,7 @@ int SetUndefinedDifficulty(sqlite3 *sql) {
 
 	sqlite3_prepare(sql, "SELECT difficulty,folder,mode,path FROM song ORDER BY folder,mode,karinotes", -1, &pStmt, NULL);
 	while (sqlite3_step(pStmt) == 100) {
-		if (sqlite3_column_int(pStmt, 0) >= 0 && sqlite3_column_int(pStmt, 0) <= 5) {
+		if (0 <= sqlite3_column_int(pStmt, 0) && sqlite3_column_int(pStmt, 0) <= 5) {
 			cstrSprintf(&folder, "%s", sqlite3_column_text(pStmt, 1));
 			mode = sqlite3_column_int(pStmt, 2);
 			difficulty = sqlite3_column_int(pStmt, 0);
@@ -15230,7 +15230,7 @@ int SetUndefinedDifficulty(sqlite3 *sql) {
 		else {
 			CSTR newfolder;
 			cstrSprintf(&newfolder, "%s", sqlite3_column_text(pStmt, 1));
-			if (folder.isSame(newfolder) && mode == sqlite3_column_int(pStmt, 2)) {
+			if (folder.isSame(newfolder) && (mode == sqlite3_column_int(pStmt, 2))) {
 				difficulty++;
 				if (difficulty == 5) difficulty = 4;
 				else if (difficulty < 0) difficulty = 2;
@@ -15239,7 +15239,7 @@ int SetUndefinedDifficulty(sqlite3 *sql) {
 			else {
 				difficulty = 2;
 			}
-			SQL_Run(sqlite3_snprintf(1024, str, "UPDATE song SET difficulty = %d WHERE path = \'%q\'", difficulty, SQL_GetColumn(4, pStmt)), sql);
+			SQL_Run(sqlite3_snprintf(1024, str, "UPDATE song SET difficulty = %d WHERE path = \'%q\'", difficulty, SQL_GetColumn(3, pStmt)), sql);
 			folder = SQL_GetColumn(1, pStmt);
 			mode = sqlite3_column_int(pStmt, 2);
 		}
