@@ -911,7 +911,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 										else if(gs.config.play.battle == 3) {
 											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[0], gs.skinData.Data[gs.skinData.skinID[0]].informationP5, 0);
 										}
-										ReadKeyConfig(&gs, "LR2files\\Config\\keyconfig_p.xml");
+										ReadKeyConfig(&gs, "LR2files\\Config\\keyconfig.xml");
 										break;
 								}
 							}
