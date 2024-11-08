@@ -2829,6 +2829,12 @@ int ProcI_Result(game *g) {
 					SetTimeLapse(152, &g->timer1);
 					SetObjectString(20, g->net.IRresultMessage, g->txtStruct.objectStr);
 				}
+				else {
+					SetTimeLapse(2, &g->timer1);
+					SetFadeOut(&g->audio, g->skstruct.fadeout);
+					g->procPhase = 2;
+					SetObjectString(20, g->net.IRresultMessage, g->txtStruct.objectStr);
+				}
 			}
 		}
 	}
