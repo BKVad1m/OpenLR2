@@ -3330,7 +3330,7 @@ int ShowReadmes(game *g) {
 	} while (FindNextFileA(hFindFile, &FindFileData));
 	FindClose(hFindFile);
 
-	g->txtStruct.readme.y = g->skstruct.src_README[0].op1 + g->txtStruct.readme.lines;
+	g->txtStruct.readme.y = g->skstruct.src_README[0].op1 * g->txtStruct.readme.lines;
 	return 1;
 }
 
@@ -7844,7 +7844,7 @@ int ProcI_SkinSelect(game *g) {
 		SetTimeLapse(11, &g->timer2);
 	}
 
-	if (g->skinData.select < 5 || g->skinData.select == 12 || g->skinData.select == 13) {
+	if (g->skinData.select <= 4 || g->skinData.select == 12 || g->skinData.select == 13) {
 		if (GetTimeLapse(40, &g->timer2) < 0 && GetTimeLapse(0, &g->timer2) > g->skstruct2.loadend + g->skstruct2.loadstart)
 			SetTimeLapse(40, &g->timer2);
 		if (GetTimeLapse(41, &g->timer2) < 0 && GetTimeLapse(0, &g->timer2) > g->skstruct2.playstart)
@@ -8517,175 +8517,177 @@ int Proc_Text(game *g, sqlite3 *sql, char flag) {
 		}
 	}
 
-	if (g->txtStruct.st_text_num == -1) return 1;
-	g->sSelect.is_mouseOnTextInput = 1;
+	if (g->txtStruct.st_text_num != -1) {
+		g->sSelect.is_mouseOnTextInput = 1;
 
-	if (CheckKeyInput(g->txtStruct.hKeyInput) < 1 || flag != 0) return 1;
+		if (CheckKeyInput(g->txtStruct.hKeyInput) >= 1 || flag == 0) {
 
-	if (CheckKeyInput(g->txtStruct.hKeyInput) == 1) {
-		
-		CSTR buf;
-		GetKeyInputString(buf, g->txtStruct.hKeyInput);
-		CSTR query;
-		
-		CSTR unused_path;
-		CSTR unused_type;
-		unused_path = g->sSelect.bmsList[g->sSelect.cur_song].filepath;
-		if (g->sSelect.bmsList[g->sSelect.cur_song].keymode == 0) {
-			unused_type = "folder";
-		}
-		else if (g->sSelect.bmsList[g->sSelect.cur_song].keymode > 0) {
-			unused_type = "song";
-		}
+			if (CheckKeyInput(g->txtStruct.hKeyInput) == 1) {
 
-		switch (g->txtStruct.st_text_num) {
-			case 20:
-				SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
-				SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
-				g->sSelect.bmsList[g->sSelect.cur_song].title = buf;
-				if (g->sSelect.bmsList[g->sSelect.cur_song].subtitle.isDiff("(null)")) {
-					cstrSprintf(&g->sSelect.bmsList[g->sSelect.cur_song].fulltitle, "%s %s", buf, g->sSelect.bmsList[g->sSelect.cur_song].subtitle);
-					g->sSelect.is_tag_edited = 1;
-					g->sSelect.is_coursemaking_done = 1; 
+				CSTR buf;
+				GetKeyInputString(buf, g->txtStruct.hKeyInput);
+				CSTR query;
+
+				CSTR unused_path;
+				CSTR unused_type;
+				unused_path = g->sSelect.bmsList[g->sSelect.cur_song].filepath;
+				if (g->sSelect.bmsList[g->sSelect.cur_song].keymode == 0) {
+					unused_type = "folder";
 				}
-				else {
-					g->sSelect.bmsList[g->sSelect.cur_song].fulltitle = buf;
-					g->sSelect.is_tag_edited = 1;
-					g->sSelect.is_coursemaking_done = 1;
+				else if (g->sSelect.bmsList[g->sSelect.cur_song].keymode > 0) {
+					unused_type = "song";
 				}
-				break;
-			case 21:
-				SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
-				SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
-				g->sSelect.bmsList[g->sSelect.cur_song].title = buf;
-				cstrSprintf(&g->sSelect.bmsList[g->sSelect.cur_song].fulltitle, "%s %s", g->sSelect.bmsList[g->sSelect.cur_song].title, buf);
-				g->sSelect.is_tag_edited = 1;
-				g->sSelect.is_coursemaking_done = 1;
-				break;
-			case 23:
-				SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
-				SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
-				g->sSelect.bmsList[g->sSelect.cur_song].genre = buf;
-				g->sSelect.is_tag_edited = 1;
-				g->sSelect.is_coursemaking_done = 1;
-				break;
-			case 24:
-				SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
-				SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
-				g->sSelect.bmsList[g->sSelect.cur_song].artist = buf;
-				g->sSelect.is_tag_edited = 1;
-				g->sSelect.is_coursemaking_done = 1;
-				break;
-			case 25:
-				SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
-				SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
-				g->sSelect.bmsList[g->sSelect.cur_song].subartist = buf;
-				g->sSelect.is_tag_edited = 1;
-				g->sSelect.is_coursemaking_done = 1;
-				break;
-			case 26:
-				SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
-				SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
-				g->sSelect.bmsList[g->sSelect.cur_song].tag = buf;
-				g->sSelect.is_tag_edited = 1;
-				g->sSelect.is_coursemaking_done = 1;
-				break;
-			case 27:
-				atol(buf);
-				if ( (0 <= atol(buf) && atol(buf) < 100) || (g->sSelect.bmsList[g->sSelect.cur_song].keymode == 0)) {
+
+				switch (g->txtStruct.st_text_num) {
+				case 20:
 					SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
 					SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
-					g->sSelect.bmsList[g->sSelect.cur_song].level = atol(buf);
-					g->sSelect.is_tag_edited = 1;
-					g->sSelect.is_coursemaking_done = 1;
-				}
-				break;
-			case 28:
-				if (g->sSelect.bmsList[g->sSelect.cur_song].keymode != 0 && (0 <= atol(buf) && atol(buf) <= 5)) {
-					SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
-					SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
-					g->sSelect.bmsList[g->sSelect.cur_song].difficulty = atol(buf);
-					g->sSelect.is_tag_edited = 1;
-					g->sSelect.is_coursemaking_done = 1;
-					if (g->config.select.difficulty != g->sSelect.bmsList[g->sSelect.cur_song].difficulty && g->config.select.difficulty != 0) {
-						g->config.select.difficulty = g->sSelect.bmsList[g->sSelect.cur_song].difficulty;
+					g->sSelect.bmsList[g->sSelect.cur_song].title = buf;
+					if (g->sSelect.bmsList[g->sSelect.cur_song].subtitle.isDiff("(null)")) {
+						cstrSprintf(&g->sSelect.bmsList[g->sSelect.cur_song].fulltitle, "%s %s", buf, g->sSelect.bmsList[g->sSelect.cur_song].subtitle);
+						g->sSelect.is_tag_edited = 1;
+						g->sSelect.is_coursemaking_done = 1;
 					}
-				}
-				break;
-			case 29:
-				if (g->sSelect.bmsList[g->sSelect.cur_song].keymode != 0 && atol(buf) >= 0) {
+					else {
+						g->sSelect.bmsList[g->sSelect.cur_song].fulltitle = buf;
+						g->sSelect.is_tag_edited = 1;
+						g->sSelect.is_coursemaking_done = 1;
+					}
+					break;
+				case 21:
 					SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
 					SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
-					g->sSelect.bmsList[g->sSelect.cur_song].exlevel = atol(buf);
+					g->sSelect.bmsList[g->sSelect.cur_song].title = buf;
+					cstrSprintf(&g->sSelect.bmsList[g->sSelect.cur_song].fulltitle, "%s %s", g->sSelect.bmsList[g->sSelect.cur_song].title, buf);
 					g->sSelect.is_tag_edited = 1;
 					g->sSelect.is_coursemaking_done = 1;
-				}
-				break;
-			case 30:
-				if (*(buf.atPos(0)) == '/') {
-					CmdSearch(g, &buf, sql);
+					break;
+				case 23:
+					SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
 					SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
-				}
-				else {
-					query = "(null)";
-
-					if (buf.findStrPos("-") > 0) {
-						int from = atol(buf.left(buf.findStrPos("-")));
-						int to = atol(buf.right(buf.length() - buf.findStrPos("-") - 1));
-
-						if (from > 0) {
-							if (0 < to && 50 <= to) {
-								cstrSprintf(&query, "SELECT * FROM song LEFT JOIN score ON song.hash = score.hash WHERE %d<=minbpm AND maxbpm<=%d", from, to);
-								buf.add(" BPM");
-							}
-							else if (1 <= to && to < 50) {
-								cstrSprintf(&query, "SELECT * FROM song LEFT JOIN score ON song.hash = score.hash WHERE %d<=level AND level<=%d", from, to);
-								cstrSprintf(&buf, "LEVEL %d-%d", from, to);
-							}
-
+					g->sSelect.bmsList[g->sSelect.cur_song].genre = buf;
+					g->sSelect.is_tag_edited = 1;
+					g->sSelect.is_coursemaking_done = 1;
+					break;
+				case 24:
+					SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
+					SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
+					g->sSelect.bmsList[g->sSelect.cur_song].artist = buf;
+					g->sSelect.is_tag_edited = 1;
+					g->sSelect.is_coursemaking_done = 1;
+					break;
+				case 25:
+					SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
+					SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
+					g->sSelect.bmsList[g->sSelect.cur_song].subartist = buf;
+					g->sSelect.is_tag_edited = 1;
+					g->sSelect.is_coursemaking_done = 1;
+					break;
+				case 26:
+					SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
+					SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
+					g->sSelect.bmsList[g->sSelect.cur_song].tag = buf;
+					g->sSelect.is_tag_edited = 1;
+					g->sSelect.is_coursemaking_done = 1;
+					break;
+				case 27:
+					atol(buf);
+					if ((0 <= atol(buf) && atol(buf) < 100) || (g->sSelect.bmsList[g->sSelect.cur_song].keymode == 0)) {
+						SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
+						SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
+						g->sSelect.bmsList[g->sSelect.cur_song].level = atol(buf);
+						g->sSelect.is_tag_edited = 1;
+						g->sSelect.is_coursemaking_done = 1;
+					}
+					break;
+				case 28:
+					if (g->sSelect.bmsList[g->sSelect.cur_song].keymode != 0 && (0 <= atol(buf) && atol(buf) <= 5)) {
+						SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
+						SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
+						g->sSelect.bmsList[g->sSelect.cur_song].difficulty = atol(buf);
+						g->sSelect.is_tag_edited = 1;
+						g->sSelect.is_coursemaking_done = 1;
+						if (g->config.select.difficulty != g->sSelect.bmsList[g->sSelect.cur_song].difficulty && g->config.select.difficulty != 0) {
+							g->config.select.difficulty = g->sSelect.bmsList[g->sSelect.cur_song].difficulty;
 						}
 					}
-					else if (atol(buf) >= 50) {
-						cstrSprintf(&query, "SELECT * FROM song LEFT JOIN score ON song.hash = score.hash WHERE maxbpm=%d OR minbpm=%d", atol(buf), atol(buf));
-						buf.add(" BPM");
+					break;
+				case 29:
+					if (g->sSelect.bmsList[g->sSelect.cur_song].keymode != 0 && atol(buf) >= 0) {
+						SetObjectString(g->txtStruct.st_text_num - 10, buf, g->txtStruct.objectStr);
+						SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
+						g->sSelect.bmsList[g->sSelect.cur_song].exlevel = atol(buf);
+						g->sSelect.is_tag_edited = 1;
+						g->sSelect.is_coursemaking_done = 1;
 					}
-					else if (atol(buf) > 0) {
-						cstrSprintf(&query, "SELECT * FROM song LEFT JOIN score ON song.hash = score.hash WHERE level = %d", atol(buf));
-						cstrSprintf(&buf, "LEVEL %d", atol(buf));
+					break;
+				case 30:
+					if (*(buf.atPos(0)) == '/') {
+						CmdSearch(g, &buf, sql);
+						SetObjectString(g->txtStruct.st_text_num, buf, g->txtStruct.objectStr);
 					}
+					else {
+						query = "(null)";
 
-					g->config.select.difficulty = 0;
-					g->sSelect.searchFocused = 1;
-					g->sSelect.filterDifficulty = 0;
-					g->sSelect.filterKey = g->config.select.key;
-					g->sSelect.curQuery[0] = query;
-					g->sSelect.queryCount = 1;
-					g->sSelect.searchType = 3;
-					g->sSelect.searchMax = g->config.select.searchmax;
-					g->sSelect.filterSort = g->config.select.sort;
-					g->sSelect.unk4fb8[0] = 0;
-					g->sSelect.selTitle = g->sSelect.bmsList[g->sSelect.cur_song].title;
-					g->sSelect.selFilepath = g->sSelect.bmsList[g->sSelect.cur_song].filepath;
-					g->sSelect.selFolder = g->sSelect.bmsList[g->sSelect.cur_song].folder;
-					g->sSelect.searchInput = buf;
-					g->sSelect.text_num = g->txtStruct.st_text_num;
-				}
-				break;
-			case 170:
-				SetObjectString(170, buf, g->txtStruct.objectStr);
-				g->sSelect.course.name = buf;
-				if (g->sSelect.course.isMakingCourse == 0) {
-					g->sSelect.course.isChangingTitle = 1;
-				}
-				ProcS_Select(g);
-				break;
+						if (buf.findStrPos("-") > 0) {
+							int from = atol(buf.left(buf.findStrPos("-")));
+							int to = atol(buf.right(buf.length() - buf.findStrPos("-") - 1));
 
+							if (from > 0) {
+								if (0 < to && 50 <= to) {
+									cstrSprintf(&query, "SELECT * FROM song LEFT JOIN score ON song.hash = score.hash WHERE %d<=minbpm AND maxbpm<=%d", from, to);
+									buf.add(" BPM");
+								}
+								else if (1 <= to && to < 50) {
+									cstrSprintf(&query, "SELECT * FROM song LEFT JOIN score ON song.hash = score.hash WHERE %d<=level AND level<=%d", from, to);
+									cstrSprintf(&buf, "LEVEL %d-%d", from, to);
+								}
+
+							}
+						}
+						else if (atol(buf) >= 50) {
+							cstrSprintf(&query, "SELECT * FROM song LEFT JOIN score ON song.hash = score.hash WHERE maxbpm=%d OR minbpm=%d", atol(buf), atol(buf));
+							buf.add(" BPM");
+						}
+						else if (atol(buf) > 0) {
+							cstrSprintf(&query, "SELECT * FROM song LEFT JOIN score ON song.hash = score.hash WHERE level = %d", atol(buf));
+							cstrSprintf(&buf, "LEVEL %d", atol(buf));
+						}
+
+						g->config.select.difficulty = 0;
+						g->sSelect.searchFocused = 1;
+						g->sSelect.filterDifficulty = 0;
+						g->sSelect.filterKey = g->config.select.key;
+						g->sSelect.curQuery[0] = query;
+						g->sSelect.queryCount = 1;
+						g->sSelect.searchType = 3;
+						g->sSelect.searchMax = g->config.select.searchmax;
+						g->sSelect.filterSort = g->config.select.sort;
+						g->sSelect.unk4fb8[0] = 0;
+						g->sSelect.selTitle = g->sSelect.bmsList[g->sSelect.cur_song].title;
+						g->sSelect.selFilepath = g->sSelect.bmsList[g->sSelect.cur_song].filepath;
+						g->sSelect.selFolder = g->sSelect.bmsList[g->sSelect.cur_song].folder;
+						g->sSelect.searchInput = buf;
+						g->sSelect.text_num = g->txtStruct.st_text_num;
+					}
+					break;
+				case 170:
+					SetObjectString(170, buf, g->txtStruct.objectStr);
+					g->sSelect.course.name = buf;
+					if (g->sSelect.course.isMakingCourse == 0) {
+						g->sSelect.course.isChangingTitle = 1;
+					}
+					ProcS_Select(g);
+					break;
+
+				}
+
+			}
+			DeleteKeyInput(g->txtStruct.hKeyInput);
+			g->txtStruct.st_text_num = -1;
+			SetTimeLapse(4, &g->timer1);
 		}
-
 	}
-	DeleteKeyInput(g->txtStruct.hKeyInput);
-	g->txtStruct.st_text_num = -1;
-	SetTimeLapse(4, &g->timer1);
 
 	g->KeyInput.mouse_buttonL = mouseL;
 	g->KeyInput.mouse_buttonR = mouseR;
@@ -9761,7 +9763,7 @@ int ProcS_CourseResult(game *g, sqlite3 *sql) {
 int PlayPreviewSample(game *g) {
 	int scratchSide = 0;
 	ConfigStruct tCfg = g->config;
-	tCfg.play.battle = (g->skinData.select > 11);
+	tCfg.play.battle = (g->skinData.select >= 12);
 	g->gameplay.is_notplaying_unchecked = 1;
 	scratchSide = 0;
 	if (g->skinData.select == 3 && g->skinData.Data[g->skinData.skinID[3]].type == SKINTYPE_14KEYS)
@@ -9780,6 +9782,7 @@ int PlayPreviewSample(game *g) {
 			ParseBmsFile(&g->gameplay, "LR2files\\Config\\sample_7.bme", &g->audio, g, &g->sSelect.metaSelected, 1, scratchSide);
 			LoadBmsResource(&g->gameplay, "LR2files\\Config\\sample_7.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide, 0);
 			break;
+
 		case 1:
 			if (g->skinData.Data[g->skinData.skinID[1]].type == SKINTYPE_7KEYS) 
 				ReadKeyConfig(g, "LR2files\\Config\\keyconfig.xml");
@@ -9789,8 +9792,8 @@ int PlayPreviewSample(game *g) {
 			InitGameplay(&g->gameplay, &tCfg.play);
 			ParseBmsFile(&g->gameplay, "LR2files\\Config\\sample_5.bme", &g->audio, g, &g->sSelect.metaSelected, 1, scratchSide);
 			LoadBmsResource(&g->gameplay, "LR2files\\Config\\sample_5.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide, 0);
-
 			break;
+
 		case 2:
 			ReadKeyConfig(g, "LR2files\\Config\\keyconfig.xml");
 			g->sSelect.metaSelected.keymode = 14;
@@ -9798,6 +9801,7 @@ int PlayPreviewSample(game *g) {
 			ParseBmsFile(&g->gameplay, "LR2files\\Config\\sample_14.bme", &g->audio, g, &g->sSelect.metaSelected, 1, scratchSide);
 			LoadBmsResource(&g->gameplay, "LR2files\\Config\\sample_14.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide, 0);
 			break;
+
 		case 3:
 			if (g->skinData.Data[g->skinData.skinID[3]].type == SKINTYPE_14KEYS)
 				ReadKeyConfig(g, "LR2files\\Config\\keyconfig.xml");
@@ -9808,6 +9812,7 @@ int PlayPreviewSample(game *g) {
 			ParseBmsFile(&g->gameplay, "LR2files\\Config\\sample_10.bme", &g->audio, g, &g->sSelect.metaSelected, 1, scratchSide);
 			LoadBmsResource(&g->gameplay, "LR2files\\Config\\sample_10.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide, 0);
 			break;
+
 		case 4:
 			ReadKeyConfig(g, "LR2files\\Config\\keyconfig_p.xml");
 			g->sSelect.metaSelected.keymode = 9;
@@ -9815,6 +9820,7 @@ int PlayPreviewSample(game *g) {
 			ParseBmsFile(&g->gameplay, "LR2files\\Config\\sample_9.bme", &g->audio, g, &g->sSelect.metaSelected, 1, scratchSide);
 			LoadBmsResource(&g->gameplay, "LR2files\\Config\\sample_9.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide, 0);
 			break;
+
 		case 13:
 			if (g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_5KEYSBATTLE)
 				ReadKeyConfig(g, "LR2files\\Config\\keyconfig.xml");
