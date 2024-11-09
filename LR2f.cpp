@@ -7816,7 +7816,7 @@ int ProcI_SkinSelect(game *g) {
 
 	if (g->KeyInput.mousewheel <= -1) {
 		g->skinData.previewCustomID++;
-		if (g->skinData.previewCustomID >= g->skinData.Data[g->skinData.previewCustomID].custom_count - 5) g->skinData.previewCustomID = g->skinData.Data[g->skinData.previewCustomID].custom_count - 5;
+		if (g->skinData.previewCustomID >= g->skinData.Data[g->skinData.previewID].custom_count - 5) g->skinData.previewCustomID = g->skinData.Data[g->skinData.previewID].custom_count - 5;
 		if (g->skinData.previewCustomID < 0) g->skinData.previewCustomID = 0;
 
 		SetObjectString(50, g->skinData.Data[g->skinData.previewID].title, g->txtStruct.objectStr);
