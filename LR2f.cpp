@@ -26383,7 +26383,7 @@ CSTR UrlEncode(CSTR in) {
 
 	for (int i = 0; i < in.length(); i++) {
 		CSTR buf;
-		if (isalnum(*in.atPos(i)) || (*in.atPos(i) == '_') || (*in.atPos(i) == '.') || (*in.atPos(i) == '-')) {
+		if (isalnum((uchar)*in.atPos(i)) || (*in.atPos(i) == '_') || (*in.atPos(i) == '.') || (*in.atPos(i) == '-')) {
 			*buf.atPos(0) = *in.atPos(i);
 			*buf.atPos(1) = '\0';
 
@@ -26393,7 +26393,7 @@ CSTR UrlEncode(CSTR in) {
 			*buf.atPos(1) = '\0';
 		}
 		else {
-			cstrSprintf(&buf, "%%%02X", *in.atPos(i));
+			cstrSprintf(&buf, "%%%02X", (uchar)*in.atPos(i));
 		}
 
 		ret.add(buf);
