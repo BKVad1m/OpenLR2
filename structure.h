@@ -478,10 +478,10 @@ typedef struct DrawingBuf DrawingBuf, *PDrawingBuf;
 typedef struct DSTdraw DSTdraw, *PDSTdraw;
 
 struct DSTdraw { /* 80bytes,4*0x14 */
-	int x;
-	int y;
-	int w;
-	int h;
+	float x;
+	float y;
+	float w;
+	float h;
 	int sortID;
 	int time;
 	int acc;

@@ -2247,11 +2247,11 @@ int DrawNotes(game *g, skstruct *sk, Timer *T, CONFIG_PLAY *cfg) {
 
 				float pos_y = 0.0;
 				if (sk->dst_NOTE[key].draw->y != 0.0) {
-					pos_y = -note_y / (float)sk->dst_NOTE[key].draw->y;
+					pos_y = -note_y / sk->dst_NOTE[key].draw->y;
 				}
 				float pos_yl = 0.0;
 				if (sk->dst_NOTE[key].draw->y != 0.0) {
-					pos_yl = -noteL_y / (float)sk->dst_NOTE[key].draw->y;
+					pos_yl = -noteL_y / sk->dst_NOTE[key].draw->y;
 				}
 
 				if (cfg->m_accel == 1) {
@@ -13989,10 +13989,10 @@ int ProcI_PO4Select(game *g, sqlite3 *sql) { //not tested
 					AddDrawingBuffer_Lunaris(&g->skstruct.drBuf, &g->skstruct.src_BAR_BODY[g->po4cur_song], &dstd3, &g->timer1);
 
 					g->skstruct.dst_BAR_STAR[g->po4cur_song].draw->w;
-					((g->sSelect.bmsList[curmod].level - 1) * g->skstruct.dst_BAR_STAR[g->po4cur_song].draw->w /2);
+					((g->sSelect.bmsList[curmod].level - 1) * (int)g->skstruct.dst_BAR_STAR[g->po4cur_song].draw->w /2);
 					
 					for (int i = 0; i < g->sSelect.bmsList[curmod].level; i++) {
-						AddDrawingBuffer_ObjectAlpha(&g->skstruct.drBuf, &g->skstruct.src_BAR_STAR[g->po4cur_song], &g->skstruct.dst_BAR_STAR[g->po4cur_song], &g->timer1, dstd3.x - ((g->sSelect.bmsList[curmod].level - 1) * g->skstruct.dst_BAR_STAR[g->po4cur_song].draw->w / 2) + i, dstd3.y, 255);
+						AddDrawingBuffer_ObjectAlpha(&g->skstruct.drBuf, &g->skstruct.src_BAR_STAR[g->po4cur_song], &g->skstruct.dst_BAR_STAR[g->po4cur_song], &g->timer1, dstd3.x - ((g->sSelect.bmsList[curmod].level - 1) * (int)g->skstruct.dst_BAR_STAR[g->po4cur_song].draw->w / 2) + i, dstd3.y, 255);
 					}
 
 					int rank = g->sSelect.bmsList[curmod].mybest.rank;
@@ -17893,16 +17893,16 @@ DSTdraw SetDSTdrawByTime(DSTstruct dst, double time) {
 			rDstd = &dst.draw[select];
 
 			if (t2 != rDstd->time && select != dst.dstCount - 1 ) {
-				oBuf.x = (int)(float)ChangeValueByTime((double)(float)rDstd->x, (double)(float)rDstd[1].x, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
-				oBuf.y = (int)(float)ChangeValueByTime((double)(float)rDstd->y, (double)(float)rDstd[1].y, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
-				oBuf.w = (int)(float)ChangeValueByTime((double)(float)rDstd->w, (double)(float)rDstd[1].w, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
-				oBuf.h = (int)(float)ChangeValueByTime((double)(float)rDstd->h, (double)(float)rDstd[1].h, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
+				oBuf.x = ChangeValueByTime((double)rDstd->x, (double)rDstd[1].x, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
+				oBuf.y = ChangeValueByTime((double)rDstd->y, (double)rDstd[1].y, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
+				oBuf.w = ChangeValueByTime((double)rDstd->w, (double)rDstd[1].w, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
+				oBuf.h = ChangeValueByTime((double)rDstd->h, (double)rDstd[1].h, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
 				oBuf.sortID = ChangeValueByTime((double)rDstd->sortID, (double)rDstd[1].sortID, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
 				oBuf.a = ChangeValueByTime((double)rDstd->a, (double)rDstd[1].a, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
 				oBuf.r = ChangeValueByTime((double)rDstd->r, (double)rDstd[1].r, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
 				oBuf.g = ChangeValueByTime((double)rDstd->g, (double)rDstd[1].g, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
 				oBuf.b = ChangeValueByTime((double)rDstd->b, (double)rDstd[1].b, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
-				oBuf.angle = (float)ChangeValueByTime((double)rDstd->angle, (double)rDstd[1].angle, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
+				oBuf.angle = ChangeValueByTime((double)rDstd->angle, (double)rDstd[1].angle, (double)rDstd->time, (double)rDstd[1].time, (double)t2, rDstd->acc);
 				oBuf.blend = rDstd->blend;
 				oBuf.center = rDstd->center;
 				oBuf.filter = rDstd->filter;
@@ -17964,18 +17964,18 @@ int LRDrawImg(int *grHandle, DSTdraw *dstD) {
 	SetDrawMode(dstD->filter);
 	SetDrawBlendMode(dstD->blend, dstD->a);
 	SetDrawBright(dstD->r, dstD->g, dstD->b);
-	if ((ushort)((ushort)(0.0 < (float)dstD->h) << 8 | (ushort)((float)dstD->h == 0.0) << 0xe) == 0) {
-		dstD->h = -(float)dstD->h;
-		dstD->y = (int)((float)dstD->y - (float)dstD->h);
+	if (dstD->h < 0.0) {
+		dstD->h = -dstD->h;
+		dstD->y = dstD->y - dstD->h;
 	}
-	if ((ushort)((ushort)(0.0 < (float)dstD->w) << 8 | (ushort)((float)dstD->w == 0.0) << 0xe) == 0) {
-		dstD->w = -(float)dstD->w;
-		dstD->x = (int)((float)dstD->x - (float)dstD->w);
+	if (dstD->w < 0.0) {
+		dstD->w = -dstD->w;
+		dstD->x = dstD->x - dstD->w;
 	}
-	x1 = (float)dstD->x;
-	y1 = (float)dstD->y;
-	x2 = (float)dstD->w + (float)dstD->x;
-	y2 = (float)dstD->y + (float)dstD->h;
+	x1 = dstD->x;
+	y1 = dstD->y;
+	x2 = dstD->w + dstD->x;
+	y2 = dstD->y + dstD->h;
 
 	if (dstD->angle != 0.0) {
 		rad = (dstD->angle / 360.0) * 6.283185;
@@ -18098,31 +18098,32 @@ void LRDrawText(int* grHandle, DSTdraw *dstd, CSTR *str, ImageFont *imF) {
 	int x, y;
 	float xf, yf, wSum;
 
-	if (imF->size < 1 || dstd->h == 0 || dstd->w == 0 || str->length() < 1) {		
-		if (dstd->h != 0 && dstd->w != 0 && str->length() > 0 && *grHandle != -1) {
+	if (imF->size < 1 || dstd->h == 0.0 || dstd->w == 0.0 || str->length() < 1) {		
+		if (dstd->h != 0.0 && dstd->w != 0.0 && str->length() > 0 && *grHandle != -1) {
 			SetDrawMode(dstd->filter);
 			SetDrawBlendMode(dstd->blend, dstd->a);
 			SetDrawBright(dstd->r, dstd->g, dstd->b);
 			GetFontStateToHandle(0, &imF->size, &iDum, *grHandle);
 			hl = dstd->h / (float)imF->size;
 			width = GetDrawStringWidthToHandle(str->outstr(), str->length(), *grHandle, 0);
-			if (width) {
+			if (width != 0.0) {
 				if (width > dstd->w) wl = dstd->w / width;
 				else wl = 1.0;
-			}
-			wl = wl * hl;
-			if (dstd->align == 1) {
-				dstd->x = dstd->x - (width*wl*0.5);
-			}
-			else if (dstd->align == 2) {
-				dstd->x = dstd->x - (width*wl);
-			}
-			GetTimeWrap();
-			if (wl == 1.0 && hl == 1.0) {
-				DrawStringToHandle(dstd->x, dstd->y, str->outstr(), GetColor(dstd->r, dstd->g, dstd->b), *grHandle, 0, 0);
-			}
-			else {
-				DrawExtendStringToHandle(dstd->x, dstd->y, wl, hl, str->outstr(), GetColor(dstd->r, dstd->g, dstd->b), *grHandle, 0, 0);
+			
+				wl = wl * hl;
+				if (dstd->align == 1) {
+					dstd->x = dstd->x - (width*wl*0.5);
+				}
+				else if (dstd->align == 2) {
+					dstd->x = dstd->x - (width*wl);
+				}
+				GetTimeWrap();
+				if (wl == 1.0 && hl == 1.0) {
+					DrawStringToHandle(dstd->x, dstd->y, str->outstr(), GetColor(dstd->r, dstd->g, dstd->b), *grHandle, 0, 0);
+				}
+				else {
+					DrawExtendStringToHandle(dstd->x, dstd->y, wl, hl, str->outstr(), GetColor(dstd->r, dstd->g, dstd->b), *grHandle, 0, 0);
+				}
 			}
 		}
 	}
@@ -18130,19 +18131,19 @@ void LRDrawText(int* grHandle, DSTdraw *dstd, CSTR *str, ImageFont *imF) {
 		SetDrawMode(dstd->filter);
 		SetDrawBlendMode(dstd->blend, dstd->a);
 		SetDrawBright(dstd->r, dstd->g, dstd->b);
-		hl = dstd->h / imF->size;
+		hl = dstd->h / (float)imF->size;
 		width = GetTextGraphLength(str, imF);
 
-		if (width) {
+		if (width != 0.0) {
 			if (width > dstd->w) wl = dstd->w / width;
 			else wl = 1.0;
 		
 			wl = wl * hl;
 			if (dstd->align == 1) {
-				dstd->x = dstd->x - (width*wl*0.5);
+				dstd->x = dstd->x - (int)(width*wl*0.5);
 			}
 			else if (dstd->align == 2) {
-				dstd->x = dstd->x - (width*wl);
+				dstd->x = dstd->x - (int)(width*wl);
 			}
 
 			wSum = 0.0;
@@ -18342,10 +18343,11 @@ int MouseOnDSTD(DSTdraw *dstd, int *x, int *y){ //1 right 2 left
 	xv = *x;
 	yv = *y;
 	fxv = (float)xv;
-	if ( xv < 640 && -1 < xv && yv < 480 && -1 < yv && (float)dstd->x <= fxv && fxv <= (float)dstd->w + (float)dstd->x
-	&& (float)dstd->y <= (float)yv && (float)yv <= (float)dstd->h + (float)dstd->y) {
+	if ( xv < 640 && 0 <= xv && yv < 480 && 0 <= yv 
+		&& dstd->x <= fxv && fxv <= dstd->w + dstd->x
+		&& dstd->y <= (float)yv && (float)yv <= dstd->h + dstd->y) {
 		
-		half = (float)dstd->w * 0.5 + (float)dstd->x;
+		half = dstd->w * 0.5 + dstd->x;
 		
 		if (fxv >= half) return 1;
 		else return 2;
