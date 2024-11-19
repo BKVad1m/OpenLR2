@@ -1645,19 +1645,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				GetTimeWrap();
 				GetTimeWrap();
 				if (gs.procSelecter == 4) {
-					if (gs.KeyInput.inputID[D_DIK_1] == 2) {
+					if (gs.KeyInput.inputID[KEY_INPUT_1] == 2) {
 						printfDx("スキン位置の変更(カーソルキーで調節)\nx:%d\ny:%d\n", gs.skstruct.adjust.shift_x, gs.skstruct.adjust.shift_y);
 					}
-					else if (gs.KeyInput.inputID[D_DIK_2] == 2) {
+					else if (gs.KeyInput.inputID[KEY_INPUT_2] == 2) {
 						printfDx("スキン拡大率の変更(カーソルキーで調節)\nx:%d\ny:%d\n", gs.skstruct.adjust.rate_x, gs.skstruct.adjust.rate_y);
 					}
-					else if (gs.KeyInput.inputID[D_DIK_3] == 2) {
+					else if (gs.KeyInput.inputID[KEY_INPUT_3] == 2) {
 						printfDx("ジャッジ表示位置の変更(カーソルキーで調節)\nx:%d\ny:%d\n", gs.skstruct.adjust.judge_x, gs.skstruct.adjust.judge_y);
 					}
-					else if (gs.KeyInput.inputID[D_DIK_4] == 2) {
+					else if (gs.KeyInput.inputID[KEY_INPUT_4] == 2) {
 						printfDx("ノートサイズの変更(カーソルキーで調節)\nx:%d\ny:%d\n", gs.skstruct.adjust.size_x, gs.skstruct.adjust.size_y);
 					}
-					else if (gs.KeyInput.inputID[D_DIK_5] == 2) {
+					else if (gs.KeyInput.inputID[KEY_INPUT_5] == 2) {
 						if (gs.skstruct.adjust.dark_type == 1) {
 							printfDx("スキン描画制限(カーソルキーで調節)\nDARK 1\n");
 						}
@@ -1668,14 +1668,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							printfDx("スキン描画制限(カーソルキーで調節)\nOFF\n");
 						}
 					}
-					else if (gs.KeyInput.inputID[D_DIK_6] == '\x02') {
+					else if (gs.KeyInput.inputID[KEY_INPUT_6] == '\x02') {
 						printfDx("ノート位置(1P)の変更(カーソルキーで調節)\nx:%d\ny:%d\n", gs.skstruct.adjust.note_1p_x, gs.skstruct.adjust.note_1p_y);
 					}
-					else if (gs.KeyInput.inputID[D_DIK_7] == '\x02'){
+					else if (gs.KeyInput.inputID[KEY_INPUT_7] == '\x02'){
 						printfDx("ノート位置(2P)の変更(カーソルキーで調節)\nx:%d\ny:%d\n", gs.skstruct.adjust.note_2p_x, gs.skstruct.adjust.note_2p_y);
 					}
 				}
-				if ( gs.KeyInput.inputID[D_DIK_F1] == '\x02' && gs.sSelect.flag_maniacPanel == '\0' && gs.sSelect.unk4f74 == '\0' && gs.is_starter == '\0') {
+				if ( gs.KeyInput.inputID[KEY_INPUT_F1] == '\x02' && gs.sSelect.flag_maniacPanel == '\0' && gs.sSelect.unk4f74 == '\0' && gs.is_starter == '\0') {
 					printfDx( (gs.sSelect.bmsList[gs.sSelect.cur_song].folderType == 8) ?
 								"F2 マニアックオプション F3 コースのソート変更\nF4 ウインドウモード切り替え F5 IRに接続\nF6  スクリーンショット F7 FPS表示\nF8 フォルダのリロード\n" 
 								: "F2 マニアックオプション F3 レベルの変更\nF4 ウインドウモード切り替え F5 IRに接続\nF6 スク リーンショット F7 FPS表示\nF8 フォルダのリロード\n");
@@ -1686,7 +1686,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				gs.sSelect.flag_maniacPanel = 0;
 				gs.sSelect.unk4f74 = '\0';
 				if(gs.procSelecter == 2){
-					if ( (gs.KeyInput.inputID[D_DIK_F5] == 1 || gs.sSelect.is_buttonIRpage != 0) && gs.sSelect.bmsList[gs.sSelect.cur_song].keymode > 4 && gs.config.network.lr2ir == 1) {
+					if ( (gs.KeyInput.inputID[KEY_INPUT_F5] == 1 || gs.sSelect.is_buttonIRpage != 0) && gs.sSelect.bmsList[gs.sSelect.cur_song].keymode > 4 && gs.config.network.lr2ir == 1) {
 						if (gs.config.system.screenmode == 0) {
 							gs.config.system.screenmode = 1;
 							SetObjectStrings_SongSelect(&gs);
@@ -1743,21 +1743,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							SetMouseDispFlag(0);
 							gs.is_clicked_screenModeChange = 0;
 						}
-						gs.KeyInput.inputID[D_DIK_F1] = 0; //why F1?
+						gs.KeyInput.inputID[KEY_INPUT_F1] = 0; //why F1?
 						gs.sSelect.is_buttonIRpage = 0;
 						InitInputStructure2(&gs.KeyInput);
 						Sleep(1000);
 						if (gs.sSelect.flag_maniacPanel || gs.sSelect.unk4f74) ClsDrawScreen();
 					}
-					else if (gs.KeyInput.inputID[D_DIK_F2] == 2) {
+					else if (gs.KeyInput.inputID[KEY_INPUT_F2] == 2) {
 						gs.sSelect.flag_maniacPanel = 1;
 						Print_ManiacOptions(&gs);
 						if (gs.sSelect.flag_maniacPanel || gs.sSelect.unk4f74) ClsDrawScreen();
 					}
-					else if (gs.KeyInput.inputID[D_DIK_F3] == 2) {
+					else if (gs.KeyInput.inputID[KEY_INPUT_F3] == 2) {
 						if (gs.sSelect.bmsList[gs.sSelect.cur_song].folderType == 8) {
 							printfDx("カーソルキー↑↓ コースの表示順変更\n");
-							if (gs.KeyInput.inputID[D_DIK_UP] == 1) {
+							if (gs.KeyInput.inputID[KEY_INPUT_UP] == 1) {
 								if (gs.sSelect.cur_song > -1) {
 									ChangeCourseID(sql3, gs.sSelect.bmsList[gs.sSelect.cur_song].courseID, gs.sSelect.bmsList[gs.sSelect.cur_song + -1].courseID, gs.sSelect.course.type);
 									SetBmsFilter(&gs, sql3);
@@ -1765,7 +1765,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 									gs.sSelect.filter_clicked = 10;
 								}
 							}
-							else if (gs.KeyInput.inputID[D_DIK_DOWN] == 1 && gs.sSelect.cur_song < gs.sSelect.bmsListCount + -1 && gs.sSelect.bmsList[gs.sSelect.cur_song + 1].courseID > 0) {
+							else if (gs.KeyInput.inputID[KEY_INPUT_DOWN] == 1 && gs.sSelect.cur_song < gs.sSelect.bmsListCount + -1 && gs.sSelect.bmsList[gs.sSelect.cur_song + 1].courseID > 0) {
 								ChangeCourseID(sql3, gs.sSelect.bmsList[gs.sSelect.cur_song].courseID, gs.sSelect.bmsList[gs.sSelect.cur_song + 1].courseID, gs.sSelect.course.type);
 								SetBmsFilter(&gs, sql3);
 								gs.sSelect.selKey = gs.sSelect.bmsList[gs.sSelect.cur_song + 1].courseID;
@@ -1776,7 +1776,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							if (gs.config.select.disabledifficultyfilter == 0) printfDx("カーソルキー↑↓ 難度カテゴリの変更\nカーソルキー←→ レベルの変更\n");
 							else printfDx("カーソルキー←→ レベルの変更\n");
 
-							if (gs.KeyInput.inputID[D_DIK_UP] == 1 && gs.config.select.disabledifficultyfilter == 0) {
+							if (gs.KeyInput.inputID[KEY_INPUT_UP] == 1 && gs.config.select.disabledifficultyfilter == 0) {
 								gs.sSelect.bmsList[gs.sSelect.cur_song].difficulty--;
 
 								if (gs.sSelect.bmsList[gs.sSelect.cur_song].difficulty >= 6)
@@ -1790,7 +1790,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 								if (gs.sSelect.bmsList[gs.sSelect.cur_song].difficulty != gs.config.select.difficulty && gs.config.select.difficulty)
 									gs.config.select.difficulty = gs.sSelect.bmsList[gs.sSelect.cur_song].difficulty;
 							}
-							else if (gs.KeyInput.inputID[D_DIK_DOWN] == 1 && gs.config.select.disabledifficultyfilter == 0) {
+							else if (gs.KeyInput.inputID[KEY_INPUT_DOWN] == 1 && gs.config.select.disabledifficultyfilter == 0) {
 								gs.sSelect.bmsList[gs.sSelect.cur_song].difficulty++;
 								
 								if (gs.sSelect.bmsList[gs.sSelect.cur_song].difficulty >= 6)
@@ -1805,7 +1805,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 									gs.config.select.difficulty = gs.sSelect.bmsList[gs.sSelect.cur_song].difficulty;
 							}
 							else {
-								if (gs.KeyInput.inputID[D_DIK_LEFT] == 1) {
+								if (gs.KeyInput.inputID[KEY_INPUT_LEFT] == 1) {
 									gs.sSelect.bmsList[gs.sSelect.cur_song].level--;
 
 									if (gs.sSelect.bmsList[gs.sSelect.cur_song].level >= 100)
@@ -1816,7 +1816,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 									gs.sSelect.is_tag_edited = 1;
 									gs.sSelect.is_clicked_filter = 1;
 								}
-								else if(gs.KeyInput.inputID[D_DIK_RIGHT] == 1){
+								else if(gs.KeyInput.inputID[KEY_INPUT_RIGHT] == 1){
 									gs.sSelect.bmsList[gs.sSelect.cur_song].level++;
 
 									if (gs.sSelect.bmsList[gs.sSelect.cur_song].level >= 100)
@@ -1962,7 +1962,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					}
 					SetObjectStrings_SongSelect(&gs);
 				}
-				if (gs.KeyInput.inputID[D_DIK_F4] == 1 && gs.procSelecter == 2) {
+				if (gs.KeyInput.inputID[KEY_INPUT_F4] == 1 && gs.procSelecter == 2) {
 					gs.config.system.screenmode++;
 					gs.is_clicked_screenModeChange = 1;
 					if (gs.config.system.screenmode >= 2) gs.config.system.screenmode = 0;
@@ -2015,7 +2015,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					SetObjectStrings_SongSelect(&gs);
 				}
 				SetMouseDispFlag( (gs.KeyInput.mouse_oldX < 640 && gs.KeyInput.mouse_oldY < 480) ? 0:1  );
-				if ( (gs.procSelecter == 2 || gs.procSelecter == 9) && gs.KeyInput.inputID[D_DIK_ESCAPE]
+				if ( (gs.procSelecter == 2 || gs.procSelecter == 9) && gs.KeyInput.inputID[KEY_INPUT_ESCAPE]
 					 && (GetTimeLapse(4,&gs.timer1) < 0.0 || GetTimeLapse(4, &gs.timer1) > 100.0) 
 					 && gs.txtStruct.st_text_num == -1 
 					 && GetTimeLapse(0, &gs.timer1) > gs.skstruct.startinput_start ){
