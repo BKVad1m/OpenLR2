@@ -19,7 +19,6 @@ sending score to LR2IR is disabled to avoid accidents.
  - behavior mismatch on NONSTOP MIX
  - readme left click scroll is faster than original (not important)
  - banner load fails
- - in song select, song bar is not transparent while scrolling with some skins
 
 # libraries
 *DxLib 3.01a -> 3.12a
