@@ -18,7 +18,6 @@ sending score to LR2IR is disabled to avoid accidents.
 # known issues
  - behavior mismatch on NONSTOP MIX
  - readme left click scroll is faster than original (not important)
- - banner load fails
 
 # build
 use visual studio 2008, with japanese locale (locale emulator works).
