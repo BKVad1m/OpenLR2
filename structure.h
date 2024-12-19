@@ -1537,7 +1537,7 @@ struct gameplay {
 	int fadeinBGAend[10];
 	int fadeoutBGAstart[10];
 	int fadeoutBGAend[10];
-	int stageMixer[10];
+	int bgaMixer[10];
 	int isPreviewLoad;
 	HANDLE hThreadPreview;
 	int previewStatus; /* 1:start 2:loaded */

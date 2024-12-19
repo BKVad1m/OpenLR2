@@ -12599,10 +12599,10 @@ int ProcGame(game *g) {
 
 	for (int i = 0; i < 5; i++) {
 		if (g->gameplay.fadeinBGAstart[i] > 0 && g->gameplay.fadeinBGAend[i] > 0 && g->gameplay.fadeinBGAstart[i] - 100 <= t41 && t41 <= g->gameplay.fadeinBGAend[i] + 100) {
-			g->gameplay.stageMixer[i] = ChangeValueByTime(0.0, 100.0, g->gameplay.fadeinBGAstart[i], g->gameplay.fadeinBGAend[i], t41, 0);
+			g->gameplay.bgaMixer[i] = ChangeValueByTime(0.0, 100.0, g->gameplay.fadeinBGAstart[i], g->gameplay.fadeinBGAend[i], t41, 0);
 		}
 		if (g->gameplay.fadeoutBGAstart[i] > 0 && g->gameplay.fadeoutBGAend[i] > 0 && g->gameplay.fadeoutBGAstart[i] - 100 <= t41 && t41 <= g->gameplay.fadeoutBGAend[i] + 100) {
-			g->gameplay.stageMixer[i] = ChangeValueByTime(100.0, 0.0, g->gameplay.fadeoutBGAstart[i], g->gameplay.fadeoutBGAend[i], t41, 0);
+			g->gameplay.bgaMixer[i] = ChangeValueByTime(100.0, 0.0, g->gameplay.fadeoutBGAstart[i], g->gameplay.fadeoutBGAend[i], t41, 0);
 		}
 	}
 		
@@ -22736,16 +22736,16 @@ int InitGameplay(gameplay *gp, CONFIG_PLAY *cfg) {
 	gp->fadeinBGAstart[9] = -1;
 	gp->fadeinBGAend[9] = -1;
 	gp->fadeoutBGAend[9] = -1;
-	gp->stageMixer[1] = 0;
-	gp->stageMixer[2] = 0;
-	gp->stageMixer[3] = 0;
-	gp->stageMixer[4] = 0;
-	gp->stageMixer[5] = 0;
-	gp->stageMixer[6] = 0;
-	gp->stageMixer[7] = 0;
-	gp->stageMixer[8] = 0;
-	gp->stageMixer[9] = 0;
-	gp->stageMixer[0] = 100;
+	gp->bgaMixer[1] = 0;
+	gp->bgaMixer[2] = 0;
+	gp->bgaMixer[3] = 0;
+	gp->bgaMixer[4] = 0;
+	gp->bgaMixer[5] = 0;
+	gp->bgaMixer[6] = 0;
+	gp->bgaMixer[7] = 0;
+	gp->bgaMixer[8] = 0;
+	gp->bgaMixer[9] = 0;
+	gp->bgaMixer[0] = 100;
 
 	return 1;
 }
@@ -22871,16 +22871,16 @@ int InitGameplay_retry(gameplay *gp, AUDIO *snd, game *g) {
 		AddReplayData(&gp->replay, 0, 200, gp->randomseed);
 	}
 
-	gp->stageMixer[1] = 0;
-	gp->stageMixer[2] = 0;
-	gp->stageMixer[3] = 0;
-	gp->stageMixer[4] = 0;
-	gp->stageMixer[5] = 0;
-	gp->stageMixer[6] = 0;
-	gp->stageMixer[7] = 0;
-	gp->stageMixer[8] = 0;
-	gp->stageMixer[9] = 0;
-	gp->stageMixer[0] = 100;
+	gp->bgaMixer[1] = 0;
+	gp->bgaMixer[2] = 0;
+	gp->bgaMixer[3] = 0;
+	gp->bgaMixer[4] = 0;
+	gp->bgaMixer[5] = 0;
+	gp->bgaMixer[6] = 0;
+	gp->bgaMixer[7] = 0;
+	gp->bgaMixer[8] = 0;
+	gp->bgaMixer[9] = 0;
+	gp->bgaMixer[0] = 100;
 
 	gp->unused_7bf68 = '\0';
 	gp->unused_73b68 = 0;

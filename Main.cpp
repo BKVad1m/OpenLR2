@@ -1540,12 +1540,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					if (gs.procSelecter == 4) {
 						if (GetTimeLapse(41, &gs.timer1) >= 0.0 && gs.config.play.bga > 0) {
 							int intTemp = 0;
-							while (gs.gameplay.stageMixer[intTemp] <= 0) {
+							while (gs.gameplay.bgaMixer[intTemp] <= 0) {
 								intTemp++;
 								if (intTemp >= gs.sSelect.bmsList[gs.sSelect.cur_song].courseStageCount - 1) break;
 							}
 
-							if (GetRand(gs.gameplay.stageMixer[intTemp+1] + gs.gameplay.stageMixer[intTemp]) > gs.gameplay.stageMixer[intTemp]) {
+							if (GetRand(gs.gameplay.bgaMixer[intTemp+1] + gs.gameplay.bgaMixer[intTemp]) > gs.gameplay.bgaMixer[intTemp]) {
 								gs.gameplay.missLayer = gs.gameplay.courseMissLayer[intTemp + 1];
 								gs.gameplay.bgaLayer1 = gs.gameplay.courseBgaLayer1[intTemp + 1];
 								gs.gameplay.bgaLayer2 = gs.gameplay.courseBgaLayer2[intTemp + 1];
