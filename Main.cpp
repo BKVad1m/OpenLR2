@@ -790,6 +790,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							if (gs.gameplay.replay.status == 2 || gs.config.play.replay == 0) {
 								if (gs.gameplay.replay.status == 1) {
 									AllocReplayBuffer(&gs.gameplay.replay);
+									//TOFIX : replay option mismatch, when use ghostbattle. ProcS_Play()->GetTargetInfo() changes option (gauge, random)
 									AddReplayDataHeader(&gs.config.play, &gs.gameplay.replay, &gs.audio, &gs.gameplay);
 								}
 								else if (gs.gameplay.replay.status == 2) {
@@ -807,6 +808,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							else {
 								gs.gameplay.replay.status = 1;
 								AllocReplayBuffer(&gs.gameplay.replay);
+								//TOFIX : replay option mismatch, when use ghostbattle. ProcS_Play()->GetTargetInfo() changes option (gauge, random)
 								AddReplayDataHeader(&gs.config.play, &gs.gameplay.replay, &gs.audio, &gs.gameplay);
 							}
 							if (gs.gameplay.ghostBattle == 1) {

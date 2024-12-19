@@ -1388,6 +1388,7 @@ int ParseBmsFile(gameplay *gp, CSTR filename, AUDIO *aud, ConfigStruct* cfg, BMS
 
 	oldSpeedMultiplier = gp->freqSpeedMultiplier;
 
+	//TOFIX : seed is not putted into replaydata, when use ghostbattle. (retry puts seed) (see also ProcS_Play())
 	if (gp->randomseed) {
 		ErrorLogFmtAdd("RANDSEEDを引き継ぎます\n");
 	}
@@ -2636,12 +2637,14 @@ int ParseBmsFile(gameplay *gp, CSTR filename, AUDIO *aud, ConfigStruct* cfg, BMS
 				}
 			}
 		}
+
 		for (int i = bmsobj_stageFirst; i < gp->bmsobj.count; i++) {
 			gp->bmsobj.notes[i].stage = stage;
 			if (!(0 <= gp->bmsobj.notes[i].stage && gp->bmsobj.notes[i].stage <= 4)) {
 				gp->bmsobj.notes[i].stage = 0;
 			}
 		}
+
 		prevStageTime = -1.0;
 		for (int i = gp->bmsobj.size - 1; i != bmsobj_stageFirst; i--) {
 			if (10 <= gp->bmsobj.notes[i].op && gp->bmsobj.notes[i].op < 30) {
