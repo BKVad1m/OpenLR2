@@ -1,4 +1,5 @@
 #pragma once
+#include <winsock2.h>
 #include <Windows.h>
 #include <vfw.h>
 #include "FMODex/fmod.h"
@@ -611,10 +612,6 @@ typedef struct REPLAY REPLAY, *PREPLAY;
 typedef struct PLAYSCORE PLAYSCORE, *PPLAYSCORE;
 
 typedef long LONG;
-
-typedef struct WSAData WSAData, *PWSAData;
-
-typedef struct WSAData WSADATA;
 
 typedef struct RANKING RANKING, *PRANKING;
 

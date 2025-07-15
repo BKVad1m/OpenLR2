@@ -1,9 +1,10 @@
 #pragma once
+#include "structure.h"
 #include <windows.h>
 
 //#include "DXlib/DxDirectX.h"
 #include "DXlib/DxLib.h"
-#include "structure.h"
+
 
 typedef struct MIDI {
 	byte input[260]; //0x101:ptich_minus 0x102:pitch_plus 0x103:pedal;

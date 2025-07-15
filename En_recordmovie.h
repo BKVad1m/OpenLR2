@@ -1,7 +1,8 @@
 #pragma once
+#include "structure.h"
 #include <windows.h>
 #include <vfw.h>
-#include "structure.h"
+
 
 	// RECORDING();
 	// bool RefreshCurFrame();

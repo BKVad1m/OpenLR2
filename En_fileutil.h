@@ -1,4 +1,3 @@
-#include "strclass.h"
 #include "structure.h"
 
 //hash

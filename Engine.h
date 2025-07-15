@@ -6,8 +6,7 @@
 //250706 memo : feature/function based struct seperation is almost IMPOSSIBLE (due to game struct)
 //so I bring structure.h again
 
-#include "DxLib/DxLib.h"
-#include <process.h>
+
 
 ////IO
 //AUDIO IO
@@ -37,6 +36,9 @@
 //value range util
 #include "En_value.h"
 
+
+#include "DxLib/DxLib.h"
+#include <process.h>
 
 
 ////GAMES

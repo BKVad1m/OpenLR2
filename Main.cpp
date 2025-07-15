@@ -1,5 +1,10 @@
 ﻿#pragma once
 // /source-charset:shift-JIS /execution-charset:shift-JIS not supported in cl.exe on vs08. open your vs08 with locale emulation(cp932)
+#include "structure.h"
+#include "Engine.h"
+#include "LR2.h"
+#include "Scenes.h"
+
 #include <windows.h>
 #include <string>
 
@@ -9,10 +14,7 @@ extern "C" {
 #include "sqlite/sqlite3.h"
 }
 
-#include "structure.h"
-#include "Engine.h"
-#include "LR2.h"
-#include "Scenes.h"
+
 
 #define LR2TITLE "LR2 beta3 version 100201"
 #define LR2VERSIONSTRING "LR2 beta3 version 100201 re-written 210807"
