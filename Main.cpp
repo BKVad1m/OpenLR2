@@ -195,10 +195,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			gs.config.select.preview = 0;
 		}
 		gs.flag_unk420 = 0;
-		SetAbleClockCount(gs.config.system.hptimer == 1);
-		SetClockFlag(&gs.timer1, 0);
-		gs.timer1.bgaFramerate = (double)gs.config.tools.movie_framerate;
-		gs.timer1.bga = 0.0;
+		SetHPtimerFlag(gs.config.system.hptimer == 1);
+		SetManualTimerFlag(&gs.timer1, 0);
+		gs.timer1.movieFramerate = (double)gs.config.tools.movie_framerate;
+		gs.timer1.movieTimer = 0.0;
 		
 		SetGraphMode(640, 480, (gs.config.system.highcolor == 0) ? 32 : 12, 60);
 		if (gs.rec.recMode == 3) {
@@ -1886,10 +1886,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							gs.audio.aviTimer = GetTimeWrap();
 						}
 						gs.rec.CpyScreenToAVI();
-						if (gs.timer1.flag) {
+						if (gs.timer1.flagMovieTimer) {
 							double time1, time2;
 							time1 = GetTimeWrap();//
-							BGATimer(&gs.timer1);
+							MovieTimer(&gs.timer1);
 							gs.audio.aviTimer = GetTimeWrap();
 							if(gs.audio.replay2avi)
 								gs.audio.aviTimer = GetTimeWrap();
@@ -1898,11 +1898,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 								while (time2 - 1.0 < time1) {
 									ProcGame(&gs);
-									SetBGATimer(&gs.timer1, time1);
+									SetManualTimer(&gs.timer1, time1);
 									gs.audio.aviTimer = time1;
 									time1 += 1.0;
 								}
-								SetBGATimer(&gs.timer1, time2);
+								SetManualTimer(&gs.timer1, time2);
 								if (gs.audio.replay2avi) {
 									gs.audio.aviTimer = time2;
 								}

@@ -1577,10 +1577,13 @@ struct Timer {
 	double FPSclock;
 	double rhythmTick;
 	double Rhythm; /* //1beat=1000,reset on line */
-	int flag; /* //char,bool */
+	char flagMovieTimer;
+	undefined padding1;
+	undefined padding2;
+	undefined padding3;
 	int unused;
-	double bga;
-	double bgaFramerate;
+	double movieTimer;
+	double movieFramerate;
 };
 
 struct NETWORK {
@@ -1702,8 +1705,8 @@ struct game {
 	char cmd_n;
 	char is_recordmode;
 	char auto2avi;
-	char(unknwon_flag_62);
-	char(unknwon_flag_63);
+	char flag_unkA0048;
+	char flag_unkA0049;
 	undefined field69_0xa004a;
 	undefined field70_0xa004b;
 	CSTR field71_0xa004c;

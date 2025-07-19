@@ -349,11 +349,11 @@ int SPtoDP(LaneStruct * lane, int baseNoteID, CHARTCONVERTER * cc);
 int ParseBmsFile(gameplay * gp, CSTR filename, AUDIO * aud, ConfigStruct * cfg, BMSMETA * meta, int bgaFlag, int scratchSide);
 
 //TIMER : 4b6710 - 
-int SetBGATimer(Timer * T, double newTime);
-int SetAbleClockCount(char val);
-int SetClockFlag(Timer * T, char flag);
+int SetManualTimerFlag(Timer * T, char flag);
+int SetManualTimer(Timer * T, double newTime);
+int SetHPtimerFlag(char val);
 int NONE_004b6770(void);
-int BGATimer(Timer * T);
+int MovieTimer(Timer * T);
 int ResetTimeLapse(int timerID, Timer * T);
 double GetTime(void);
 double GetTimeWrap(void);

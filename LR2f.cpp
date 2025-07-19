@@ -375,9 +375,8 @@ int LoopInRange(int min, int max, int add, int *num){
 	*num = *num + add;
 	if (max < *num) {
 		*num = min;
-		return 1;
 	}
-	if (*num < min) {
+	else if (*num < min) {
 		*num = max;
 	}
 	return 1;
@@ -13242,10 +13241,10 @@ int ProcS_Play(game *g, sqlite3* sql) {
 	
 	if (g->is_recordmode && g->rec.writeSamplePos <= 0) {
 		g->rec.PrepareAVIRecord(g->config.tools.movie_framerate, 24, g->directoryFilename, (g->skstruct.fadeout + g->gameplay.song_runtime + g->skstruct.loadstart + g->skstruct.loadend + g->skstruct.playstart + 500.0) * g->config.tools.movie_framerate / 1000.0, GetMainWindowHandle());
-		g->timer1.flag = 1;
-		g->timer1.bgaFramerate = g->config.tools.movie_framerate;
-		g->timer1.bga = 0.0;
-		if (g->is_recordmode) SetClockFlag(&g->timer1, 1);
+		g->timer1.flagMovieTimer = 1;
+		g->timer1.movieFramerate = g->config.tools.movie_framerate;
+		g->timer1.movieTimer = 0.0;
+		if (g->is_recordmode) SetManualTimerFlag(&g->timer1, 1);
 		InitTimer(&g->timer1);
 		g->gameplay.timetick = GetTimeWrap();
 		if (g->gameplay.flag_longsound || g->gameplay.flag_0note) {
@@ -14782,8 +14781,6 @@ CSTR GetRandomFileNoError(CSTR path, CSTR dir) {
 //43c060
 int ReadXml_Int(const char *level1, const char *level2, const char *level3, int initvalue, int *oBuf, TiXmlDocument *xmlData){
 	TiXmlElement *cur;
-	int iVar1;
-	long lVar2;
 
 	if (xmlData == NULL) {
 		*oBuf = initvalue;
@@ -14809,7 +14806,7 @@ int ReadXml_Int(const char *level1, const char *level2, const char *level3, int 
 int ReadXml_Str(const char *level1, const char *level2, const char *level3, const CSTR initvalue, CSTR* oBuf, TiXmlDocument *xmlData) {
 	TiXmlElement *cur;
 
-	if (!xmlData) {
+	if (xmlData == NULL) {
 		oBuf->assign(&initvalue);
 		return 0;
 	}
@@ -14873,11 +14870,6 @@ int Read_JukeboxPath(CONFIG_JUKEBOX *box, TiXmlDocument *xml){
 //43c440
 int ReadXml_Int_Multi(const char *level1, const char *level2, const char *level3, int *oBuf, TiXmlDocument *xmlData){
 	TiXmlElement *cur;
-	
-	void *pvVar1;
-	int iVar2;
-	long lVar3;
-	int iVar4;
 
 	oBuf[0] = 0;
 	oBuf[1] = 0;
@@ -14906,7 +14898,7 @@ int ReadXml_Int_Multi(const char *level1, const char *level2, const char *level3
 
 				for (int i = 1; i < 16; i++) {
 					cur = cur->NextSiblingElement();
-					if (cur == (void *)0x0) {
+					if (cur == NULL) {
 						return 1;
 					}
 					oBuf[i] = atol(cur->ToElement()->GetText());
@@ -19402,32 +19394,31 @@ bool IsMultibyte(byte ch){
 
 //49a790
 double ChangeValueByTime(double val1, double val2, double time1, double time2, double timenow, int type){
-	double dVar1;
+	double ratio;
 
-	if (val1 != val2) {
-		if ( (time2 < timenow) || (time1 > timenow) || (time2 <= time1) ) {
-			if (time1 < timenow) {
-				return val2;
-			}
-		}
-		else {
-			if (type == 0) {
-				dVar1 = (timenow - time1) / (time2 - time1);
-				return (1.0 - dVar1) * val1 + dVar1 * val2;
-			}
-			if (type == 1) {
-				dVar1 = (timenow - time1) / (time2 - time1);
-				dVar1 = dVar1 * dVar1 * dVar1;
-				return (1.0 - dVar1) * val1 + dVar1 * val2;
-			}
-			if (type == 2) {
-				dVar1 = 1.0 - (timenow - time1) / (time2 - time1);
-				dVar1 = 1.0 - dVar1 * dVar1 * dVar1;
-				return (1.0 - dVar1) * val1 + dVar1 * val2;
-			}
-		}
+	if(val1 == val2){
+		return val1;
 	}
-	return val1;
+	else if (timenow <= time2 && time1 <= timenow && time1 < time2){
+		if (type == 0) {
+			ratio = (timenow - time1) / (time2 - time1);
+			return (1.0 - ratio) * val1 + ratio * val2;
+		}
+		if (type == 1) {
+			ratio = (timenow - time1) / (time2 - time1);
+			ratio = ratio * ratio * ratio;
+			return (1.0 - ratio) * val1 + ratio * val2;
+		}
+		if (type == 2) {
+			ratio = 1.0 - (timenow - time1) / (time2 - time1);
+			ratio = 1.0 - ratio * ratio * ratio;
+			return (1.0 - ratio) * val1 + ratio * val2;
+		}
+		return val1;
+	}
+	else{
+		return (time1 < timenow)? val2 : val1;
+	}
 }
 
 //49a840
@@ -20142,22 +20133,18 @@ int ReallocDrawingBuffer(DrawingBuf *drb){
 
 //for convenience
 double ByTime(double v1, double v2, double t1, double t2, double tO) {
-	double ret, temp;
+	double ratio;
 
-	ret = v1;
-	if (v2 != v1) {
-		if (t2 < tO || tO < t1 || t2 <= t1) {
-			ret = v2;
-			if (tO <= t1) {
-				ret = v1;
-			}
-		}
-		else {
-			temp = (tO - t1) / (t2 - t1);
-			ret = (1 - temp) * v1 + temp * v2;
-		}
+	if (v2 == v1){
+		return v1;
 	}
-	return ret;
+	else if (t1 <= tO && tO <= t2 && t1 < t2) {
+		ratio = (tO - t1) / (t2 - t1);
+		return (1 - ratio) * v1 + ratio * v2;
+	}
+	else {
+		return (tO <= t1)? v1 : v2;
+	}
 }
 
 //49c880
@@ -21310,6 +21297,7 @@ int InitImageFont(ImageFont *imgfont) {
 		imgfont->images[i].grHandle = -1;
 		imgfont->images[i].filename[0] = '\0';
 	}
+	return 1;
 }
 
 //4a0480
@@ -27917,28 +27905,28 @@ int ParseBmsFile(gameplay *gp, CSTR filename, AUDIO *aud, ConfigStruct* cfg, BMS
 
 
 //TIMER
-double ClockTime;
-bool ableClockFlag;
-bool ableClockCount;
+double manualTimer;
+bool flagManualTimer;
+bool flagHighPerformanceTimer;
 
 //4b6710
-int SetBGATimer(Timer *T, double newTime){
-	ClockTime = newTime;
-	T->bga = newTime;
+int SetManualTimer(Timer *T, double newTime){
+	manualTimer = newTime;
+	T->movieTimer = newTime;
 	return 1;
 }
 
 //4b6730
-int SetAbleClockCount(char val){
-	ableClockCount = val;
+int SetHPtimerFlag(char val){
+	flagHighPerformanceTimer = val;
 	return 1;
 }
 
 //4b6740
-int SetClockFlag(Timer *T, char flag){
-	T->flag = flag;
-	ClockTime = 0.0;
-	ableClockFlag = flag;
+int SetManualTimerFlag(Timer *T, char flag){
+	T->flagMovieTimer = flag;
+	manualTimer = 0.0;
+	flagManualTimer = flag;
 	return 1;
 }
 
@@ -27948,14 +27936,9 @@ int NONE_004b6770(void){
 }
 
 //4b6780
-int BGATimer(Timer *T){
-	if (T->bgaFramerate <= 0.0) {
-		T->bga = T->bga + 33.33333333333334;
-	}
-	else {
-		T->bga = 1000.0 / T->bgaFramerate + T->bga;
-	}
-	ClockTime = T->bga;
+int MovieTimer(Timer *T){
+	T->movieTimer += (T->movieFramerate > 0.0)? (1000.0 / T->movieFramerate) : 33.33333333333334;
+	manualTimer = T->movieTimer;
 	return 1;
 }
 
@@ -27969,138 +27952,52 @@ int ResetTimeLapse(int timerID, Timer *T){
 	return 1;
 }
 
-//4b6800 //not reliable
+//4b6800 //logic shortened
 double GetTime(void){
-	long long lVar1;
 	DWORD time;
-	BOOL BVar2;
 	LARGE_INTEGER pfc_time;
 	LARGE_INTEGER pfc_freq;
 	double ret;
 
-	if (ableClockCount == '\0') {
-		time = timeGetTime();
-		ret = (double)(time & 0x7fffffff);
-	}
-	else {
-		BVar2 = QueryPerformanceFrequency(&pfc_freq);
-		if (BVar2 == 0) {
-			time = timeGetTime();
-			ret = (double)(time & 0x7fffffff);
-		}
-		else {
+	if (flagHighPerformanceTimer){
+		if (QueryPerformanceFrequency(&pfc_freq)) {
 			QueryPerformanceCounter(&pfc_time);
-			ret = (double)pfc_time.QuadPart*1000 / (double)pfc_freq.QuadPart;
+			return (double)pfc_time.QuadPart*1000 / (double)pfc_freq.QuadPart;
 		}
 	}
-	return ret;
+
+	time = timeGetTime();
+	return (double)(time & 0x7fffffff);
 }
 
 //4b6890
 double GetTimeWrap(void) {
-	double dVar1;
-
-	if (ableClockFlag != '\0') {
-		return ClockTime;
-	}
-	timeBeginPeriod(1);
-	dVar1 = GetTime();
-	timeEndPeriod(1);
-	return dVar1;
-}
-/*
-bool ableClockCount;
-bool ableClockFlag;
-double ClockTime;
-
-//4b6800
-double GetTime(){
-	LARGE_INTEGER timer, t1;
-	long long lVar1;
-	DWORD time;
-	BOOL BVar2;
-	undefined4 local_10;
-	undefined4 uStack12;
-	long long local_8;
 	double ret;
 
-	if (ableClockCount == '\0') {
-		time = timeGetTime();
-		ret = (double)(time & 0x7fffffff);
-	}
-	else {
-		BVar2 = QueryPerformanceFrequency(&timer);
-		if (BVar2 == 0) {
-			time = timeGetTime();
-			ret = (double)(time & 0x7fffffff);
-		}
-		else {
-			QueryPerformanceCounter(&t1);
-			ret = t1.QuadPart / timer.QuadPart;
-		}
-	}
-	return ret;
-}
-
-//4b6890
-double GetTimeWrap() {
-	double ret;
-	if (ableClockFlag) {
-		return ClockTime;
+	if (flagManualTimer) {
+		return manualTimer;
 	}
 	timeBeginPeriod(1);
 	ret = GetTime();
 	timeEndPeriod(1);
 	return ret;
 }
-*/
 
 //4b68d0
 int InitTimer(Timer *T) {
-	double dVar4;
-
+	//GetTimeWrap() call seems replaced by compiler
 	T->clock[0] = -1.0;
 	for (int i = 0; i < 499; i++) {
 		T->clock[i + 1] = T->clock[i];
 	}
 
-	dVar4 = ClockTime;
-	if (ableClockFlag == '\0') {
-		timeBeginPeriod(1);
-		dVar4 = GetTime();
-		timeEndPeriod(1);
-	}
-	T->scratch = dVar4;
-	dVar4 = ClockTime;
-	if (ableClockFlag == '\0') {
-		timeBeginPeriod(1);
-		dVar4 = GetTime();
-		timeEndPeriod(1);
-	}
-	T->rhythmTick = dVar4;
-	dVar4 = ClockTime;
-	if (ableClockFlag == '\0') {
-		timeBeginPeriod(1);
-		dVar4 = GetTime();
-		timeEndPeriod(1);
-	}
-	T->gameTick = dVar4;
+	T->scratch = GetTimeWrap();
+	T->rhythmTick = GetTimeWrap();
+	T->gameTick = GetTimeWrap();
 	T->tickTime = 0.0;
 	T->Rhythm = -1.0;
-	dVar4 = ClockTime;
-	if (ableClockFlag == '\0') {
-		timeBeginPeriod(1);
-		dVar4 = GetTime();
-		timeEndPeriod(1);
-	}
-	T->vSyncTick = dVar4;
-	dVar4 = ClockTime;
-	if (ableClockFlag == '\0') {
-		timeBeginPeriod(1);
-		dVar4 = GetTime();
-		timeEndPeriod(1);
-	}
-	T->FPSclock = dVar4;
+	T->vSyncTick = GetTimeWrap();
+	T->FPSclock = GetTimeWrap();
 	T->FPScount = 0.0;
 	ErrorLogFmtAdd("タイマーを初期化しました\n");
 	return 1;
@@ -28108,33 +28005,12 @@ int InitTimer(Timer *T) {
 
 //4b6a10
 int CalcFPS(Timer *t){
-	double dVar1;
-
+	//GetTimeWrap() call seems replaced by compiler
 	t->FPScount = t->FPScount + 1.0;
-	dVar1 = ClockTime;
-	if (ableClockFlag == '\0') {
-		timeBeginPeriod(1);
-		dVar1 = GetTime();
-		timeEndPeriod(1);
-	}
-	dVar1 = dVar1 - t->FPSclock;
-	if ( dVar1 > 1000.0) {
-		dVar1 = ClockTime;
-		if (ableClockFlag == '\0') {
-			timeBeginPeriod(1);
-			dVar1 = GetTime();
-			timeEndPeriod(1);
-		}
-		t->FPS = (t->FPScount * 1000.0 + 499.0) / (dVar1 - t->FPSclock);
+	if ( GetTimeWrap() - t->FPSclock > 1000.0) {
+		t->FPS = (t->FPScount * 1000.0 + 499.0) / (GetTimeWrap() - t->FPSclock);
 		t->FPScount = 0.0;
-		if (ableClockFlag != '\0') {
-			t->FPSclock = ClockTime;
-			return 1;
-		}
-		timeBeginPeriod(1);
-		dVar1 = GetTime();
-		timeEndPeriod(1);
-		t->FPSclock = dVar1;
+		t->FPSclock = GetTimeWrap();
 	}
 	return 1;
 }
@@ -28146,31 +28022,22 @@ double GetTimeLapse(uint timerID, Timer *T) {
 	if (500 < timerID) return -1.0;
 	if (timerID == 140) return T->Rhythm;
 
-	ret = -1.0;
-	if (ret != T->clock[timerID]) {
-		if ((T->flag == '\0') || (T->bgaFramerate <= 0.0)) {
-			return GetTimeWrap() - T->clock[timerID];
-		}
-		ret = T->bga - T->clock[timerID];
-	}
-	return ret;
+	if (T->clock[timerID] == -1.0) return -1.0;
+
+	if (T->flagMovieTimer && (0.0 < T->movieFramerate))
+		return T->movieTimer - T->clock[timerID];
+
+	return GetTimeWrap() - T->clock[timerID];
 }
 
 //4b6b80
 int SetTimeLapse(int timerID, Timer *T){
-	double dVar1;
-
-	if ((*(char *)&T->flag != '\0') && (0.0 < T->bgaFramerate)) {
-		T->clock[timerID] = T->bga;
+	//GetTimeWrap() call seems replaced by compiler
+	if (T->flagMovieTimer && (0.0 < T->movieFramerate)) {
+		T->clock[timerID] = T->movieTimer;
+		//TOFIX : forgot return?
 	}
-	if (ableClockFlag != '\0') {
-		T->clock[timerID] = ClockTime;
-		return 1;
-	}
-	timeBeginPeriod(1);
-	dVar1 = GetTime();
-	timeEndPeriod(1);
-	T->clock[timerID] = dVar1;
+	T->clock[timerID] = GetTimeWrap();
 	return 1;
 }
 
