@@ -1686,8 +1686,8 @@ struct game {
 	char cmd_n;
 	char is_recordmode;
 	char auto2avi;
-	char(unknwon_flag_62);
-	char(unknwon_flag_63);
+	char flag_unkA0048;
+	char flag_unkA0049;
 	undefined field69_0xa004a;
 	undefined field70_0xa004b;
 	CSTR field71_0xa004c;

@@ -2,17 +2,10 @@
 
 #include "En_xml.h"
 #include "tinyxml/tinyxml.h"
-#include "sqlite/sqlite3.h"
-//extern "C"{
-#include "lib/md5.h" //md5
-//}
-
 
 //43c060
 int ReadXml_Int(const char *level1, const char *level2, const char *level3, int initvalue, int *oBuf, TiXmlDocument *xmlData){
 	TiXmlElement *cur;
-	int iVar1;
-	long lVar2;
 
 	if (xmlData == NULL) {
 		*oBuf = initvalue;
@@ -38,7 +31,7 @@ int ReadXml_Int(const char *level1, const char *level2, const char *level3, int 
 int ReadXml_Str(const char *level1, const char *level2, const char *level3, const CSTR initvalue, CSTR* oBuf, TiXmlDocument *xmlData) {
 	TiXmlElement *cur;
 
-	if (!xmlData) {
+	if (xmlData == NULL) {
 		oBuf->assign(&initvalue);
 		return 0;
 	}
@@ -66,11 +59,6 @@ int ReadXml_Str(const char *level1, const char *level2, const char *level3, cons
 //43c440
 int ReadXml_Int_Multi(const char *level1, const char *level2, const char *level3, int *oBuf, TiXmlDocument *xmlData){
 	TiXmlElement *cur;
-	
-	void *pvVar1;
-	int iVar2;
-	long lVar3;
-	int iVar4;
 
 	oBuf[0] = 0;
 	oBuf[1] = 0;
@@ -99,7 +87,7 @@ int ReadXml_Int_Multi(const char *level1, const char *level2, const char *level3
 
 				for (int i = 1; i < 16; i++) {
 					cur = cur->NextSiblingElement();
-					if (cur == (void *)0x0) {
+					if (cur == NULL) {
 						return 1;
 					}
 					oBuf[i] = atol(cur->ToElement()->GetText());

@@ -540,6 +540,7 @@ int InitImageFont(ImageFont *imgfont) {
 		imgfont->images[i].grHandle = -1;
 		imgfont->images[i].filename[0] = '\0';
 	}
+	return 1;
 }
 
 //4a0480
