@@ -16373,6 +16373,7 @@ int DB_LeaveCriticalSection() {
 }
 
 //444130 //TODO more readable
+//ANSI >> UTF-16(unicode) >> UTF-8
 bool ANSItoUTF8(LPCSTR str, char *oBuf, size_t *oSize){
 	int cchWideChar;
 	LPWSTR lpWideCharStr;
@@ -16401,28 +16402,29 @@ bool ANSItoUTF8(LPCSTR str, char *oBuf, size_t *oSize){
 }
 
 //444210
-bool UTF8toANSI(LPCSTR str, void *oBuf, size_t *oSize){
+//UTF-8 >> UTF-16(unicode) >> ANSI
+bool UTF8toANSI(LPCSTR str, char *oBuf, size_t *oSize){
 	int cchWideChar;
 	LPWSTR lpWideCharStr;
 	LPSTR lpMultiByteStr;
-	size_t sVar1;
+	size_t size;
 	
 	*oSize = 0;
 	cchWideChar = MultiByteToWideChar(CP_UTF8, 0, str, -1, (LPWSTR)0x0, 0);
 	lpWideCharStr = (LPWSTR)malloc(cchWideChar * 2 + 2);
 	MultiByteToWideChar(CP_UTF8, 0, str, -1, lpWideCharStr, cchWideChar);
-	sVar1 = WideCharToMultiByte(CP_ACP, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
-	if (oBuf == (void *)0x0) {
-		*oSize = sVar1;
+	size = WideCharToMultiByte(CP_ACP, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
+	if (oBuf == NULL) {
+		*oSize = size;
 		delete(lpWideCharStr);
 		return true;
 	}
-	lpMultiByteStr = (LPSTR)malloc(sVar1 * 2);
-	memset(lpMultiByteStr, '\0', sVar1 * 2);
-	WideCharToMultiByte(CP_ACP, 0, lpWideCharStr, -1, lpMultiByteStr, sVar1, (LPCSTR)0x0, (LPBOOL)0x0);
-	sVar1 = lstrlenA(lpMultiByteStr);
-	*oSize = sVar1;
-	memcpy(oBuf, lpMultiByteStr, sVar1);
+	lpMultiByteStr = (LPSTR)malloc(size * 2);
+	memset(lpMultiByteStr, '\0', size * 2);
+	WideCharToMultiByte(CP_ACP, 0, lpWideCharStr, -1, lpMultiByteStr, size, (LPCSTR)0x0, (LPBOOL)0x0);
+	size = lstrlenA(lpMultiByteStr);
+	*oSize = size;
+	memcpy(oBuf, lpMultiByteStr, size);
 	delete(lpWideCharStr);
 	delete(lpMultiByteStr);
 	return true;
@@ -16430,60 +16432,60 @@ bool UTF8toANSI(LPCSTR str, void *oBuf, size_t *oSize){
 
 //4442f0
 int SQL_Run(CSTR queryStr, sqlite3 *sql){
-	LPCSTR lpMultiByteStr;
-	uint uVar1;
+	
+	int result;
 	int cchWideChar;
 	LPCWSTR lpWideCharStr;
-	size_t sVar2;
+	LPCSTR lpMultiByteStr;
+	size_t size;
 	char *oBuf;
-	size_t local_10;
-	int *local_c;
-	undefined *puStack8;
+	size_t newsize;
 
 	lpMultiByteStr = queryStr;
+
 	cchWideChar = MultiByteToWideChar(CP_ACP, 0, queryStr, -1, (LPWSTR)0x0, 0);
 	lpWideCharStr = (LPWSTR)malloc(cchWideChar * 2 + 2);
-	
 	MultiByteToWideChar(CP_ACP, 0, lpMultiByteStr, -1, (LPWSTR)lpWideCharStr, cchWideChar);
-	sVar2 = WideCharToMultiByte(CP_UTF8, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
-	local_10 = sVar2;
+	size = WideCharToMultiByte(CP_UTF8, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
+	newsize = size;
 	delete(lpWideCharStr);
-	oBuf = (char *)malloc(sVar2 + 1);
-	
-	memset(oBuf, '\0', sVar2 + 1);
-	ANSItoUTF8(queryStr, oBuf, &local_10);
-	oBuf[local_10] = '\0';
-	uVar1 = sqlite3_exec(sql, oBuf, NULL, (void *)0x0, (char **)0x0);
+
+	oBuf = (char *)malloc(size + 1);
+	memset(oBuf, '\0', size + 1);
+	ANSItoUTF8(queryStr, oBuf, &newsize);
+	oBuf[newsize] = '\0';
+	result = sqlite3_exec(sql, oBuf, NULL, NULL, NULL);
 	delete(oBuf);
-	return uVar1;
+	return result;
 }
 
 //4443f0
 int SQL_prepare(CSTR queryStr, sqlite3 *sql, sqlite3_stmt **ppStmt){
-	LPCSTR lpMultiByteStr;
-	uint uVar1;
-	int iVar2;
+	
+	int cchWideChar;
 	LPCWSTR lpWideCharStr;
-	size_t sVar3;
+	LPCSTR lpMultiByteStr;
+	size_t size;
 	char *oBuf;
-	size_t local_10;
-	int *local_c;
+	size_t newsize;
+	int result;
 
 	lpMultiByteStr = queryStr;
 
-	iVar2 = MultiByteToWideChar(0, 0, queryStr, -1, (LPWSTR)0x0, 0);
-	lpWideCharStr = (LPCWSTR)malloc(iVar2 * 2 + 2);
-	MultiByteToWideChar(0, 0, lpMultiByteStr, -1, (LPWSTR)lpWideCharStr, iVar2);
-	sVar3 = WideCharToMultiByte(0xfde9, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
-	local_10 = sVar3;
+	cchWideChar = MultiByteToWideChar(CP_ACP, 0, queryStr, -1, (LPWSTR)0x0, 0);
+	lpWideCharStr = (LPCWSTR)malloc(cchWideChar * 2 + 2);
+	MultiByteToWideChar(CP_ACP, 0, lpMultiByteStr, -1, (LPWSTR)lpWideCharStr, cchWideChar);
+	size = WideCharToMultiByte(CP_UTF8, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
+	newsize = size;
 	delete(lpWideCharStr);
-	oBuf = (char *)malloc(sVar3 + 1);
-	memset(oBuf, '\0', sVar3 + 1);
-	ANSItoUTF8(queryStr, oBuf, &local_10);
-	oBuf[local_10] = '\0';
-	iVar2 = sqlite3_prepare(sql, oBuf, -1, ppStmt, NULL);
+
+	oBuf = (char *)malloc(size + 1);
+	memset(oBuf, '\0', size + 1);
+	ANSItoUTF8(queryStr, oBuf, &newsize);
+	oBuf[newsize] = '\0';
+	result = sqlite3_prepare(sql, oBuf, -1, ppStmt, NULL);
 	delete(oBuf);
-	return iVar2;
+	return result;
 }
 
 //4444f0
