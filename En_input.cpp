@@ -99,35 +99,13 @@ int ResetPressCount(inputStructure *is){
 
 //4be990
 int DetermineResultPlayDevice(inputStructure *is){
-	int joy;
-	int key;
-	int midi;
-
-	key = is->keyboard_presscount;
-	joy = is->joypad_presscount;
-	midi = is->MIDI_presscount;
-
-	/*if (joy <= key && midi <= key) return 0;
+	int &joy = is->joypad_presscount;
+	int &key = is->keyboard_presscount;
+	int &midi = is->MIDI_presscount;
+	
+	if (joy <= key && midi <= key) return 0;
 	if (midi <= joy && key <= joy) return 1;
 	if (key <= midi && joy <= midi) return 2;
-	return 0;*/
-	if (joy <= key) {
-		if (midi <= key) {
-			return 0;
-		}
-		if (joy < key) {
-			if ((key <= midi) && joy <= midi) {
-				return 2;
-			}
-			return 0;
-		}
-	}
-	if (midi <= joy) {
-		return 1;
-	}
-	if (key <= midi && joy <= midi) {
-		return 2;
-	}
 	return 0;
 }
 
