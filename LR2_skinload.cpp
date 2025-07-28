@@ -984,6 +984,8 @@ int ReadSkin(skstruct *sk,CSTR FilePath, int unused, int skin_num, SkinUser* sku
 		ExpandSkinObjectMax(&sk->otherObject[6], 20);
 		ExpandSkinObjectMax(&sk->otherObject[7], 20);
 		ExpandSkinObjectMax(&sk->otherObject[5], 20);
+		
+		line++;
 
 		if (fBuf.length() > 6) {
 			if (*fBuf.atPos(0) == '#') {
