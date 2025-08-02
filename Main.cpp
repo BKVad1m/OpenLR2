@@ -588,7 +588,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						gs.config.system.windowsize_y = wSizeY;
 					}
 				}
-				if (gs.cmd_directplay && gs.procSelecter != 4 && gs.procSelecter != 5 && gs.procSelecter != 13 && gs.procPhase != 2 && gs.procPhase != 3) break;
+				if (gs.cmd_directplay && gs.procSelecter != 4 && gs.procSelecter != 5 && gs.procSelecter != 13 && gs.procPhase != 2 && gs.procPhase != 3) {
+					ErrorLogFmtAdd("break\n");
+					break;
+				}
 				
 				if (GetTimeWrap() >= startTime + 6) {
 					GetTimeWrap();
@@ -2035,7 +2038,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 			//phase_game end
-			ErrorLogFmtAdd("break\n");
 			if (gs.is_recordmode) {
 				RecordBmsSound(&gs, gs.directoryFilename);
 				remove("LR2files\\movie_temp.mp3");
