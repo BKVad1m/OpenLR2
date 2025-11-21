@@ -23,7 +23,7 @@ using namespace std;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 
-	int backGrHandle;
+	int loadingGrHandle;
 
 	sqlite3* sql3;
 
@@ -293,7 +293,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				ErrorLogAdd(gs.net.request_result);
 			}
 
-			backGrHandle = SetBackground(LoadGraph("LR2files/Config/loading.bmp", 0));
+			loadingGrHandle = LoadGraph("LR2files/Config/loading.bmp", 0);
+
+			int backgroundGrHandle = MakeScreen(640, 480, 0);
+			SetDrawScreen(backgroundGrHandle);
+			DrawBox(0, 0, 640, 480, GetColor(0, 0, 0), 1);
+			SetDrawScreen(DX_SCREEN_BACK);
 
 			memcpy(gs.config.jukebox.rival, gs.net.rivals, 4 * 20);
 			sqlite3_open(gs.is_starter ? "LR2files\\Database.db" : "LR2files\\Database\\song.db", &sql3);
@@ -305,8 +310,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (gs.cmd_directplay == false) {
 					printfDx(LR2VERSIONSTRING);
 					printfDx("\nPUSH ANY KEY\n");
-					if (backGrHandle > 0) {
-						DrawGraph(0, 0, backGrHandle, 0);
+					if (loadingGrHandle > 0) {
+						DrawGraph(0, 0, loadingGrHandle, 0);
 					}
 					ScreenFlip();
 					if (WaitInput(&gs.KeyInput) == -1) return 0;
@@ -314,8 +319,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 			if (gs.cmd_directplay == false) {
-				if (backGrHandle > 0) {
-					DrawGraph(0, 0, backGrHandle, 0);
+				if (loadingGrHandle > 0) {
+					DrawGraph(0, 0, loadingGrHandle, 0);
 				}
 				ScreenFlip();
 				Sleep(500);
@@ -590,6 +595,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						gs.config.system.windowsize_y = wSizeY;
 					}
 				}
+				DrawGraph(0, 0, backgroundGrHandle, 0);
 				if (gs.cmd_directplay && gs.procSelecter != 4 && gs.procSelecter != 5 && gs.procSelecter != 13 && gs.procPhase != 2 && gs.procPhase != 3) {
 					ErrorLogFmtAdd("break\n");
 					break;
