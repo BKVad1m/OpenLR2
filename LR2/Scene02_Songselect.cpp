@@ -720,16 +720,20 @@ int ShowReadme(game *g, CSTR path) {
 CSTR GetMissonString(int missionLevel, int line) {
 	switch (missionLevel) {
 		case 1:
-			if (line != 0) return "DEATH";
-			break;
+			if (line == 0) 
+				return "NOTES>=100";
+			else
+				return "DEATH";
 
 		case 2:
-			if (line != 0) return "HIDDEN";
-			break;
+			if (line == 0)
+				return "NOTES>=100"; 
+			else
+				return "HIDDEN";
 
 		case 3:
-			if (line != 0) return "SUDDEN";
-			break;
+			if (line == 0) return "NOTES>=100";
+			else return "SUDDEN";
 
 		case 4:
 			if (line == 0) 
@@ -738,8 +742,10 @@ CSTR GetMissonString(int missionLevel, int line) {
 				return "";
 
 		case 5:
-			if (line != 0) return "S-RANDOM, SURVIVAL";
-			break;
+			if (line == 0)
+				return "NOTES>=100"; 
+			else
+				return "S-RANDOM, SURVIVAL";
 
 		case 6:
 			if (line == 0)
@@ -748,12 +754,16 @@ CSTR GetMissonString(int missionLevel, int line) {
 				return "FREQ/SPEEDFX>=+3";
 
 		case 7:
-			if (line != 0) return "CONVERGE";
-			break;
+			if (line == 0)
+				return "NOTES>=100"; 
+			else
+				return "CONVERGE";
 
 		case 8:
-			if (line != 0) return "HID+SUD";
-			break;
+			if (line == 0)
+				return "NOTES>=100";
+			else
+				return "HID+SUD";
 
 		case 9:
 			if (line == 0)
@@ -810,11 +820,17 @@ CSTR GetMissonString(int missionLevel, int line) {
 				return "";
 
 		case 18:
-			if (line != 0) return "P.ATTACK";
+			if (line == 0)
+				return "NOTES>=100";
+			else
+				return "P.ATTACK";
 			break;
 
 		case 19:
-			if (line != 0) return "G.ATTACK";
+			if (line == 0)
+				return "NOTES>=100";
+			else
+				return "G.ATTACK";
 			break;
 
 		case 20:
@@ -949,7 +965,7 @@ CSTR GetMissonString(int missionLevel, int line) {
 			else 
 				return "";
 	}
-	return "NOTES>=100";
+	return "";
 }
 
 

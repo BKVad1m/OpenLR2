@@ -309,8 +309,21 @@ int CheckMission(game *g){
 	if (g->config.play.gaugeOption[1] == 3) 
 		return 0;
 
-	if (g->gameplay.isNosave) 
-		return 0;
+	//converge 7 14 25 35 40
+	//constant 15 23 24 34 39
+	if (g->gameplay.isNosave) {
+		if(g->gameplay.playerstat.trial != 7
+		&& g->gameplay.playerstat.trial != 14
+		&& g->gameplay.playerstat.trial != 25
+		&& g->gameplay.playerstat.trial != 35
+		&& g->gameplay.playerstat.trial != 40
+		&& g->gameplay.playerstat.trial != 15 
+		&& g->gameplay.playerstat.trial != 23
+		&& g->gameplay.playerstat.trial != 24
+		&& g->gameplay.playerstat.trial != 34
+		&& g->gameplay.playerstat.trial != 39)
+			return 0;
+	}
 
 	if (g->gameplay.playerstat.trial <= 0) 
 		g->gameplay.playerstat.trial = 1;
@@ -351,8 +364,8 @@ int CheckMission(game *g){
 				g->gameplay.playerstat.trial = level + 1;
 			}
 			break;
-		case 6: //TOFIX: omitted note count condition
-			if (g->audio.param.pitch_on == 1 && (g->audio.param.pitch_type == 0 || g->audio.param.pitch_type == 2)) {
+		case 6:
+			if (g->gameplay.player[0].totalnotes >= 100 && g->audio.param.pitch_on == 1 && (g->audio.param.pitch_type == 0 || g->audio.param.pitch_type == 2)) {
 				if (g->audio.param.pitch_amount >= 3) {
 					g->gameplay.playerstat.trial = level + 1;
 				}
@@ -437,7 +450,7 @@ int CheckMission(game *g){
 			break;
 		case 19:
 			if (gauge != 5) break;
-			if (g->gameplay.player[0].totalnotes >= 100) { //TOFIX : note condition is omitted in string
+			if (g->gameplay.player[0].totalnotes >= 100) {
 				g->gameplay.playerstat.trial = level + 1;
 			}
 			break;
@@ -544,7 +557,7 @@ int CheckMission(game *g){
 			}
 			break;
 		case 36:
-			if (gauge == 2 && 998 <= g->gameplay.player[0].exscore && 1002 <= g->gameplay.player[0].exscore) { //TOFIX g->gameplay.player[0].exscore <= 1002
+			if (gauge == 2 && 998 <= g->gameplay.player[0].exscore && g->gameplay.player[0].exscore <= 1002) {
 				g->gameplay.playerstat.trial = level + 1;
 			}
 			break;
