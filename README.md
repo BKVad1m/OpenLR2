@@ -3,7 +3,9 @@ Rewritten source code of bms player Lunatic Rave 2
 Project started Jan, 2021.(and aged about 1 year) And now it's about to release.
 
 if there is any different behavior with LR2beta3100201, plaese let me know.
+
 current progress is refactoring at LR2Beta4 branch
+
 original codes remain at LR2Beta3-v100201 branch
 
 # is it really open source?
@@ -11,13 +13,18 @@ I didn't decide yet, I asked stakeholders(IR manager) but there was no reply
 
 # installation
 get original LR2 beta3 100201
+
 put OpenLR2.exe into the folder and run (or you can replace original LR2body.exe )
 
 # caution
 It uses same score DB with origianl one.
+
 To avoid data corruption, do not run this on where you played original LR2 (or use -ns option).
+
 recommend use newly installed LR2.
+
 sending score to LR2IR is disabled to avoid accidents.
+
 (accidents can be occur, by saving score with OpenLR2 and sending score with original LR2. DO NOT MIX yet)
 
 # known issues
