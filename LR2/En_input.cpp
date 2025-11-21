@@ -201,12 +201,10 @@ void ProcessInput(inputStructure *is, int interval) {
 	if ((is->mouse_buttonL == 0) && (is->is_drag_now != -1)) {
 		is->is_drag_now = -1;
 	}
-
-	//key
 	GetTimeWrap();
+	//key
 	keyError = GetHitKeyStateAll(new_keyInput);
 	GetTimeWrap();
-
 	GetTimeWrap();
 	//joypad
 	memset(new_joyInput, 0, sizeof(int) * 0x100);

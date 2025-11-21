@@ -565,7 +565,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 			int startTime = GetTimeWrap();
-
 			GetTimeWrap();
 			if (gs.is_starter) {
 				gs.procSelecter = 11;
@@ -1041,7 +1040,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					gs.procPhase = 1;
 				}
 				GetTimeWrap();
-
 				GetTimeWrap();
 				if (gs.skstruct.startinput_start < GetTimeLapse(0, &gs.timer1) && GetTimeLapse(1, &gs.timer1) == -1.0) {
 					InitInputStructure(&gs.KeyInput);
@@ -1460,7 +1458,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					ProcGame(&gs);
 				}
 				GetTimeWrap();
-
 				GetTimeWrap();
 				for (int i = 0; i < gs.skstruct.image.srcSize; i++) {
 
@@ -1661,7 +1658,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 				InitDrawingBuffer(&gs.skstruct.drBuf);
 				GetTimeWrap();
-
 				GetTimeWrap();
 				if (gs.procSelecter == 4) {
 					if (gs.KeyInput.inputID[KEY_INPUT_1] == 2) {
@@ -1857,7 +1853,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					}
 				}
 				GetTimeWrap();
-
 				GetTimeWrap();
 				if (gs.isSkipDrawTick == 0) {
 					if (gs.gameplay.flag_gameinput != 0 && gs.config.system.thread == 0 && gs.config.system.vsync == 1 && gs.is_recordmode == 0) {
@@ -1950,7 +1945,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					}
 					ScreenFlip();
 					GetTimeWrap();
-
 					GetTimeWrap();
 					clsDx();
 					CalcFPS(&gs.timer1);
@@ -1962,13 +1956,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				else gs.isSkipDrawTick = 0;
 				ClsDrawScreen();
 				GetTimeWrap();
-
 				GetTimeWrap();
 				if (gs.gameplay.flag_gameinput == 0 || gs.gameplay.isPreviewLoad) {
 					ReactInput(&gs);
 				}
 				GetTimeWrap();
-
 				GetTimeWrap();
 				if (gs.sSelect.is_clicked_tagedit) {
 					EditTag(&gs.sSelect.bmsList[gs.sSelect.cur_song],sql3);
@@ -2051,9 +2043,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					ErrorLogAdd("選曲中ESCが押されました。LR2を終了します\n");
 				}
 			}
-			//main loop end
-
-			//phase_exit game
+			//phase_game end
 			if (gs.is_recordmode) {
 				RecordBmsSound(&gs, gs.directoryFilename);
 				remove("LR2files\\movie_temp.mp3");
@@ -2130,7 +2120,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			ReleaseSysSound(&gs);
 			EndSound(&gs.audio);
 			return 0;
-			//phase_exit game end
 		}
 
 	}

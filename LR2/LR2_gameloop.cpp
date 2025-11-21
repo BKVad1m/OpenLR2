@@ -56,13 +56,12 @@ void ReactInput(game *g) {
 		if (g->txtStruct.readme.h > 0) g->txtStruct.readme.h = 0;
 	}
 	GetTimeWrap();
-
 	GetTimeWrap();
 	if (g->audio.is_fmod_disabled== 0) FMOD_System_Update(g->audio.fmodSys);
 	SetVolumeByFade(&g->audio);
 	GetTimeWrap();
-
 	GetTimeWrap();
+
 	if (g->sSelect.metaSelected.keymode >= 10) {
 		if (g->procSelecter == 4 && g->config.play.battle == 3) {
 			if (g->gameplay.replay.status == 2 && GetTimeLapse(41, &g->timer1) != -1.0)
@@ -104,7 +103,6 @@ void ReactInput(game *g) {
 		}
 	}
 	GetTimeWrap();
-
 	GetTimeWrap();
 
 	if (g->gameplay.replay.status == 1 && GetTimeLapse(41, &g->timer1) != -1.0 && g->procSelecter == 4) {
@@ -113,8 +111,8 @@ void ReactInput(game *g) {
 	else if (g->gameplay.replay.status == 2 && GetTimeLapse(41, &g->timer1) != -1.0 && g->procSelecter == 4) {
 		ReplayToInput(&g->gameplay.replay, g, &g->audio, &g->gameplay, &g->KeyInput, &g->timer1);
 	}
-	GetTimeWrap();
 
+	GetTimeWrap();
 	GetTimeWrap();
 	if (g->txtStruct.st_text_num != -1) {
 		memset(g->KeyInput.p1_buttonInput, 0, 20);
@@ -144,19 +142,15 @@ void ReactInput(game *g) {
 		}
 	}
 	GetTimeWrap();
-
 	GetTimeWrap();
 	FxByMIDI(g);
 	GetTimeWrap();
-
 	GetTimeWrap();
 	SetObjectValue_Slider(g, &g->skstruct, &g->timer1, 0);
 	GetTimeWrap();
-
 	GetTimeWrap();
 	SetObjectValue_Button(g, &g->skstruct, &g->timer1, 0);
 	GetTimeWrap();
-
 	GetTimeWrap();
 	if (g->procSelecter == 7) {
 		SetObjectValue_Slider(g, &g->skstruct2, &g->timer2, 1);
