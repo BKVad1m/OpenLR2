@@ -40,7 +40,7 @@ typedef enum SKINTYPE {
 	SKINTYPE_SKINSELECT = 9,
 	SKINTYPE_SOUNDSET = 10,
 	SKINTYPE_THEME = 11,
-	SKINTYPE_7KEYSBATTLE = 12, //.RED skin manual doesn't match with LR2beta3 100201
+	SKINTYPE_7KEYSBATTLE = 12, //.RED skin manual doesn't match with LR2beta3 100201 -
 	SKINTYPE_5KEYSBATTLE = 13,
 	SKINTYPE_9KEYSBATTLE = 14,
 	SKINTYPE_COURSERESULT = 15,
@@ -112,14 +112,14 @@ typedef struct CONFIG_INPUT CONFIG_INPUT, *PCONFIG_INPUT;
 
 struct CONFIG_INPUT {
 	int buttonMap[40][16];
-	int sys_inputinterval; /* Created by retype action */
+	int sys_inputinterval; 
 	int midi_control[40];
 };
 
 typedef struct CONFIG_JUKEBOX CONFIG_JUKEBOX, *PCONFIG_JUKEBOX;
 
 struct CONFIG_JUKEBOX {
-	CSTR path[1000]; /* Created by retype action */
+	CSTR path[1000]; 
 	int numOfPath;
 	int autoreload;
 	int customfolder;
@@ -132,13 +132,13 @@ struct CONFIG_JUKEBOX {
 typedef struct CONFIG_NETWORK CONFIG_NETWORK, *PCONFIG_NETWORK;
 
 struct CONFIG_NETWORK {
-	int lr1ir; /* Created by retype action */
-	CSTR lr1id; /* Created by retype action */
-	CSTR lr1pass; /* Created by retype action */
-	int lr2ir; /* Created by retype action */
-	CSTR mail; /* Created by retype action */
-	int autoupdate; /* Created by retype action */
-	int getrival; /* Created by retype action */
+	int lr1ir; 
+	CSTR lr1id; 
+	CSTR lr1pass; 
+	int lr2ir; 
+	CSTR mail; 
+	int autoupdate; 
+	int getrival; 
 };
 
 typedef struct CONFIG_PLAY CONFIG_PLAY, *PCONFIG_PLAY;
@@ -173,11 +173,11 @@ struct CONFIG_PLAY {
 	int randSC[2]; // include scratch to random by impossible command
 	int randFix[2]; // fix a lane by impossible command
 	int replay;
-	int hsmargin; /* Created by retype action */
-	int hsmax; /* Created by retype action */
-	int hsmin; /* Created by retype action */
-	int shuttermargin; /* Created by retype action */
-	int basespeed; /* Created by retype action */
+	int hsmargin; 
+	int hsmax; 
+	int hsmin; 
+	int shuttermargin; 
+	int basespeed; 
 	int m_softlanding;
 	int m_addmine;
 	int m_addlong;
@@ -203,21 +203,21 @@ struct CONFIG_PLAY {
 	char unk_f1;
 	char unused_f2;
 	undefined field59_0xf3;
-	int gomiscore; /* Created by retype action */
-	int disablecurspeedchange; /* Created by retype action */
-	int disableleftclickexit; /* Created by retype action */
+	int gomiscore; 
+	int disablecurspeedchange; 
+	int disableleftclickexit; 
 };
 
 typedef struct CONFIG_PLAYER CONFIG_PLAYER, *PCONFIG_PLAYER;
 
 struct CONFIG_PLAYER {
-	CSTR id; /* Created by retype action */
-	CSTR pass; /* Created by retype action */
-	CSTR passMD5; /* Created by retype action */
-	CSTR lrid; /* Created by retype action */
-	CSTR irpass; /* Created by retype action */
+	CSTR id; 
+	CSTR pass; 
+	CSTR passMD5; 
+	CSTR lrid; 
+	CSTR irpass; 
 	CSTR irpassMD5;
-	CSTR name; /* Created by retype action */
+	CSTR name; 
 };
 
 typedef struct CONFIG_SELECT CONFIG_SELECT, *PCONFIG_SELECT;
@@ -226,22 +226,22 @@ struct CONFIG_SELECT {
 	int difficulty;
 	int sort;
 	int key;
-	int searchmax; /* Created by retype action */
+	int searchmax; 
 	int randomclose;
-	int speedfirst; /* Created by retype action */
-	int speednext; /* Created by retype action */
-	int control; /* Created by retype action */
-	int buttonselect; /* Created by retype action */
+	int speedfirst; 
+	int speednext; 
+	int control; 
+	int buttonselect; 
 	int folderlamp;
 	undefined4 unused_28;
 	int difficultychangetype;
-	int ignorekeyall; /* Created by retype action */
-	int ignorekeysingle; /* Created by retype action */
-	int ignorekeydouble; /* Created by retype action */
-	int ignoredp; /* Created by retype action */
-	int ignorepms; /* Created by retype action */
-	int ignoredifficultyall; /* Created by retype action */
-	int ignore5key; /* Created by retype action */
+	int ignorekeyall; 
+	int ignorekeysingle; 
+	int ignorekeydouble; 
+	int ignoredp; 
+	int ignorepms; 
+	int ignoredifficultyall; 
+	int ignore5key; 
 	int titleflash;
 	int levelbarflash_7;
 	int levelbarflash_5;
@@ -254,8 +254,8 @@ struct CONFIG_SELECT {
 typedef struct CONFIG_SKIN CONFIG_SKIN, *PCONFIG_SKIN;
 
 struct CONFIG_SKIN {
-	int disableimagefont; /* Created by retype action */
-	CSTR fontname; /* Created by retype action */
+	int disableimagefont; 
+	CSTR fontname; 
 	CSTR skinFilePath[30];
 };
 
@@ -263,17 +263,17 @@ typedef struct CONFIG_SOUND CONFIG_SOUND, *PCONFIG_SOUND;
 
 struct CONFIG_SOUND {
 	int disabledsp;
-	int bufferlength; /* Created by retype action */
-	int numbuffers; /* Created by retype action */
-	int output; /* Created by retype action */
-	int driver; /* Created by retype action */
-	int disablefmod; /* Created by retype action */
-	int volumemaster; /* Created by retype action */
-	int volumekey; /* Created by retype action */
-	int volumebgm; /* Created by retype action */
-	int volumeflag; /* Created by retype action */
-	int eqflag; /* Created by retype action */
-	int eqp0; /* Created by retype action */
+	int bufferlength; 
+	int numbuffers; 
+	int output; 
+	int driver; 
+	int disablefmod; 
+	int volumemaster; 
+	int volumekey; 
+	int volumebgm; 
+	int volumeflag; 
+	int eqflag; 
+	int eqp0; 
 	int eqp1;
 	int eqp2;
 	int eqp3;
@@ -304,42 +304,42 @@ typedef struct CONFIG_SYSTEM CONFIG_SYSTEM, *PCONFIG_SYSTEM;
 
 struct CONFIG_SYSTEM {
 	int screenmode;
-	int vsync; /* Created by retype action */
-	int directdraw; /* Created by retype action */
-	int mainsleep; /* Created by retype action */
-	int bmssleep; /* Created by retype action */
-	int screenexrate; /* Created by retype action */
-	int highcolor; /* Created by retype action */
-	int disablesystemkey; /* Created by retype action */
-	int outputlog; /* Created by retype action */
-	int eventmode; /* Created by retype action */
+	int vsync; 
+	int directdraw; 
+	int mainsleep; 
+	int bmssleep; 
+	int screenexrate; 
+	int highcolor; 
+	int disablesystemkey; 
+	int outputlog; 
+	int eventmode; 
 	int thread;
-	int disableskinpreview; /* Created by retype action */
-	int hptimer; /* Created by retype action */
-	int isablebmsthread; /* Created by retype action */
-	int disablefolderthread; /* Created by retype action */
-	int language; /* Created by retype action */
-	int windowsize_x; /* Created by retype action */
-	int windowsize_y; /* Created by retype action */
-	int maindisplay; /* Created by retype action */
-	int softwarerendering; /* Created by retype action */
+	int disableskinpreview; 
+	int hptimer; 
+	int isablebmsthread; 
+	int disablefolderthread; 
+	int language; 
+	int windowsize_x; 
+	int windowsize_y; 
+	int maindisplay; 
+	int softwarerendering; 
 };
 
 typedef struct CONFIG_TOOLS CONFIG_TOOLS, *PCONFIG_TOOLS;
 
 struct CONFIG_TOOLS {
-	CSTR mp3enc_body; /* Created by retype action */
-	CSTR mp3enc_option_normal; /* Created by retype action */
-	CSTR mp3enc_option_movie; /* Created by retype action */
+	CSTR mp3enc_body; 
+	CSTR mp3enc_option_normal; 
+	CSTR mp3enc_option_movie; 
 	int movie_audio;
 	int mp3_volume;
 	int movie_framerate;
-	CSTR oggenc_body; /* Created by retype action */
-	CSTR oggenc_option; /* Created by retype action */
-	CSTR oggdec_body; /* Created by retype action */
-	CSTR oggdec_option; /* Created by retype action */
-	CSTR bmse_body; /* Created by retype action */
-	CSTR bmse_option; /* Created by retype action */
+	CSTR oggenc_body; 
+	CSTR oggenc_option; 
+	CSTR oggdec_body; 
+	CSTR oggdec_option; 
+	CSTR bmse_body; 
+	CSTR bmse_option; 
 	int autowavtoogg;
 	int autobmptopng;
 	int autofumensearch;
@@ -381,21 +381,21 @@ struct STATUS {
 	int rate;
 	int minbp;
 	int stat_maxcombo;
-	int playcount; /* Created by retype action */
-	int clearcount; /* Created by retype action */
-	int failcount; /* Created by retype action */
-	int clear_db; /* Created by retype action */
-	int clear_sd; /* Created by retype action */
-	int clear_ex; /* Created by retype action */
+	int playcount; 
+	int clearcount; 
+	int failcount; 
+	int clear_db; 
+	int clear_sd; 
+	int clear_ex; 
 	int total_notes;
-	int op_history; /* Created by retype action */
-	int op_best; /* Created by retype action */
+	int op_history; 
+	int op_best; 
 	int IRranking;
 	int IRclearRate;
 	int IRplayercount;
 	char IRthreadEnd;
-	int complete; /* Created by retype action */
-	int rseed; /* Created by retype action */
+	int complete; 
+	int rseed; 
 };
 
 struct SONGDATA { /* 712bytes */
@@ -772,7 +772,7 @@ struct inputStructure {
 	int config_keymode; /* 0:7k 1:9k 2:5k */
 	int config_button; /* for selection */
 	int config_button_inMap; /* for use */
-	int config_key; /* Created by retype action */
+	int config_key; 
 	int mouse_recentMoveTime;
 	int keyboard_presscount;
 	int joypad_presscount;
@@ -1133,7 +1133,7 @@ struct SONGSELECT {
 	char flag_maniacPanel;
 	char unused4f6e;
 	char unused4f6f;
-	int maniac_cursor; /* Created by retype action */
+	int maniac_cursor; 
 	char unk4f74; /* //clear screen flag? */
 	char unused4f75;
 	char unused4f76;
@@ -1157,15 +1157,15 @@ struct SONGSELECT {
 	char unk4fc4[3];
 	undefined field75_0x4fc7;
 	int searchFocused; /* about active? 2,4:multithread */
-	int filterDifficulty; /* Created by retype action */
-	int filterKey; /* Created by retype action */
-	int filterSort; /* Created by retype action */
+	int filterDifficulty; 
+	int filterKey; 
+	int filterSort; 
 	int searchMax; /* and rivalID */
 	int isFolder;
-	CSTR selFilepath; /* Created by retype action */
+	CSTR selFilepath; 
 	CSTR selTitle;
-	CSTR selFolder; /* Created by retype action */
-	int selKey; /* Created by retype action */
+	CSTR selFolder; 
+	int selKey; 
 	CSTR searchInput; /* struct finish here or far */
 	int text_num;
 	int unk4ff8;
@@ -1258,7 +1258,7 @@ struct EXTENDEDPLAYERSTATS {
 struct PLAYERSTATUS {
 	int flag_active = 0;
 	int judgecount[6] = {}; /* 0unknown 1poor 2bad 3good 4great 5pgreat */
-	int max_combo = 0; /* Created by retype action */
+	int max_combo = 0; 
 	int now_combo = 0;
 	int combo_song_draw = 0;
 	int max_combo_course = 0;
@@ -1396,7 +1396,7 @@ struct gameplay {
 	undefined field29_0x73b67;
 	int unused_73b68;
 	int lastMissTime;
-	int misslayerTime[2]; /* Created by retype action */
+	int misslayerTime[2]; 
 	int lastMeasure;
 	undefined field34_0x73b7c;
 	undefined field35_0x73b7d;
@@ -1431,10 +1431,10 @@ struct gameplay {
 	undefined field64_0x73bae;
 	undefined field65_0x73baf;
 	struct PLAYERSTATUS player[2];
-	double song_runtime; /* Created by retype action */
+	double song_runtime; 
 	char flag_threadExist;
 	char flag_closingPhase;
-	undefined1 bmsResourceLoaded; /* Created by retype action */
+	undefined1 bmsResourceLoaded; 
 	undefined field71_0x73deb;
 	int autojudge_midsum;//TODO : need to init = 0;
 	int autojudge_midcount;//TODO : need to init = 0;
@@ -1467,8 +1467,8 @@ struct gameplay {
 	undefined field100_0x7bf0a;
 	undefined field101_0x7bf0b;
 	int procGameCallCount;
-	bool isSpeedChanged; /* Created by retype action */
-	undefined1 trialClear; /* Created by retype action */
+	bool isSpeedChanged; 
+	undefined1 trialClear; 
 	undefined field105_0x7bf12;
 	undefined field106_0x7bf13;
 	int lanecoverDoubleclickTimeP1; 
@@ -1480,7 +1480,7 @@ struct gameplay {
 	double speedmultiplier;
 	double maxBPM;
 	double minBPM;
-	char lanecoverDisplayP1; /* Created by retype action */
+	char lanecoverDisplayP1; 
 	char lanecoverDisplayP2;
 	char isNosave;
 	char isForceEasy;
@@ -1499,13 +1499,13 @@ struct gameplay {
 	int bpmChangedRealtime; /* timer142 */
 	int bpmChangedBmstime; /* bpm change timing */
 	char unused_7bf68;
-	char ghostBattle; /* Created by retype action */
+	char ghostBattle; 
 	undefined field136_0x7bf6a;
 	undefined field137_0x7bf6b;
 	struct CONFIG_PLAY targetCfg; /* //1p_speed ~ struct */
 	int delayDetectedCount;
 	int delayCheckCount;
-	undefined1 isCourse; /* Created by retype action */
+	undefined1 isCourse; 
 	undefined field142_0x7c075;
 	undefined field143_0x7c076;
 	undefined field144_0x7c077;
