@@ -200,7 +200,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		gs.timer1.movieFramerate = (double)gs.config.tools.movie_framerate;
 		gs.timer1.movieTimer = 0.0;
 		
-		SetGraphMode(640, 480, (gs.config.system.highcolor == 0) ? 32 : 12, 60);
+		SetGraphMode(640, 480, (gs.config.system.highcolor == 0) ? 32 : 16, 60);
 		if (gs.rec.recMode == 3) {
 			SetGraphMode(256, 256, 32, 60);
 		}
