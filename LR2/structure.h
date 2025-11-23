@@ -4,6 +4,7 @@
 #include <vfw.h>
 #include <vector>
 #include <array>
+#include <mutex>
 #include <thread>
 #include "FMOD/fmod.h"
 #include "strclass.h"
@@ -694,7 +695,7 @@ struct RANKING {
 
 	void ExpandRankingBuffer(int add);
 	void Init();
-	int ParseXML(CSTR path);
+	int ParseXML(const char* path);
 	RANKING();
 };
 
@@ -1412,7 +1413,7 @@ struct gameplay {
 	int previewStatus; /* 1:start 2:loaded */
 	CSTR previewBMShash;
 	CSTR previewBMSfilepath;
-	CRITICAL_SECTION criticalSection;
+	std::mutex criticalSection;
 };
 
 struct SkinManage {
@@ -1462,7 +1463,7 @@ struct NETWORK {
 	int isOnline;
 	int rankUpdateDelayLevel;
 	int waitTime;
-	CRITICAL_SECTION criticalSection;
+	std::mutex criticalSection;
 	CSTR param;
 	CSTR httpResult;
 	int isRequestSuccess;
@@ -1492,8 +1493,8 @@ struct NETWORK {
 
 	int Init();
 
-	void Lock();
-	void Unlock();
+	void ParseRankingXml(const char* path);
+
 	int HTTPrequest();
 	void WaitAndInitRanking();
 	int GetRanking(CSTR hash, char flagInit);
@@ -1537,7 +1538,6 @@ struct game {
 	int procPhase;
 	std::jthread hThreadBanner;
 	struct gameplay gameplay;
-	CRITICAL_SECTION criticalSection;
 	char is_clicked_screenModeChange;
 	int isSkipDrawTick; /* skip frame? */
 	int flag_Screenshot; /* char */

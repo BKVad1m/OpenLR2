@@ -438,8 +438,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			gs.gameplay.isCourse = 0;
 			gs.gameplay.isPreviewLoad = 0;
 			gs.gameplay.previewStatus = 0;
-			InitializeCriticalSection(&gs.gameplay.criticalSection);
-			InitializeCriticalSection(&gs.criticalSection);
 			if (gs.gameplay.hThreadPreview.joinable()) {
 				gs.gameplay.hThreadPreview.join();
 			}

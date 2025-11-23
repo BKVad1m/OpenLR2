@@ -1,12 +1,13 @@
 #include "strclass.h"
+
 extern "C" {
 #include "sqlite/sqlite3.h"
 }
 
+#include <mutex>
+
 extern int EnabledInsane;
-extern CRITICAL_SECTION DB_lock;
-int DB_EnterCriticalSection();
-int DB_LeaveCriticalSection();
+inline std::mutex g_db_lock;
 
 bool ANSItoUTF8(LPCSTR str, char * oBuf, size_t * oSize);
 bool UTF8toANSI(LPCSTR str, char * oBuf, size_t * oSize);

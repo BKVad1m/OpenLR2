@@ -2461,7 +2461,6 @@ int LoadLR2CustomFolder(sqlite3 *sql, CONFIG_JUKEBOX *jb, CSTR scoreDBpath, char
 	sqlite3 *scoreDB, *tagDB;
 	char query[1024], query2[256];
 
-	InitializeCriticalSection(&DB_lock);
 	int folderAddCount = 0;
 	EnabledInsane = 0;
 	if (flag_starter) {

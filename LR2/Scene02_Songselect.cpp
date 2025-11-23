@@ -1439,7 +1439,7 @@ void CheckNewSong(glb_dbgame *glb) {
 	int filDiff, filKey;
 	int err = 0;
 
-	DB_EnterCriticalSection();
+	std::unique_lock l{g_db_lock};
 	glb->pGame->sSelect.searchFocused = 2;
 	filDiff = glb->pGame->sSelect.filterDifficulty;
 	filKey = glb->pGame->sSelect.filterKey;
@@ -1507,9 +1507,6 @@ void CheckNewSong(glb_dbgame *glb) {
 	(glb->pGame->sSelect).unk4fc4[0] = '\0';
 	(glb->pGame->sSelect).unk4fc4[1] = '\0';
 	(glb->pGame->sSelect).unk4fc4[2] = '\0';
-	DB_LeaveCriticalSection();
-
-	return;
 }
 
 //4181b0
@@ -1531,9 +1528,7 @@ void ThreadProc_RankingAutoUpdate(void *param) { // TODO: take game&
 	
 	if (path.canOpenFile()) {
 		if (hash.isSame(g->sSelect.bmsList[g->sSelect.cur_song].hash)) {
-			g->net.Lock();
-			g->net.rankingData.ParseXML(path);
-			g->net.Unlock();
+			g->net.ParseRankingXml(path);
 		}
 
 		if (g->net.rankingData.rankingCount > 0) {

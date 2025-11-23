@@ -109,7 +109,7 @@ void RANKING::Init() {
 }
 
 //4ba790
-int RANKING::ParseXML(CSTR path) {
+int RANKING::ParseXML(const char* path) {
 	
 	TiXmlDocument *hXml;
 	TiXmlElement *cur;
@@ -518,8 +518,6 @@ RANKING::RANKING() {
 
 //4bbb80
 int NETWORK::Init() {
-
-	InitializeCriticalSection((LPCRITICAL_SECTION)&this->criticalSection);
 	this->unk234 = 0;
 	this->waitForHandle = '\0';
 	this->domain = "www.dream-pro.info";
@@ -536,14 +534,10 @@ int NETWORK::Init() {
 	return 1;
 }
 
-//4bbd00
-void NETWORK::Lock() {
-	EnterCriticalSection(&this->criticalSection);
-}
-
-//4bbd10
-void NETWORK::Unlock() {
-	LeaveCriticalSection(&this->criticalSection);
+void NETWORK::ParseRankingXml(const char* path)
+{
+	std::unique_lock l{criticalSection};
+	rankingData.ParseXML(path);
 }
 
 //4bbd20
@@ -554,103 +548,99 @@ int NETWORK::HTTPrequest() {
 	CSTR request(2048);
 	CSTR recvBuf(2048);
 
-	EnterCriticalSection(&this->criticalSection);
+	{
+		std::unique_lock l{criticalSection};
 
-	s = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-	if (s == 0xffffffff) {
-		cstrSprintf(&this->request_debug, "ソケットエラー : %d\n", WSAGetLastError());
-		ErrorLogAdd(this->request_debug);
-		closesocket(s);
-		LeaveCriticalSection(&this->criticalSection);
-		return this->isRequestSuccess = 0;
-	}
-
-	server.sin_family = AF_INET;
-	server.sin_port = htons(80);
-	server.sin_addr.S_un.S_addr = inet_addr(this->domain);
-	if (server.sin_addr.S_un.S_addr == 0xffffffff) {
-		host = gethostbyname(this->domain);
-		if (host == NULL) {
-			if (WSAGetLastError() == 11001) cstrSprintf(&this->request_debug, "ホストが見つかりません : %d\n", WSAGetLastError());
-			else cstrSprintf(&this->request_debug, "その他のエラーです : %d\n", WSAGetLastError());
+		s = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+		if (s == 0xffffffff) {
+			cstrSprintf(&this->request_debug, "ソケットエラー : %d\n", WSAGetLastError());
 			ErrorLogAdd(this->request_debug);
 			closesocket(s);
-			LeaveCriticalSection(&this->criticalSection);
 			return this->isRequestSuccess = 0;
 		}
 
-		for (int i = 0; host->h_addr_list[i]; i++) {
-			memcpy(&server.sin_addr.S_un,host->h_addr_list[i],4);
-			if (connect(s, (sockaddr*)&server, sizeof(struct sockaddr_in)) == 0) {
-				if (host->h_addr_list[i] == NULL) {
-					cstrSprintf(&this->request_debug, "接続に失敗しました : %d\n", WSAGetLastError());
-					ErrorLogAdd(this->request_debug);
-					closesocket(s);
-					LeaveCriticalSection(&this->criticalSection);
-					return this->isRequestSuccess = 0;
+		server.sin_family = AF_INET;
+		server.sin_port = htons(80);
+		server.sin_addr.S_un.S_addr = inet_addr(this->domain);
+		if (server.sin_addr.S_un.S_addr == 0xffffffff) {
+			host = gethostbyname(this->domain);
+			if (host == NULL) {
+				if (WSAGetLastError() == 11001) cstrSprintf(&this->request_debug, "ホストが見つかりません : %d\n", WSAGetLastError());
+				else cstrSprintf(&this->request_debug, "その他のエラーです : %d\n", WSAGetLastError());
+				ErrorLogAdd(this->request_debug);
+				closesocket(s);
+				return this->isRequestSuccess = 0;
+			}
+
+			for (int i = 0; host->h_addr_list[i]; i++) {
+				memcpy(&server.sin_addr.S_un, host->h_addr_list[i], 4);
+				if (connect(s, (sockaddr*)&server, sizeof(struct sockaddr_in)) == 0) {
+					if (host->h_addr_list[i] == NULL) {
+						cstrSprintf(&this->request_debug, "接続に失敗しました : %d\n", WSAGetLastError());
+						ErrorLogAdd(this->request_debug);
+						closesocket(s);
+						return this->isRequestSuccess = 0;
+					}
+					break;
 				}
-				break;
 			}
-		}
-	}
-	else {
-		if (connect(s, (sockaddr*)&server, sizeof(struct sockaddr_in)) == 0) {
-			cstrSprintf(&this->request_debug, "接続に失敗しました : %d\n", WSAGetLastError());
-			ErrorLogAdd(this->request_debug);
-			closesocket(s);
-			LeaveCriticalSection(&this->criticalSection);
-			return this->isRequestSuccess = 0;
-		}
-	}
-		
-	unsigned long argp = 1;
-	ioctlsocket(s, 0x8004667e, &argp);
-		
-	request.fillzero();
-	cstrSprintf(&request, "POST %s HTTP/1.0\r\nContent-Length:%d\n\n%s", this->target_URL, this->param.length(), this->param);
-
-	if (send(s, request, request.length() + 1, 0) < 0) {
-		cstrSprintf(&this->request_debug, "データの送信に失敗しました : %d\n", WSAGetLastError());
-		ErrorLogAdd(this->request_debug);
-		closesocket(s);
-		LeaveCriticalSection(&this->criticalSection);
-		return this->isRequestSuccess = 0;
-	}
-
-	request.fillzero(); //from this time, request is used as response result
-
-	int timeout = this->timeout / 10;
-	int i = 0;
-	for (; i != timeout; i++) {
-		recvBuf = "";
-		int recvSize = recv(s, recvBuf, recvBuf.msize() - 1, 0);
-		if (this->waitForHandle == 1) {
-			request = "DISCONNECT";
-			break;
-		}
-
-		if (recvSize < 0) {
-			if (WSAGetLastError() != 10035) { //WSAEWOULDBLOCK
-				cstrSprintf(&this->request_debug, "データの受信に失敗しました : %d\n", WSAGetLastError());
-				if(this->rankingData.myID == 1) ErrorLogAdd(this->request_debug);
-				request.fillzero();
-				break;
-			}
-		}
-		else if (recvSize == 0) {
-			break;
 		}
 		else {
-			request.add(recvBuf);
+			if (connect(s, (sockaddr*)&server, sizeof(struct sockaddr_in)) == 0) {
+				cstrSprintf(&this->request_debug, "接続に失敗しました : %d\n", WSAGetLastError());
+				ErrorLogAdd(this->request_debug);
+				closesocket(s);
+				return this->isRequestSuccess = 0;
+			}
 		}
-		Sleep(10);
-	}
-	if (i == timeout) {
-		request = "TIMEOUT";
-	}
 
-	closesocket(s);
-	LeaveCriticalSection(&this->criticalSection);
+		unsigned long argp = 1;
+		ioctlsocket(s, 0x8004667e, &argp);
+
+		request.fillzero();
+		cstrSprintf(&request, "POST %s HTTP/1.0\r\nContent-Length:%d\n\n%s", this->target_URL, this->param.length(), this->param);
+
+		if (send(s, request, request.length() + 1, 0) < 0) {
+			cstrSprintf(&this->request_debug, "データの送信に失敗しました : %d\n", WSAGetLastError());
+			ErrorLogAdd(this->request_debug);
+			closesocket(s);
+			return this->isRequestSuccess = 0;
+		}
+
+		request.fillzero(); //from this time, request is used as response result
+
+		int timeout = this->timeout / 10;
+		int i = 0;
+		for (; i != timeout; i++) {
+			recvBuf = "";
+			int recvSize = recv(s, recvBuf, recvBuf.msize() - 1, 0);
+			if (this->waitForHandle == 1) {
+				request = "DISCONNECT";
+				break;
+			}
+
+			if (recvSize < 0) {
+				if (WSAGetLastError() != 10035) { //WSAEWOULDBLOCK
+					cstrSprintf(&this->request_debug, "データの受信に失敗しました : %d\n", WSAGetLastError());
+					if (this->rankingData.myID == 1) ErrorLogAdd(this->request_debug);
+					request.fillzero();
+					break;
+				}
+			}
+			else if (recvSize == 0) {
+				break;
+			}
+			else {
+				request.add(recvBuf);
+			}
+			Sleep(10);
+		}
+		if (i == timeout) {
+			request = "TIMEOUT";
+		}
+
+		closesocket(s);
+	}
 
 	if (request.findStrPos("#") != -1) {
 		this->httpResult = request.right(request.length() - (request.findStrPos("#") + 1));
@@ -833,7 +823,6 @@ int NETWORK::GetTargetInfo(int mode, CSTR songmd5, CSTR *oData, CSTR *oName, int
 
 //4bcc50
 NETWORK::NETWORK(){
-	InitializeCriticalSection(&criticalSection);
 	unk234 = 0;
 	waitForHandle = '\0';
 	domain = "www.dream-pro.info";
@@ -845,8 +834,6 @@ NETWORK::NETWORK(){
 
 //4bcda0
 int NETWORK::WS_clean() {
-	EnterCriticalSection(&this->criticalSection);
-	LeaveCriticalSection(&this->criticalSection);
 	WSACleanup();
 	return 1;
 }

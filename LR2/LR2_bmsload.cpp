@@ -474,7 +474,7 @@ int LoadBmsResource(gameplay *gp, CSTR BMSfilepath, AUDIO *aud, ConfigStruct *cf
 		return 1;
 	}
 
-	EnterCriticalSection(&gp->criticalSection);
+	std::unique_lock l{gp->criticalSection};
 
 	for (int i = 0; i < 6480; i++) {
 		if (gp->keysound_filename[i].length() > 0) {
@@ -483,7 +483,6 @@ int LoadBmsResource(gameplay *gp, CSTR BMSfilepath, AUDIO *aud, ConfigStruct *cf
 			gp->loadObject_loaded++;
 		}
 		if (gp->flag_closingPhase || (gp->previewStatus != 1 && noVideo)) {
-			LeaveCriticalSection(&gp->criticalSection);
 			return 1;
 		}
 	}
@@ -501,7 +500,6 @@ int LoadBmsResource(gameplay *gp, CSTR BMSfilepath, AUDIO *aud, ConfigStruct *cf
 
 	if (noVideo) {
 		gp->loadObject_loaded = gp->loadObject_total;
-		LeaveCriticalSection(&gp->criticalSection);
 		return 1;
 	}
 	
@@ -523,7 +521,6 @@ int LoadBmsResource(gameplay *gp, CSTR BMSfilepath, AUDIO *aud, ConfigStruct *cf
 
 		if (gp->flag_closingPhase) {
 			if (cfg->system.isablebmsthread == 0) CoUninitialize();
-			LeaveCriticalSection(&gp->criticalSection);
 			return 1;
 		}
 	}
@@ -571,7 +568,6 @@ int LoadBmsResource(gameplay *gp, CSTR BMSfilepath, AUDIO *aud, ConfigStruct *cf
 			}
 		}
 	}
-	LeaveCriticalSection(&gp->criticalSection);
 	return 0;
 }
 

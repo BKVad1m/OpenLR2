@@ -1,18 +1,5 @@
 #include "En_dbio.h"
 
-CRITICAL_SECTION DB_lock;
-//4440f0
-int DB_EnterCriticalSection() {
-	EnterCriticalSection(&DB_lock);
-	return 1;
-}
-
-//444110
-int DB_LeaveCriticalSection() {
-	LeaveCriticalSection(&DB_lock);
-	return 1;
-}
-
 //444130 //TODO more readable
 //ANSI >> UTF-16(unicode) >> UTF-8
 bool ANSItoUTF8(LPCSTR str, char *oBuf, size_t *oSize){
