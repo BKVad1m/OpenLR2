@@ -1,5 +1,7 @@
 #include "structure.h"
 
+struct sqlite3;
+
 //song list
 int SwapBmsList(SONGSELECT * ss);
 int InitBmsList(SONGSELECT * ss);

@@ -1,18 +1,5 @@
 #include "En_dbio.h"
 
-CRITICAL_SECTION DB_lock;
-//4440f0
-int DB_EnterCriticalSection() {
-	EnterCriticalSection(&DB_lock);
-	return 1;
-}
-
-//444110
-int DB_LeaveCriticalSection() {
-	LeaveCriticalSection(&DB_lock);
-	return 1;
-}
-
 //444130 //TODO more readable
 //ANSI >> UTF-16(unicode) >> UTF-8
 bool ANSItoUTF8(LPCSTR str, char *oBuf, size_t *oSize){
@@ -28,7 +15,7 @@ bool ANSItoUTF8(LPCSTR str, char *oBuf, size_t *oSize){
 	size = WideCharToMultiByte(CP_UTF8, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
 	if (oBuf == NULL) {
 		*oSize = size;
-		delete(lpWideCharStr);
+		free(lpWideCharStr);
 		return true;
 	}
 	lpMultiByteStr = (LPSTR)malloc(size * 2);
@@ -37,8 +24,8 @@ bool ANSItoUTF8(LPCSTR str, char *oBuf, size_t *oSize){
 	size = lstrlenA(lpMultiByteStr);
 	*oSize = size;
 	memcpy(oBuf, lpMultiByteStr, size);
-	delete(lpWideCharStr);
-	delete(lpMultiByteStr);
+	free(lpWideCharStr);
+	free(lpMultiByteStr);
 	return true;
 }
 
@@ -57,7 +44,7 @@ bool UTF8toANSI(LPCSTR str, char *oBuf, size_t *oSize){
 	size = WideCharToMultiByte(CP_ACP, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
 	if (oBuf == NULL) {
 		*oSize = size;
-		delete(lpWideCharStr);
+		free(lpWideCharStr);
 		return true;
 	}
 	lpMultiByteStr = (LPSTR)malloc(size * 2);
@@ -66,8 +53,8 @@ bool UTF8toANSI(LPCSTR str, char *oBuf, size_t *oSize){
 	size = lstrlenA(lpMultiByteStr);
 	*oSize = size;
 	memcpy(oBuf, lpMultiByteStr, size);
-	delete(lpWideCharStr);
-	delete(lpMultiByteStr);
+	free(lpWideCharStr);
+	free(lpMultiByteStr);
 	return true;
 }
 
@@ -89,14 +76,14 @@ int SQL_Run(CSTR queryStr, sqlite3 *sql){
 	MultiByteToWideChar(CP_ACP, 0, lpMultiByteStr, -1, (LPWSTR)lpWideCharStr, cchWideChar);
 	size = WideCharToMultiByte(CP_UTF8, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
 	newsize = size;
-	delete(lpWideCharStr);
+	free((void*)lpWideCharStr);
 
 	oBuf = (char *)malloc(size + 1);
 	memset(oBuf, '\0', size + 1);
 	ANSItoUTF8(queryStr, oBuf, &newsize);
 	oBuf[newsize] = '\0';
 	result = sqlite3_exec(sql, oBuf, NULL, NULL, NULL);
-	delete(oBuf);
+	free((void*)oBuf);
 	return result;
 }
 
@@ -118,14 +105,14 @@ int SQL_prepare(CSTR queryStr, sqlite3 *sql, sqlite3_stmt **ppStmt){
 	MultiByteToWideChar(CP_ACP, 0, lpMultiByteStr, -1, (LPWSTR)lpWideCharStr, cchWideChar);
 	size = WideCharToMultiByte(CP_UTF8, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
 	newsize = size;
-	delete(lpWideCharStr);
+	free((void*)lpWideCharStr);
 
 	oBuf = (char *)malloc(size + 1);
 	memset(oBuf, '\0', size + 1);
 	ANSItoUTF8(queryStr, oBuf, &newsize);
 	oBuf[newsize] = '\0';
 	result = sqlite3_prepare(sql, oBuf, -1, ppStmt, NULL);
-	delete(oBuf);
+	free((void*)oBuf);
 	return result;
 }
 

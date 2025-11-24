@@ -1,5 +1,7 @@
 #include "structure.h"
 
+struct sqlite3;
+
 int ApplyJudgeNote(int judge, game *g, int player, int lane, Timer *T, char isReplay);
 int ApplyJudgeMine(int judge, game *g, int player, int lane, int damage);
  

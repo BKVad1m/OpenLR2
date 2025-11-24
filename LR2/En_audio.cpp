@@ -8,7 +8,7 @@
 #include "En_audio.h"
 #include "strclass.h"
 #include "FMOD/fmod.h"
-#include "dxlib/DxLib.h"
+#include "DxLib/DxLib.h"
 #include <algorithm>
 #include <cmath>
 #include <array>
@@ -469,7 +469,7 @@ void WriteSoundFile(AUDIO *aud, CSTR filename, uint size) {
 		fclose(_File);
 	}
 	if (aud->buffer) {
-		delete(aud->buffer);
+		free(aud->buffer);
 	}
 	ErrorLogFmtAdd("データを保存しました。\n");
 }
@@ -547,7 +547,7 @@ int RecordSound(AUDIO *aud, SOUNDDATA *sound, double time, double len) {
 				memset(newbuffer, 0, aud->size * 4);
 				memcpy(newbuffer, aud->buffer, aud->size * 2);
 				if (aud->buffer != NULL) {
-					delete(aud->buffer);
+					free(aud->buffer);
 					aud->buffer = NULL;
 				}
 				aud->buffer = newbuffer;
@@ -1208,7 +1208,7 @@ void RAWSOUND::ExpandBuffer(int minSize) {
 		buf = (byte*)malloc(newSize);
 		memcpy(buf, this->data, this->dataSize);
 		memset(&buf[this->dataSize], 0, newSize - this->dataSize);
-		delete(this->data);
+		free(this->data);
 		this->data = buf;
 		this->dataSize = newSize;
 	}

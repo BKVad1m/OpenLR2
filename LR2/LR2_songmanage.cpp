@@ -1552,7 +1552,6 @@ int SearchCourseFromDB(sqlite3 *sql, SONGSELECT *ss, int keys, int multistagemod
 		song.title = "RANDOM MIX";
 		song.fulltitle = "RANDOM MIX";
 		song.artist = "ランダムでコースを作成します";
-		song.artist = ""; //original code, not a mistake
 		song.hash = "randomcourse";
 		song.filepath = "randomcourse";
 		song.folderType = 9;
@@ -2462,7 +2461,6 @@ int LoadLR2CustomFolder(sqlite3 *sql, CONFIG_JUKEBOX *jb, CSTR scoreDBpath, char
 	sqlite3 *scoreDB, *tagDB;
 	char query[1024], query2[256];
 
-	InitializeCriticalSection(&DB_lock);
 	int folderAddCount = 0;
 	EnabledInsane = 0;
 	if (flag_starter) {

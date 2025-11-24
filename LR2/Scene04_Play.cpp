@@ -1625,7 +1625,7 @@ void ProcGameThread(game *g) {
 	}
 
 	if (g->gameplay.flag_retry == 0 && g->config.system.isablebmsthread == 0) {
-		_beginthread((void(*)(void*))ProcLoadBmsResource, 0, g);
+		std::jthread(ProcLoadBmsResource, g).detach();
 	}
 	else {
 		g->gameplay.bmsResourceLoaded = 1;
@@ -1732,7 +1732,9 @@ int ProcS_Play(game *g, sqlite3* sql) {
 
 	int iTemp;
 
-	if (g->gameplay.hThreadPreview) WaitForSingleObject(g->gameplay.hThreadPreview, 5000);
+	if (g->gameplay.hThreadPreview.joinable()) {
+		g->gameplay.hThreadPreview.join();
+	}
 	g->gameplay.flag_closingPhase = 0;
 	
 	CSTR gData, gName;
@@ -1947,8 +1949,7 @@ int ProcS_Play(game *g, sqlite3* sql) {
 	}
 
 	SetObjectString(1, g->gameplay.targetScore.name, g->txtStruct.objectStr);
-	HANDLE hG = (HANDLE)_beginthread((void(*)(void*))ProcGameThread,0,g);
-	SetThreadPriority(hG, -1);
+	std::jthread(ProcGameThread, g).detach(); // removed SetThreadPriority(hG, -1);
 	return 1;
 }
 

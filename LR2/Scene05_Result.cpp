@@ -211,8 +211,8 @@ int ProcI_Result(game *g) {
 			SetObjectString(20, g->net.IRresultMessage, g->txtStruct.objectStr);
 		}
 		else {
-			if (GetTimeLapse(151, &g->timer1) <= g->skstruct.startinput_rank || GetTimeLapse(152, &g->timer1) != -1.0 || (g->net.isOnline && (g->net.isOnline != 1 || g->net.hHandle))) {
-				if (GetTimeLapse(151, &g->timer1) > g->skstruct.startinput_rank && GetTimeLapse(152, &g->timer1) == -1.0 && g->net.isOnline == 1 && g->net.hHandle) {
+			if (GetTimeLapse(151, &g->timer1) <= g->skstruct.startinput_rank || GetTimeLapse(152, &g->timer1) != -1.0 || (g->net.isOnline && (g->net.isOnline != 1 || g->net.hHandle.joinable()))) {
+				if (GetTimeLapse(151, &g->timer1) > g->skstruct.startinput_rank && GetTimeLapse(152, &g->timer1) == -1.0 && g->net.isOnline == 1 && g->net.hHandle.joinable()) {
 					fWaitHiScoreUpdateInput = 1;
 				}
 				else if (GetTimeLapse(152, &g->timer1) > g->skstruct.startinput_update && GetTimeLapse(2, &g->timer1) == -1.0) {

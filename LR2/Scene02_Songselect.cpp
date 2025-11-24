@@ -59,7 +59,7 @@ int SetTarget(game *g) {
 
 
 //401fe0
-void ThreadProc_LoadBanner(void *param) {
+void ThreadProc_LoadBanner(void *param) { // TODO: take game&
 	game* g = (game*)param;
 
 	CSTR path;
@@ -1439,7 +1439,7 @@ void CheckNewSong(glb_dbgame *glb) {
 	int filDiff, filKey;
 	int err = 0;
 
-	DB_EnterCriticalSection();
+	std::unique_lock l{g_db_lock};
 	glb->pGame->sSelect.searchFocused = 2;
 	filDiff = glb->pGame->sSelect.filterDifficulty;
 	filKey = glb->pGame->sSelect.filterKey;
@@ -1507,13 +1507,10 @@ void CheckNewSong(glb_dbgame *glb) {
 	(glb->pGame->sSelect).unk4fc4[0] = '\0';
 	(glb->pGame->sSelect).unk4fc4[1] = '\0';
 	(glb->pGame->sSelect).unk4fc4[2] = '\0';
-	DB_LeaveCriticalSection();
-
-	return;
 }
 
 //4181b0
-void ThreadProc_RankingAutoUpdate(void *param) {
+void ThreadProc_RankingAutoUpdate(void *param) { // TODO: take game&
 	game *g = (game*)param;
 
 	CSTR hash = g->sSelect.bmsList[g->sSelect.cur_song].hash;
@@ -1531,9 +1528,7 @@ void ThreadProc_RankingAutoUpdate(void *param) {
 	
 	if (path.canOpenFile()) {
 		if (hash.isSame(g->sSelect.bmsList[g->sSelect.cur_song].hash)) {
-			g->net.Lock();
-			g->net.rankingData.ParseXML(path);
-			g->net.Unlock();
+			g->net.ParseRankingXml(path);
 		}
 
 		if (g->net.rankingData.rankingCount > 0) {
@@ -1554,7 +1549,6 @@ void ThreadProc_RankingAutoUpdate(void *param) {
 		}
 
 		if (GetNowUnixtime() - GetFileUnixtime(path) < 86400 || g->config.network.autoupdate == 0) { //86400 is 24hours
-			g->net.hHandle = NULL;
 			g->sSelect.isRankingAutoUpdateThread = 0;
 			return;
 		}
@@ -1564,14 +1558,12 @@ void ThreadProc_RankingAutoUpdate(void *param) {
 
 	if (!g->config.network.autoupdate) {
 		if (!isIR2) g->net.IRstatus = 0;
-		g->net.hHandle = NULL;
 		g->sSelect.isRankingAutoUpdateThread = 0;
 		return;
 	}
 
 	if (g->net.rankUpdateDelayLevel >= 3) {
 		if (!isIR2) g->net.IRstatus = 5;
-		g->net.hHandle = NULL;
 		g->sSelect.isRankingAutoUpdateThread = 0;
 		return;
 	}
@@ -1582,7 +1574,6 @@ void ThreadProc_RankingAutoUpdate(void *param) {
 		Sleep(4);
 		if (g->net.waitForHandle || (isIR2 && (g->KeyInput.p1_buttonInput[4] == 2 || g->KeyInput.p2_buttonInput[4] == 2))) {
 			g->sSelect.isRankingAutoUpdateThread = 0;
-			g->net.hHandle = NULL;
 			ResetTimeLapse(177, &g->timer1);
 			g->net.IRstatus = isIR2 ? 2 : 0;
 			return;
@@ -1632,9 +1623,7 @@ void ThreadProc_RankingAutoUpdate(void *param) {
 	}
 
 	SetObjectStrings_SongSelect(g);
-	g->net.hHandle = NULL;
 	g->sSelect.isRankingAutoUpdateThread = 0;
-	return;
 }
 
 //419440
@@ -1646,7 +1635,6 @@ void LoadPreview(game *g) {
 	if (!IsFileExist(g->gameplay.previewBMSfilepath)) {
 		g->gameplay.isPreviewLoad = 0;
 		g->gameplay.previewStatus = 0;
-		g->gameplay.hThreadPreview = 0;
 		return;
 	}
 
@@ -1682,9 +1670,6 @@ void LoadPreview(game *g) {
 		g->gameplay.previewStatus = 0;
 		g->gameplay.isPreviewLoad = 0;
 	}
-
-	g->gameplay.hThreadPreview = 0;
-	return;
 }
 
 
@@ -1767,13 +1752,13 @@ int ProcS_Select(game *g) {
 	g->sSelect.levelsOfSong[4] = g->sSelect.bmsList[g->sSelect.cur_song].difficultyLevel[4];
 
 	if (g->sSelect.bmsList[g->sSelect.cur_song].isBanner && g->skstruct.reloadbanner == 1 && g->procSelecter == 2) {
-		g->hThreadBanner = _beginthread(ThreadProc_LoadBanner, 0, g);
+		g->hThreadBanner = std::jthread(ThreadProc_LoadBanner, g);
 	}
 	if (g->net.isOnline == 1 && g->procSelecter == 2) {
 		g->net.WaitAndInitRanking();
 		if (g->sSelect.bmsList[g->sSelect.cur_song].keymode >= 5 && (g->sSelect.bmsList[g->sSelect.cur_song].courseStageCount < 1 || g->sSelect.bmsList[g->sSelect.cur_song].courseIR)) {
 			g->net.IRstatus = 1;
-			g->net.hHandle = (HANDLE)_beginthread(ThreadProc_RankingAutoUpdate, 0, g);
+			g->net.hHandle = std::jthread(ThreadProc_RankingAutoUpdate, g);
 			SetObjectStrings_SongSelect(g);
 			return 1;
 		}
@@ -2662,13 +2647,13 @@ int ProcI_Select(game *g, sqlite3 *sql) {
 	}
 
 	if(g->config.select.preview == 1){
-		if (GetTimeLapse(11, &g->timer1) >= 500.0 && g->gameplay.previewStatus == 0 && g->sSelect.bmsList[g->sSelect.cur_song].keymode >= 5 && g->sSelect.bmsList[g->sSelect.cur_song].courseStageCount == 0 && g->gameplay.hThreadPreview == 0) {
+		if (GetTimeLapse(11, &g->timer1) >= 500.0 && g->gameplay.previewStatus == 0 && g->sSelect.bmsList[g->sSelect.cur_song].keymode >= 5 && g->sSelect.bmsList[g->sSelect.cur_song].courseStageCount == 0 && !g->gameplay.hThreadPreview.joinable()) {
 			g->gameplay.flag_closingPhase = 1;
 			g->gameplay.isPreviewLoad = 0;
 			g->gameplay.previewStatus = 1;
 			g->gameplay.previewBMShash = g->sSelect.bmsList[g->sSelect.cur_song].hash;
 			g->gameplay.previewBMSfilepath = g->sSelect.bmsList[g->sSelect.cur_song].filepath;
-			g->gameplay.hThreadPreview = (HANDLE)_beginthread((void(*)(void*))LoadPreview, 0, g);
+			g->gameplay.hThreadPreview = std::jthread(LoadPreview, g);
 		}
 		else if (g->gameplay.previewStatus) {
 			if (g->gameplay.previewBMShash.isDiff(g->sSelect.bmsList[g->sSelect.cur_song].hash)) {
