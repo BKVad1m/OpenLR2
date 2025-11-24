@@ -61,10 +61,10 @@ int ProcS_subCourseResult(game *g, sqlite3 *sql) {
 		g->sSelect.bmsList[g->sSelect.cur_song].mybest.rseed = g->gameplay.randomseed;
 
 		if (g->sSelect.bmsList[g->sSelect.cur_song].keymode < 10) {
-			g->sSelect.bmsList[g->sSelect.cur_song].mybest.op_best = g->config.play.gaugeOption[0] + g->config.play.random[0] * 10;
+			g->sSelect.bmsList[g->sSelect.cur_song].mybest.op_best = g->gameplay.player[0].gaugeType + g->config.play.random[0] * 10;
 		}
 		else {
-			g->sSelect.bmsList[g->sSelect.cur_song].mybest.op_best = g->config.play.gaugeOption[0] + g->config.play.random[0] * 10 + g->config.play.random[1] * 100 + g->config.play.dpflip * 1000;
+			g->sSelect.bmsList[g->sSelect.cur_song].mybest.op_best = g->gameplay.player[0].gaugeType + g->config.play.random[0] * 10 + g->config.play.random[1] * 100 + g->config.play.dpflip * 1000;
 		}
 	}
 

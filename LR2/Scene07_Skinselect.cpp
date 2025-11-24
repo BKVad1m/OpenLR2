@@ -379,7 +379,9 @@ int PlayPreviewSample(game *g) {
 			for (int i = 0; i < 1000; i++) {
 				g->gameplay.statgraph[p].combo[i] = g->gameplay.player[p].totalnotes * i / 1000;
 				g->gameplay.statgraph[p].exscore[i] = g->gameplay.player[p].totalnotes * i * 16 / 9000;
-				g->gameplay.statgraph[p].hp[i] = (100 * i) / 1000;
+				for (int gauge = 0; gauge < 6; gauge++) {
+					g->gameplay.statgraph[p].hp[gauge][i] = (100 * i) / 1000;
+				}
 				if (p == 0) {
 					g->gameplay.rategraph[0].val[i] = g->gameplay.statgraph[0].exscore[0] * 7 / 8;
 					g->gameplay.rategraph[1].val[i] = g->gameplay.statgraph[0].exscore[0] * 6 / 8;

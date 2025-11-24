@@ -144,19 +144,19 @@ bool GetOptionFlag_dst(game *gs, int option) {
 			break;
 
 		case 42:
-			if (gs->config.play.gaugeOption[0] != 0 && gs->config.play.gaugeOption[0] != 3) return !ret;
+			if (gs->gameplay.player[0].gaugeType != 0 && gs->gameplay.player[0].gaugeType != 3) return !ret;
 			if (gs->gameplay.isCourse == 0) return ret;
 			break;
 		case 43:
-			if (gs->config.play.gaugeOption[0] != 0 && gs->config.play.gaugeOption[0] != 3) return ret;
+			if (gs->gameplay.player[0].gaugeType != 0 && gs->gameplay.player[0].gaugeType != 3) return ret;
 			if (gs->gameplay.isCourse == 0) return !ret;
 			return ret;
 		case 44:
-			if (gs->config.play.gaugeOption[1] != 0 && gs->config.play.gaugeOption[1] != 3) return !ret;
+			if (gs->gameplay.player[1].gaugeType != 0 && gs->gameplay.player[1].gaugeType != 3) return !ret;
 			if (gs->gameplay.isCourse == 0) return ret;
 			break;
 		case 45:
-			if (gs->config.play.gaugeOption[1] != 0 && gs->config.play.gaugeOption[1] != 3) return ret;
+			if (gs->gameplay.player[1].gaugeType != 0 && gs->gameplay.player[1].gaugeType != 3) return ret;
 			if (gs->gameplay.isCourse == 0) return !ret;
 			return ret;
 
@@ -785,47 +785,47 @@ bool GetOptionFlag_dst(game *gs, int option) {
 			return ret;
 
 		case 230:
-			if (gs->gameplay.player[0].HP < 0.0) return !ret;
-			if (gs->gameplay.player[0].HP < 10.0) return ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 0.0) return !ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 10.0) return ret;
 			break;
 		case 231:
-			if (gs->gameplay.player[0].HP < 10.0) return !ret;
-			if (gs->gameplay.player[0].HP < 20.0) return ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 10.0) return !ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 20.0) return ret;
 			break;
 		case 232:
-			if (gs->gameplay.player[0].HP < 20.0) return !ret;
-			if (gs->gameplay.player[0].HP < 30.0) return ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 20.0) return !ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 30.0) return ret;
 			break;
 		case 233:
-			if (gs->gameplay.player[0].HP < 30.0) return !ret;
-			if (gs->gameplay.player[0].HP < 40.0) return ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 30.0) return !ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 40.0) return ret;
 			break;
 		case 234:
-			if (gs->gameplay.player[0].HP < 40.0) return !ret;
-			if (gs->gameplay.player[0].HP < 50.0) return ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 40.0) return !ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 50.0) return ret;
 			break;
 		case 235:
-			if (gs->gameplay.player[0].HP < 50.0) return !ret;
-			if (gs->gameplay.player[0].HP < 60.0) return ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 50.0) return !ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 60.0) return ret;
 			break;
 		case 236:
-			if (gs->gameplay.player[0].HP < 60.0) return !ret;
-			if (gs->gameplay.player[0].HP < 70.0) return ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 60.0) return !ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 70.0) return ret;
 			break;
 		case 237:
-			if (gs->gameplay.player[0].HP < 70.0) return !ret;
-			if (gs->gameplay.player[0].HP < 80.0) return ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 70.0) return !ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 80.0) return ret;
 			break;
 		case 238:
-			if (gs->gameplay.player[0].HP < 80.0) return !ret;
-			if (gs->gameplay.player[0].HP < 90.0) return ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 80.0) return !ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 90.0) return ret;
 			break;
 		case 239:
-			if (gs->gameplay.player[0].HP < 90.0) return !ret;
-			if (gs->gameplay.player[0].HP < 100.0) return ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 90.0) return !ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] < 100.0) return ret;
 			break;
 		case 240:
-			if (gs->gameplay.player[0].HP >= 100.0) return ret;
+			if (gs->gameplay.player[0].HP[gs->gameplay.player[0].gaugeType] >= 100.0) return ret;
 			break;
 		case 241:
 			if (gs->gameplay.player[0].judge_draw == 5) return ret;
@@ -853,47 +853,47 @@ bool GetOptionFlag_dst(game *gs, int option) {
 			break;
 
 		case 250:
-			if (gs->gameplay.player[1].HP < 0.0) return !ret;
-			if (gs->gameplay.player[1].HP < 10.0) return ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 0.0) return !ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 10.0) return ret;
 			break;
 		case 251:
-			if (gs->gameplay.player[1].HP < 10.0) return !ret;
-			if (gs->gameplay.player[1].HP < 20.0) return ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 10.0) return !ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 20.0) return ret;
 			break;
 		case 252:
-			if (gs->gameplay.player[1].HP < 20.0) return !ret;
-			if (gs->gameplay.player[1].HP < 30.0) return ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 20.0) return !ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 30.0) return ret;
 			break;
 		case 253:
-			if (gs->gameplay.player[1].HP < 30.0) return !ret;
-			if (gs->gameplay.player[1].HP < 40.0) return ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 30.0) return !ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 40.0) return ret;
 			break;
 		case 254:
-			if (gs->gameplay.player[1].HP < 40.0) return !ret;
-			if (gs->gameplay.player[1].HP < 50.0) return ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 40.0) return !ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 50.0) return ret;
 			break;
 		case 255:
-			if (gs->gameplay.player[1].HP < 50.0) return !ret;
-			if (gs->gameplay.player[1].HP < 60.0) return ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 50.0) return !ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 60.0) return ret;
 			break;
 		case 256:
-			if (gs->gameplay.player[1].HP < 60.0) return !ret;
-			if (gs->gameplay.player[1].HP < 70.0) return ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 60.0) return !ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 70.0) return ret;
 			break;
 		case 257:
-			if (gs->gameplay.player[1].HP < 70.0) return !ret;
-			if (gs->gameplay.player[1].HP < 80.0) return ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 70.0) return !ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 80.0) return ret;
 			break;
 		case 258:
-			if (gs->gameplay.player[1].HP < 80.0) return !ret;
-			if (gs->gameplay.player[1].HP < 90.0) return ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 80.0) return !ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 90.0) return ret;
 			break;
 		case 259:
-			if (gs->gameplay.player[1].HP < 90.0) return !ret;
-			if (gs->gameplay.player[1].HP < 100.0) return ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 90.0) return !ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] < 100.0) return ret;
 			break;
 		case 260:
-			if (gs->gameplay.player[1].HP >= 100.0) return ret;
+			if (gs->gameplay.player[1].HP[gs->gameplay.player[1].gaugeType] >= 100.0) return ret;
 			break;
 		case 261:
 			if (gs->gameplay.player[1].judge_draw == 5) return ret;
@@ -3228,7 +3228,9 @@ int SetObjectValue_Button(game *g, skstruct *sk, Timer *T, char flag) {
 
 			//Option Play
 			case 40:
-				isClickSuccess = ButtonByInput(&sk->drBuf, &sk->otherObject[1].src[i], &sk->otherObject[1].dst[i], T, &g->KeyInput, &g->config.play.gaugeOption[0], 0, 5, g->sSelect.panel);
+				isClickSuccess = g->procSelecter == 4 || g->procSelecter == 5 || g->procSelecter == 13 ?
+					ButtonByInput(&sk->drBuf, &sk->otherObject[1].src[i], &sk->otherObject[1].dst[i], T, &g->KeyInput, &g->gameplay.player[0].gaugeType, 0, 5, g->sSelect.panel) :
+					ButtonByInput(&sk->drBuf, &sk->otherObject[1].src[i], &sk->otherObject[1].dst[i], T, &g->KeyInput, &g->config.play.gaugeOption[0], 0, 5, g->sSelect.panel);
 				if (isClickSuccess == 2) {
 					PlaySound(&g->audio, &g->audio.sysSound.option_change, g->audio.chnKey, -1);
 					SetObjectStrings_SongSelect(g);
@@ -3237,7 +3239,9 @@ int SetObjectValue_Button(game *g, skstruct *sk, Timer *T, char flag) {
 
 			case 41:
 				if (g->config.play.battle == 1) {
-					isClickSuccess = ButtonByInput(&sk->drBuf, &sk->otherObject[1].src[i], &sk->otherObject[1].dst[i], T, &g->KeyInput, &g->config.play.gaugeOption[1], 0, 5, g->sSelect.panel);
+					isClickSuccess = g->procSelecter == 4 || g->procSelecter == 5 || g->procSelecter == 13 ?
+						ButtonByInput(&sk->drBuf, &sk->otherObject[1].src[i], &sk->otherObject[1].dst[i], T, &g->KeyInput, &g->gameplay.player[0].gaugeType, 0, 5, g->sSelect.panel) :
+						ButtonByInput(&sk->drBuf, &sk->otherObject[1].src[i], &sk->otherObject[1].dst[i], T, &g->KeyInput, &g->config.play.gaugeOption[0], 0, 5, g->sSelect.panel);
 					if (isClickSuccess == 2) {
 						PlaySound(&g->audio, &g->audio.sysSound.option_change, g->audio.chnKey, -1);
 						SetObjectStrings_SongSelect(g);

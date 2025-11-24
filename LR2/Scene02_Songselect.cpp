@@ -109,7 +109,7 @@ int Print_ManiacOptions(game *g) {
 	printfDx("変態オプションの仮置き場です。\n");
 	printfDx("トライアル改訂の際はこの手のオプションを多数取り入れる予定です。\n");
 	printfDx("これらのオプションは、基本的にリプレイに反映されません。\n");
-	printfDx("カーソルキーで選択・変更ができます。\n%03d/%03d\n\n\n",g->sSelect.maniac_cursor + 1, 21);
+	printfDx("カーソルキーで選択・変更ができます。\n%03d/%03d\n\n\n",g->sSelect.maniac_cursor + 1, 22);
 
 	int pg_cursor = g->sSelect.maniac_cursor / 10 * 10;
 	int pg_max = pg_cursor + 10;
@@ -423,6 +423,16 @@ int Print_ManiacOptions(game *g) {
 					if (g->KeyInput.inputID[KEY_INPUT_RIGHT] == 1) g->config.play.m_lunaris = g->config.play.m_lunaris == 0;
 				}
 				break;
+			case 21:
+				printfDx("GAUGE AUTO SHIFT    ");
+				if (g->config.play.m_gas == 0) printfDx("OFF");
+				if (g->config.play.m_gas == 1) printfDx("ON");
+
+				if (g->sSelect.maniac_cursor == 21) {
+					if (g->KeyInput.inputID[KEY_INPUT_LEFT] == 1) g->config.play.m_gas = g->config.play.m_gas == 0;
+					if (g->KeyInput.inputID[KEY_INPUT_RIGHT] == 1) g->config.play.m_gas = g->config.play.m_gas == 0;
+				}
+				break;
 			default:
 				break;
 		}
@@ -523,14 +533,19 @@ int Print_ManiacOptions(game *g) {
 	case 20:
 		printfDx("2008年エイプリルフールネタのテト○ス風ミニゲームをプレイできます。\n");
 		break;
+	case 21:
+		printfDx("GAS automatically changes the gauge to the easier one during gameplay.\n");
+		printfDx("Will not shift to the gauge harder than originally selected (Start with easy -> groove).\n");
+		printfDx("If enabled, will save the score with the best survived gauge regardless of what's displayed.\n");
+		break;
 	}
 
 	if (g->KeyInput.inputID[KEY_INPUT_UP] == 1) {
-		LoopInRange(0, 20, -1, &g->sSelect.maniac_cursor);
+		LoopInRange(0, 21, -1, &g->sSelect.maniac_cursor);
 	}
 
 	if (g->KeyInput.inputID[KEY_INPUT_DOWN] == 1) {
-		LoopInRange(0, 20, 1, &g->sSelect.maniac_cursor);
+		LoopInRange(0, 21, 1, &g->sSelect.maniac_cursor);
 	}
 
 	return 1;

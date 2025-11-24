@@ -32,7 +32,7 @@ int CheckClearLampChallenge(game *g){ //TOFIX : p2_assist == 1 but no battle, do
 		&& g->config.play.autokey == 0 && (g->config.play.unknown_1 == 0 || g->sSelect.metaSelected.keymode < 10) 
 		&& g->config.play.p1_assist == 0 && (g->config.play.p2_assist == 0 || g->sSelect.metaSelected.keymode < 10)) {
 
-		gauge = g->config.play.gaugeOption[0];
+		gauge = g->gameplay.player[0].gaugeType;
 		if (gauge == 1) return 3;
 		else if (gauge == 2) return 4;
 		else if (gauge == 3) return 1;
@@ -47,6 +47,7 @@ int CheckClearLampChallenge(game *g){ //TOFIX : p2_assist == 1 but no battle, do
 uint ConvertOptionHistory(game *g){
 
 	int clear;
+	int gauge;
 	uint ret;
 
 	ret = 0;
@@ -57,15 +58,16 @@ uint ConvertOptionHistory(game *g){
 	}
 	else {
 		clear = g->gameplay.player[0].clearType;
+		gauge = g->gameplay.player[0].gaugeType;
 		if (clear == 2) {
-			if (g->config.play.gaugeOption[0] == 3) {
+			if (gauge == 3) {
 				ret = 8;
 			}
 			return ret;
 		}
 		if (clear > 2) {
 			ret = 0;
-			switch (g->config.play.gaugeOption[0]) {
+			switch (gauge) {
 				case 0:
 					ret = 1;
 					break;
@@ -140,13 +142,14 @@ uint ConvertOptionHistory(game *g){
 
 //405bf0 
 int LogGraphPlayData(GRAPHDATA *grp, PLAYERSTATUS *pstat, int time, int endtime){
-
 	if (grp->cursor < 1000 && time <= endtime && 0 < endtime) {
 		do {
 			if ((time * 1000) / endtime < grp->cursor) {
 				return 1;
 			}
-			grp->hp[grp->cursor] = pstat->HP;
+			for (int i = 0; i < 6; i++) {
+				grp->hp[i][grp->cursor] = pstat->HP[i];
+			}
 			grp->combo[grp->cursor] = pstat->now_combo;
 			grp->exscore[grp->cursor] = pstat->exscore;
 			grp->cursor++;
@@ -180,7 +183,9 @@ int LogGraphPlayerDataToEnd(GRAPHDATA *grp, PLAYERSTATUS *pstat){
 
 	if (grp->cursor >= 1) {
 		for (int i = grp->cursor; i < 1000; i++) {
-			grp->hp[i] = pstat->HP;
+			for (int gauge = 0; gauge < 6; gauge++) {
+				grp->hp[gauge][i] = pstat->HP[gauge];
+			}
 			grp->combo[i] = pstat->now_combo;
 			grp->exscore[i] = pstat->exscore;
 		}
@@ -188,7 +193,9 @@ int LogGraphPlayerDataToEnd(GRAPHDATA *grp, PLAYERSTATUS *pstat){
 	}
 	else {
 		for (int i = grp->cursor; i < 1000; i++) {
-			grp->hp[i] = grp->hp[0];
+			for (int gauge = 0; gauge < 6; gauge++) {
+				grp->hp[gauge][i] = grp->hp[gauge][0];
+			}
 			grp->combo[i] = grp->combo[0];
 			grp->exscore[i] = grp->exscore[0];
 		}
@@ -206,7 +213,7 @@ int CheckClear(PLAYERSTATUS *pstat, int gaugeType, char isCourse){
 		return pstat->clearType;
 	}
 	if (gaugeType == 1 || gaugeType == 5 || gaugeType == 4) {
-		if ( pstat->note_current == pstat->totalnotes && pstat->HP >= 2.0) {
+		if ( pstat->note_current == pstat->totalnotes && pstat->HP[gaugeType] >= 2.0) {
 			pstat->clearType = 4;
 		}
 	}
@@ -214,12 +221,12 @@ int CheckClear(PLAYERSTATUS *pstat, int gaugeType, char isCourse){
 		if (isCourse) {
 			if (pstat->note_current != pstat->totalnotes)
 				return pstat->clearType;
-			if (pstat->HP >= 2.0) {
+			if (pstat->HP[gaugeType] >= 2.0) {
 				pstat->clearType = (gaugeType != 3) + 2;
 				return pstat->clearType;
 			}
 		}
-		if (pstat->note_current == pstat->totalnotes && pstat->HP >= 80.0) {
+		if (pstat->note_current == pstat->totalnotes && pstat->HP[gaugeType] >= 80.0) {
 			pstat->clearType = (gaugeType != 3) + 2;
 			return pstat->clearType;
 		}
@@ -259,6 +266,7 @@ int CheckCourseClear(game *g) {
 		}
 	}
 
+	std::array<int, 2> gauge = { g->gameplay.player[0].gaugeType, g->gameplay.player[1].gaugeType };
 	for (int p = 0; p < 2; p++) {
 		memcpy(g->gameplay.player[p].judgecount, g->gameplay.player[p].judgecount2, sizeof(int) * 6);
 		g->gameplay.player[p].exscore = g->gameplay.player[p].judgecount[4] + g->gameplay.player[p].judgecount[5] * 2;
@@ -268,19 +276,19 @@ int CheckCourseClear(game *g) {
 		
 		g->gameplay.player[p].clearType = 1;
 
-		if (g->gameplay.player[p].HP < 2.0 || g->gameplay.courseStageNow < g->gameplay.courseStageCount - 1) {
+		if (g->gameplay.player[p].HP[gauge[p]] < 2.0 || g->gameplay.courseStageNow < g->gameplay.courseStageCount - 1) {
 			g->gameplay.player[p].clearType = 1;
 		}
 		else if (g->gameplay.player[p].total_note == g->gameplay.player[p].max_combo_course) {
 			g->gameplay.player[p].clearType = 5;
 		}
-		else if (g->config.play.gaugeOption[p] == 1 || g->config.play.gaugeOption[p] == 5 || g->config.play.gaugeOption[p] == 4) {
-			if (g->gameplay.player[p].note_current2 == g->gameplay.player[p].total_note && g->gameplay.player[p].HP > 2.0) {
+		else if (gauge[p] == 1 || gauge[p] == 5 || gauge[p] == 4) {
+			if (g->gameplay.player[p].note_current2 == g->gameplay.player[p].total_note && g->gameplay.player[p].HP[gauge[p]] > 2.0) {
 				g->gameplay.player[p].clearType = 4;
 			}
 		}
-		else if (g->gameplay.player[p].note_current2 == g->gameplay.player[p].total_note && g->gameplay.player[p].HP > 2.0) {
-			g->gameplay.player[p].clearType = (g->config.play.gaugeOption[p] != 3) + 2;
+		else if (g->gameplay.player[p].note_current2 == g->gameplay.player[p].total_note && g->gameplay.player[p].HP[gauge[p]] > 2.0) {
+			g->gameplay.player[p].clearType = (gauge[p] != 3) + 2;
 		}
 	}
 
@@ -300,10 +308,11 @@ int CheckMission(game *g){
 	if (g->config.play.p1_assist == 2) 
 		return 0;
 
-	gauge = g->config.play.gaugeOption[0];
-	if (g->config.play.gaugeOption[0] == 3) 
+	gauge = g->gameplay.player[0].gaugeType;
+
+	if (g->gameplay.player[0].gaugeType == 3)
 		return 0;
-	if (g->config.play.gaugeOption[1] == 3) 
+	if (g->gameplay.player[1].gaugeType == 3)
 		return 0;
 
 	//converge 7 14 25 35 40
@@ -334,7 +343,7 @@ int CheckMission(game *g){
 			}
 			break;
 		case 4:
-			if (gauge == 0 && 80.0 <= g->gameplay.player[0].HP && g->gameplay.player[0].HP < 86.0) {
+			if (gauge == 0 && 80.0 <= g->gameplay.player[0].HP[gauge] && g->gameplay.player[0].HP[gauge] < 86.0) {
 				g->gameplay.playerstat.trial = level + 1;
 			}
 			break;
@@ -441,12 +450,12 @@ int CheckMission(game *g){
 			}
 			break;
 		case 20:
-			if (gauge == 0 && g->gameplay.player[0].HP >= 80.0 && g->gameplay.player[0].HP < 82.0) {
+			if (gauge == 0 && g->gameplay.player[0].HP[gauge] >= 80.0 && g->gameplay.player[0].HP[gauge] < 82.0) {
 				g->gameplay.playerstat.trial = level + 1;
 			}
 			break;
 		case 21:
-			if (gauge == 1 && g->gameplay.player[0].HP < 4.0) {
+			if (gauge == 1 && g->gameplay.player[0].HP[gauge] < 4.0) {
 				g->gameplay.playerstat.trial = level + 1;
 			}
 			break;
@@ -590,7 +599,7 @@ int SaveResult(game *g, sqlite3* sql) {
 
 	if (g->gameplay.isAutoplay) return -1;
 
-	CheckClear(&g->gameplay.player[0], g->config.play.gaugeOption[0], g->gameplay.isCourse);
+	CheckClear(&g->gameplay.player[0], g->gameplay.player[0].gaugeType, g->gameplay.isCourse);
 	if (g->gameplay.courseType == 0 || g->gameplay.courseType == 2) {
 		ErrorLogFmtAdd("エキスパ用のスコア保存処理を行います\n");
 		if (CheckScoreSaveConditon(g) == 0) return -1;
@@ -642,10 +651,10 @@ int SaveResult(game *g, sqlite3* sql) {
 			bms.mybest.rseed = g->gameplay.randomseed;
 
 			if (bms.keymode < 10) {
-				bms.mybest.op_best = g->config.play.gaugeOption[0] + g->config.play.random[0] * 10;
+				bms.mybest.op_best = g->gameplay.player[0].gaugeType + g->config.play.random[0] * 10;
 			}
 			else {
-				bms.mybest.op_best = g->config.play.gaugeOption[0] + g->config.play.random[0] * 10 + g->config.play.random[1] * 100 + g->config.play.dpflip * 1000;
+				bms.mybest.op_best = g->gameplay.player[0].gaugeType + g->config.play.random[0] * 10 + g->config.play.random[1] * 100 + g->config.play.dpflip * 1000;
 			}
 
 			isNewRecord = true;
@@ -748,7 +757,7 @@ int SaveResult(game *g, sqlite3* sql) {
 		ErrorLogFmtAdd("通常のスコア保存処理を行います\n");
 		
 		if (g->config.play.battle == 1) {
-			CheckClear(&g->gameplay.player[1], g->config.play.gaugeOption[1], g->gameplay.isCourse);
+			CheckClear(&g->gameplay.player[1], g->gameplay.player[1].gaugeType, g->gameplay.isCourse);
 		}
 		else {
 			g->gameplay.player[1].clearType = g->gameplay.player[0].clearType;
@@ -967,10 +976,10 @@ int SaveResult(game *g, sqlite3* sql) {
 					g->sSelect.bmsList[g->sSelect.cur_song].mybest.rseed = g->gameplay.randomseed;
 
 					if (g->sSelect.bmsList[g->sSelect.cur_song].keymode < 10) {
-						g->sSelect.bmsList[g->sSelect.cur_song].mybest.op_best = g->config.play.gaugeOption[0] + g->config.play.random[0] * 10;
+						g->sSelect.bmsList[g->sSelect.cur_song].mybest.op_best = g->gameplay.player[0].gaugeType + g->config.play.random[0] * 10;
 					}
 					else {
-						g->sSelect.bmsList[g->sSelect.cur_song].mybest.op_best = g->config.play.gaugeOption[0] + g->config.play.random[0] * 10 + g->config.play.random[1] * 100 + g->config.play.dpflip * 1000;
+						g->sSelect.bmsList[g->sSelect.cur_song].mybest.op_best = g->gameplay.player[0].gaugeType + g->config.play.random[0] * 10 + g->config.play.random[1] * 100 + g->config.play.dpflip * 1000;
 					}
 
 					isNewRecord = true;

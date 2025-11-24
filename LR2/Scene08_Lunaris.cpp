@@ -517,36 +517,37 @@ int LUNARIS_JUDGE(game *g) {
 		LUNARIS_LAND();
 		int lineclear = LUNARIS_CHECKLINE();
 		int up = LUNARIS_GETBLOCKUP();
+		int gauge = g->config.play.gaugeOption[0];
 
 		g->gameplay.player[0].judgecount[1]++;
 
-		if (g->config.play.gaugeOption[0] == 0) {
-			g->gameplay.player[0].HP -= 1.5;
+		if (gauge == 0) {
+			g->gameplay.player[0].HP[gauge] -= 1.5;
 			g->gameplay.player[0].HP_print -= 1.5;
 			g->gameplay.player[0].HP_old -= 1.5;
-			if (g->gameplay.player[0].HP < 2.0) {
-				g->gameplay.player[0].HP = 2.0;
+			if (g->gameplay.player[0].HP[gauge] < 2.0) {
+				g->gameplay.player[0].HP[gauge] = 2.0;
 				g->gameplay.player[0].HP_print = 2.0;
 				g->gameplay.player[0].HP_old = 2.0;
 			}
 		}
-		else if (g->config.play.gaugeOption[0] == 3) {
-			g->gameplay.player[0].HP -= 1.0;
+		else if (gauge == 3) {
+			g->gameplay.player[0].HP[gauge] -= 1.0;
 			g->gameplay.player[0].HP_print -= 1.0;
 			g->gameplay.player[0].HP_old -= 1.0;
-			if (g->gameplay.player[0].HP < 2.0) {
-				g->gameplay.player[0].HP = 2.0;
+			if (g->gameplay.player[0].HP[gauge] < 2.0) {
+				g->gameplay.player[0].HP[gauge] = 2.0;
 				g->gameplay.player[0].HP_print = 2.0;
 				g->gameplay.player[0].HP_old = 2.0;
 			}
 		}
 		else {
-			g->gameplay.player[0].HP -= 5.0;
+			g->gameplay.player[0].HP[gauge] -= 5.0;
 			g->gameplay.player[0].HP_print -= 5.0;
 			g->gameplay.player[0].HP_old -= 5.0;
 		}
 
-		if (lun_field[7][1] || lun_y + up - 1 + lineclear < 0 || g->gameplay.player[0].HP < 0.0) {
+		if (lun_field[7][1] || lun_y + up - 1 + lineclear < 0 || g->gameplay.player[0].HP[gauge] < 0.0) {
 			SetTimeLapse(3, &g->timer1);
 			g->procPhase = 3;
 			StopAllKeysound(g);
@@ -563,9 +564,9 @@ int LUNARIS_JUDGE(game *g) {
 			g->gameplay.player[0].recent_judge = 2;
 			SetTimeLapse(46, &g->timer1);
 
-			g->gameplay.player[0].HP += 4.0;
-			if (g->config.play.gaugeOption[0] == 2 || g->config.play.gaugeOption[0] == 4) {
-				g->gameplay.player[0].HP = 0.0;
+			g->gameplay.player[0].HP[gauge] += 4.0;
+			if (gauge == 2 || gauge == 4) {
+				g->gameplay.player[0].HP[gauge] = 0.0;
 
 				SetTimeLapse(3, &g->timer1);
 				g->procPhase = 3;
@@ -583,9 +584,9 @@ int LUNARIS_JUDGE(game *g) {
 			g->gameplay.player[0].recent_judge = 3;
 			SetTimeLapse(46, &g->timer1);
 
-			g->gameplay.player[0].HP += 16.0;
-			if (g->config.play.gaugeOption[0] == 4) {
-				g->gameplay.player[0].HP = 0.0;
+			g->gameplay.player[0].HP[gauge] += 16.0;
+			if (gauge == 4) {
+				g->gameplay.player[0].HP[gauge] = 0.0;
 
 				SetTimeLapse(3, &g->timer1);
 				g->procPhase = 3;
@@ -603,7 +604,7 @@ int LUNARIS_JUDGE(game *g) {
 			g->gameplay.player[0].recent_judge = 4;
 			SetTimeLapse(46, &g->timer1);
 
-			g->gameplay.player[0].HP += 30.0;
+			g->gameplay.player[0].HP[gauge] += 30.0;
 			g->gameplay.player[0].score += 3000;
 		}
 		else if (lineclear == 4) {
@@ -615,11 +616,11 @@ int LUNARIS_JUDGE(game *g) {
 			g->gameplay.player[0].recent_judge = 5;
 			SetTimeLapse(46, &g->timer1);
 
-			g->gameplay.player[0].HP += 40.0;
+			g->gameplay.player[0].HP[gauge] += 40.0;
 			g->gameplay.player[0].score += 12000;
 		}
 
-		if (g->gameplay.player[0].HP > 100.0) g->gameplay.player[0].HP = 100.0;
+		if (g->gameplay.player[0].HP[gauge] > 100.0) g->gameplay.player[0].HP[gauge] = 100.0;
 	}
 	lun_judgetime = GetTimeWrap();
 	return 1;

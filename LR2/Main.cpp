@@ -1394,6 +1394,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 								ReleaseReplayBuffer(&gs.gameplay.replay);
 							}
 
+							if (gs.gameplay.courseType == 0 || gs.gameplay.courseType == 2) {
+								gs.gameplay.player[0].lastCourseGaugeType = gs.gameplay.player[0].gaugeType;
+								gs.gameplay.player[1].lastCourseGaugeType = gs.gameplay.player[1].gaugeType;
+							}
+
 							if (gs.gameplay.isAutoplay == 1 && (gs.gameplay.courseType == 0 || gs.gameplay.courseType == 2) && gs.gameplay.courseStageNow < gs.gameplay.courseStageCount -1  && gs.gameplay.flag_closingPhase == 0) {
 								gs.gameplay.courseStageNow++;
 								gs.procSelecter = 4;
@@ -1421,7 +1426,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							}
 							StopSysSound(&gs);
 							if (gs.gameplay.courseType == 0 || gs.gameplay.courseType == 2) {
-								if (gs.gameplay.courseStageNow < gs.gameplay.courseStageCount -1 && gs.gameplay.player[0].clearType != 0 && (gs.gameplay.player[1].clearType != 0 || gs.config.play.battle != 1) && gs.gameplay.player[0].HP >= 2.0) {
+								gs.gameplay.player[0].gaugeType = gs.gameplay.player[0].lastCourseGaugeType;
+								gs.gameplay.player[1].gaugeType = gs.gameplay.player[1].lastCourseGaugeType;
+								if (gs.gameplay.courseStageNow < gs.gameplay.courseStageCount -1 && gs.gameplay.player[0].clearType != 0 && (gs.gameplay.player[1].clearType != 0 || gs.config.play.battle != 1) && gs.gameplay.player[0].HP[gs.gameplay.player[0].gaugeType] >= 2.0) {
 									gs.gameplay.courseStageNow++;
 									gs.procSelecter = 4;
 								}

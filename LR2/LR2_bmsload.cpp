@@ -252,15 +252,22 @@ int InitGameplay(gameplay *gp, CONFIG_PLAY *cfg) {
 		int prevCombodraw = gp->player[p].combo_draw;
 		int prevTotalnote = gp->player[p].total_note;
 		int prevNotecurrent = gp->player[p].note_current2;
-		double prevHP = gp->player[p].HP;
+		int prevGaugeType = gp->player[p].gaugeType;
+		int prevLastCourseGaugeType = gp->player[p].lastCourseGaugeType;
+		auto prevHP = gp->player[p].HP;
+		double prevHP_print = gp->player[p].HP[prevGaugeType];
 		EXTENDEDPLAYERSTATS extendedStatsCourse = gp->player[p].extendedStatsCourse;
 		std::array<EXTENDEDPLAYERSTATS, 20> extendedColumnStatsCourse = gp->player[p].extendedColumnStatsCourse;
 
 		gp->player[p] = PLAYERSTATUS();
+		gp->player[p].gaugeType = cfg->gaugeOption[p];
+		gp->statgraph[p] = GRAPHDATA();
 
 		if (gp->courseStageNow > 0) {
+			gp->player[p].gaugeType = prevGaugeType;
+			gp->player[p].lastCourseGaugeType = prevLastCourseGaugeType;
 			gp->player[p].HP = prevHP;
-			gp->player[p].HP_print = prevHP;
+			gp->player[p].HP_print = prevHP_print;
 			gp->player[p].now_combo_course = prevNowcombo;
 			gp->player[p].max_combo_course = prevMaxcombo;
 			gp->player[p].combo_draw = prevCombodraw;
@@ -271,25 +278,28 @@ int InitGameplay(gameplay *gp, CONFIG_PLAY *cfg) {
 			gp->player[p].extendedColumnStatsCourse = extendedColumnStatsCourse;
 		}
 	}
-
 	gp->player[0].flag_active = 1;
 	gp->player[1].flag_active = 0;
-	memset(&gp->statgraph[0], 0, sizeof(GRAPHDATA));
-	memset(&gp->statgraph[1], 0, sizeof(GRAPHDATA));
 
 	for (int p = 0; p < 2; p++) {
 		if (gp->courseStageNow < 1) {
-			if (gp->isCourse == 0 && (cfg->gaugeOption[p] == 0 || cfg->gaugeOption[p] == 3)) {
-				gp->player[p].HP = 20.0;
-				gp->player[p].HP_old = 20.0;
-				gp->player[p].HP_print = 20.0;
+			if (gp->isCourse == 0) {
+				gp->player[p].HP[0] = 20.;
+				gp->player[p].HP[3] = 20.;
 			}
 			else {
-				gp->player[p].HP = 100.0;
-				gp->player[p].HP_old = 100.0;
-				gp->player[p].HP_print = 100.0;
+				gp->player[p].HP[0] = 100.;
+				gp->player[p].HP[3] = 100.;
 			}
-			gp->statgraph[p].hp[0] = gp->player[p].HP;
+			gp->player[p].HP[1] = 100.;
+			gp->player[p].HP[2] = 100.;
+			gp->player[p].HP[4] = 100.;
+			gp->player[p].HP[5] = 100.;
+			gp->player[p].HP_old = gp->player[p].HP[gp->player[p].gaugeType];
+			gp->player[p].HP_print = gp->player[p].HP[gp->player[p].gaugeType];
+			for (int i = 0; i < 6; i++) {
+				gp->statgraph[p].hp[i][0] = gp->player[p].HP[i];
+			}
 		}
 	}
 	for (int i = 0; i < 6480; i++) {
@@ -626,47 +636,39 @@ int InitGameplay_retry(gameplay *gp, AUDIO *snd, game *g) {
 	gp->delayDetectedCount = 0;
 	gp->delayCheckCount = 0;
 
-	double tempDmg[6];
-	int tempTime[6], tempCount;
-	tempCount = gp->player[0].totalnotes;
-	memcpy(tempDmg, &gp->player[0].judge_damage, sizeof(tempDmg));
-	memcpy(tempTime, &gp->player[0].judgetime, sizeof(tempTime));
-	gp->player[0] = PLAYERSTATUS();
-	memcpy(&gp->player[0].judge_damage, tempDmg, sizeof(tempDmg));
-	memcpy(&gp->player[0].judgetime, tempTime, sizeof(tempTime));
-	gp->player[0].totalnotes = tempCount;
-
-	tempCount = gp->player[1].totalnotes;
-	memcpy(tempDmg, &gp->player[1].judge_damage, sizeof(tempDmg));
-	memcpy(tempTime, &gp->player[1].judgetime, sizeof(tempTime));
-	gp->player[1] = PLAYERSTATUS();
-	memcpy(&gp->player[1].judge_damage, tempDmg, sizeof(tempDmg));
-	memcpy(&gp->player[1].judgetime, tempTime, sizeof(tempTime));
-	gp->player[1].totalnotes = tempCount;
-
-	memset(&gp->statgraph[0], 0, sizeof(GRAPHDATA));
-	memset(&gp->statgraph[1], 0, sizeof(GRAPHDATA));
-	
+	for (int p = 0; p < 2; p++) {
+		int tempTime[6], tempCount;
+		tempCount = gp->player[p].totalnotes;
+		auto tempDmg = gp->player[p].judge_damage;
+		memcpy(tempTime, &gp->player[p].judgetime, sizeof(tempTime));
+		gp->player[p] = PLAYERSTATUS();
+		gp->player[p].gaugeType = g->config.play.gaugeOption[p];
+		gp->player[p].judge_damage = tempDmg;
+		memcpy(&gp->player[p].judgetime, tempTime, sizeof(tempTime));
+		gp->player[p].totalnotes = tempCount;
+		gp->statgraph[p] = GRAPHDATA();
+	}
 	gp->player[0].flag_active = 1;
 	gp->player[1].flag_active = 0;
 
 	for (int p = 0; p < 2; p++) {
-		if (gp->isCourse) {
-			gp->player[p].HP = 100.0;
-			gp->player[p].HP_old = 100.0;
-			gp->player[p].HP_print = 100.0;
+		if (gp->isCourse == 0) {
+			gp->player[p].HP[0] = 20.;
+			gp->player[p].HP[3] = 20.;
 		}
-		else if (g->config.play.gaugeOption[p] == 0 || g->config.play.gaugeOption[p] == 3) {
-			gp->player[p].HP = 20.0;
-			gp->player[p].HP_old = 20.0;
-			gp->player[p].HP_print = 20.0;
+		else {
+			gp->player[p].HP[0] = 100.;
+			gp->player[p].HP[3] = 100.;
 		}
-		else{
-			gp->player[p].HP = 100.0;
-			gp->player[p].HP_old = 100.0;
-			gp->player[p].HP_print = 100.0;
+		gp->player[p].HP[1] = 100.;
+		gp->player[p].HP[2] = 100.;
+		gp->player[p].HP[4] = 100.;
+		gp->player[p].HP[5] = 100.;
+		gp->player[p].HP_old = gp->player[p].HP[gp->player[p].gaugeType];
+		gp->player[p].HP_print = gp->player[p].HP[gp->player[p].gaugeType];
+		for (int i = 0; i < 6; i++) {
+			gp->statgraph[p].hp[i][0] = gp->player[p].HP[i];
 		}
-		gp->statgraph->hp[p] = gp->player[p].HP;
 	}
 
 	for (int i = 0; i < 1296; i++) {
@@ -3764,152 +3766,133 @@ int ParseBmsFile(gameplay *gp, CSTR filename, AUDIO *aud, ConfigStruct* cfg, BMS
 			double dmg = max(dmg_notebase * 10, dmg_totalbase) / 10.0;
 
 			if (!gp->isCourse) {
-				switch (cfg->play.gaugeOption[p]) {
-				default:
-					gp->player[p].judge_damage[5] = total[p] / (float)notes;
-					gp->player[p].judge_damage[4] = total[p] / (float)notes;
-					gp->player[p].judge_damage[3] = total[p] / (float)(notes + notes);
-					gp->player[p].judge_damage[2] = -4.0;
-					gp->player[p].judge_damage[1] = -6.0;
-					gp->player[p].judge_damage[0] = -2.0;
-					break;
-				case 1:
-					gp->player[p].judge_damage[5] = 0.1;
-					gp->player[p].judge_damage[4] = 0.1;
-					gp->player[p].judge_damage[3] = 0.05;
-					gp->player[p].judge_damage[2] = dmg * (-6.0);
-					gp->player[p].judge_damage[1] = dmg * (-10.0);
-					gp->player[p].judge_damage[0] = dmg * (-2.0);
-					break;
-				case 2:
-					gp->player[p].judge_damage[5] = 0.0;
-					gp->player[p].judge_damage[4] = 0.0;
-					gp->player[p].judge_damage[3] = 0.0;
-					gp->player[p].judge_damage[2] = -100.0;
-					gp->player[p].judge_damage[1] = -100.0;
-					gp->player[p].judge_damage[0] = 0.0;
-					break;
-				case 3:
-					gp->player[p].judge_damage[5] = (total[p] / (float)notes) * 1.2;
-					gp->player[p].judge_damage[4] = (total[p] / (float)notes) * 1.2;
-					gp->player[p].judge_damage[3] = (total[p] / (float)(notes + notes)) * 1.2;
-					gp->player[p].judge_damage[2] = -3.2;
-					gp->player[p].judge_damage[1] = -4.800000000000001;
-					gp->player[p].judge_damage[0] = -1.6;
-					break;
-				case 4:
-					gp->player[p].judge_damage[5] = 0.1;
-					gp->player[p].judge_damage[4] = -1.0;
-					gp->player[p].judge_damage[3] = -100.0;
-					gp->player[p].judge_damage[2] = -100.0;
-					gp->player[p].judge_damage[1] = -100.0;
-					gp->player[p].judge_damage[0] = -100.0;
-					break;
-				case 5:
-					gp->player[p].judge_damage[5] = dmg * (-10.0);
-					gp->player[p].judge_damage[4] = -1.0;
-					gp->player[p].judge_damage[3] = 0.1;
-					gp->player[p].judge_damage[2] = -6.0;
-					gp->player[p].judge_damage[1] = dmg * (-10.0);
-					gp->player[p].judge_damage[0] = dmg * (-2.0);
-					break;
-				}
+				gp->player[p].judge_damage[0][5] = total[p] / (float)notes;
+				gp->player[p].judge_damage[0][4] = total[p] / (float)notes;
+				gp->player[p].judge_damage[0][3] = total[p] / (float)(notes + notes);
+				gp->player[p].judge_damage[0][2] = -4.0;
+				gp->player[p].judge_damage[0][1] = -6.0;
+				gp->player[p].judge_damage[0][0] = -2.0;
+
+				gp->player[p].judge_damage[1][5] = 0.1;
+				gp->player[p].judge_damage[1][4] = 0.1;
+				gp->player[p].judge_damage[1][3] = 0.05;
+				gp->player[p].judge_damage[1][2] = dmg * (-6.0);
+				gp->player[p].judge_damage[1][1] = dmg * (-10.0);
+				gp->player[p].judge_damage[1][0] = dmg * (-2.0);
+
+				gp->player[p].judge_damage[2][5] = 0.0;
+				gp->player[p].judge_damage[2][4] = 0.0;
+				gp->player[p].judge_damage[2][3] = 0.0;
+				gp->player[p].judge_damage[2][2] = -100.0;
+				gp->player[p].judge_damage[2][1] = -100.0;
+				gp->player[p].judge_damage[2][0] = 0.0;
+
+				gp->player[p].judge_damage[3][5] = (total[p] / (float)notes) * 1.2;
+				gp->player[p].judge_damage[3][4] = (total[p] / (float)notes) * 1.2;
+				gp->player[p].judge_damage[3][3] = (total[p] / (float)(notes + notes)) * 1.2;
+				gp->player[p].judge_damage[3][2] = -3.2;
+				gp->player[p].judge_damage[3][1] = -4.800000000000001;
+				gp->player[p].judge_damage[3][0] = -1.6;
+
+				gp->player[p].judge_damage[4][5] = 0.1;
+				gp->player[p].judge_damage[4][4] = -1.0;
+				gp->player[p].judge_damage[4][3] = -100.0;
+				gp->player[p].judge_damage[4][2] = -100.0;
+				gp->player[p].judge_damage[4][1] = -100.0;
+				gp->player[p].judge_damage[4][0] = -100.0;
+
+				gp->player[p].judge_damage[5][5] = dmg * (-10.0);
+				gp->player[p].judge_damage[5][4] = -1.0;
+				gp->player[p].judge_damage[5][3] = 0.1;
+				gp->player[p].judge_damage[5][2] = -6.0;
+				gp->player[p].judge_damage[5][1] = dmg * (-10.0);
+				gp->player[p].judge_damage[5][0] = dmg * (-2.0);
 			}
 			else if (gp->courseType == 2) {
-				switch (cfg->play.gaugeOption[p]) {
-				default:
-					gp->player[p].judge_damage[5] = 0.1;
-					gp->player[p].judge_damage[4] = 0.1;
-					gp->player[p].judge_damage[3] = 0.04;
-					gp->player[p].judge_damage[2] = -2.0;
-					gp->player[p].judge_damage[1] = -3.0;
-					gp->player[p].judge_damage[0] = -2.0;
-					break;
-				case 1:
-					gp->player[p].judge_damage[5] = 0.1;
-					gp->player[p].judge_damage[4] = 0.1;
-					gp->player[p].judge_damage[3] = 0.04;
-					gp->player[p].judge_damage[2] = dmg * (-6.0);
-					gp->player[p].judge_damage[1] = dmg * (-10.0);
-					gp->player[p].judge_damage[0] = dmg * (-2.0);
-					break;
-				case 2:
-					gp->player[p].judge_damage[5] = 0.0;
-					gp->player[p].judge_damage[4] = 0.0;
-					gp->player[p].judge_damage[3] = 0.0;
-					gp->player[p].judge_damage[2] = -100.0;
-					gp->player[p].judge_damage[1] = -100.0;
-					gp->player[p].judge_damage[0] = 0.0;
-					break;
-				case 4:
-					gp->player[p].judge_damage[5] = 0.1;
-					gp->player[p].judge_damage[4] = -1.0;
-					gp->player[p].judge_damage[3] = -100.0;
-					gp->player[p].judge_damage[2] = -100.0;
-					gp->player[p].judge_damage[1] = -100.0;
-					gp->player[p].judge_damage[0] = -100.0;
-					break;
-				case 5:
-					gp->player[p].judge_damage[5] = dmg * (-10.0);
-					gp->player[p].judge_damage[4] = -1.0;
-					gp->player[p].judge_damage[3] = 0.1;
-					gp->player[p].judge_damage[2] = -6.0;
-					gp->player[p].judge_damage[1] = dmg * (-10.0);
-					gp->player[p].judge_damage[0] = dmg * (-2.0);
-					break;
-				}
+				gp->player[p].judge_damage[0][5] = 0.1;
+				gp->player[p].judge_damage[0][4] = 0.1;
+				gp->player[p].judge_damage[0][3] = 0.04;
+				gp->player[p].judge_damage[0][2] = -2.0;
+				gp->player[p].judge_damage[0][1] = -3.0;
+				gp->player[p].judge_damage[0][0] = -2.0;
+
+				gp->player[p].judge_damage[1][5] = 0.1;
+				gp->player[p].judge_damage[1][4] = 0.1;
+				gp->player[p].judge_damage[1][3] = 0.04;
+				gp->player[p].judge_damage[1][2] = dmg * (-6.0);
+				gp->player[p].judge_damage[1][1] = dmg * (-10.0);
+				gp->player[p].judge_damage[1][0] = dmg * (-2.0);
+
+				gp->player[p].judge_damage[2][5] = 0.0;
+				gp->player[p].judge_damage[2][4] = 0.0;
+				gp->player[p].judge_damage[2][3] = 0.0;
+				gp->player[p].judge_damage[2][2] = -100.0;
+				gp->player[p].judge_damage[2][1] = -100.0;
+				gp->player[p].judge_damage[2][0] = 0.0;
+
+				gp->player[p].judge_damage[3][5] = 0.1;
+				gp->player[p].judge_damage[3][4] = 0.1;
+				gp->player[p].judge_damage[3][3] = 0.04;
+				gp->player[p].judge_damage[3][2] = -2.0;
+				gp->player[p].judge_damage[3][1] = -3.0;
+				gp->player[p].judge_damage[3][0] = -2.0;
+
+				gp->player[p].judge_damage[4][5] = 0.1;
+				gp->player[p].judge_damage[4][4] = -1.0;
+				gp->player[p].judge_damage[4][3] = -100.0;
+				gp->player[p].judge_damage[4][2] = -100.0;
+				gp->player[p].judge_damage[4][1] = -100.0;
+				gp->player[p].judge_damage[4][0] = -100.0;
+
+				gp->player[p].judge_damage[5][5] = dmg * (-10.0);
+				gp->player[p].judge_damage[5][4] = -1.0;
+				gp->player[p].judge_damage[5][3] = 0.1;
+				gp->player[p].judge_damage[5][2] = -6.0;
+				gp->player[p].judge_damage[5][1] = dmg * (-10.0);
+				gp->player[p].judge_damage[5][0] = dmg * (-2.0);
 			}
 			else {
-				switch (cfg->play.gaugeOption[p]) {
-				default:
-					gp->player[p].judge_damage[5] = 0.1;
-					gp->player[p].judge_damage[4] = 0.1;
-					gp->player[p].judge_damage[3] = 0.04;
-					gp->player[p].judge_damage[2] = -1.5;
-					gp->player[p].judge_damage[1] = -2.0;
-					gp->player[p].judge_damage[0] = -1.5;
-					break;
-				case 1:
-					gp->player[p].judge_damage[5] = 0.1;
-					gp->player[p].judge_damage[4] = 0.1;
-					gp->player[p].judge_damage[3] = 0.05;
-					gp->player[p].judge_damage[2] = dmg * (-6.0);
-					gp->player[p].judge_damage[1] = dmg * (-10.0);
-					gp->player[p].judge_damage[0] = dmg * (-2.0);
-					break;
-				case 2:
-					gp->player[p].judge_damage[5] = 0.0;
-					gp->player[p].judge_damage[4] = 0.0;
-					gp->player[p].judge_damage[3] = 0.0;
-					gp->player[p].judge_damage[2] = -100.0;
-					gp->player[p].judge_damage[1] = -100.0;
-					gp->player[p].judge_damage[0] = 0.0;
-					break;
-				case 3:
-					gp->player[p].judge_damage[5] = 0.12;
-					gp->player[p].judge_damage[4] = 0.12;
-					gp->player[p].judge_damage[3] = 0.048;
-					gp->player[p].judge_damage[2] = -1.2;
-					gp->player[p].judge_damage[1] = -1.6;
-					gp->player[p].judge_damage[0] = -1.2;
-					break;
-				case 4:
-					gp->player[p].judge_damage[5] = 0.1;
-					gp->player[p].judge_damage[4] = -1.0;
-					gp->player[p].judge_damage[3] = -100.0;
-					gp->player[p].judge_damage[2] = -100.0;
-					gp->player[p].judge_damage[1] = -100.0;
-					gp->player[p].judge_damage[0] = -100.0;
-					break;
-				case 5:
-					gp->player[p].judge_damage[5] = dmg * (-10.0);
-					gp->player[p].judge_damage[4] = -1.0;
-					gp->player[p].judge_damage[3] = 0.1;
-					gp->player[p].judge_damage[2] = -6.0;
-					gp->player[p].judge_damage[1] = dmg * (-10.0);
-					gp->player[p].judge_damage[0] = dmg * (-2.0);
-					break;
-				}
+				gp->player[p].judge_damage[0][5] = 0.1;
+				gp->player[p].judge_damage[0][4] = 0.1;
+				gp->player[p].judge_damage[0][3] = 0.04;
+				gp->player[p].judge_damage[0][2] = -1.5;
+				gp->player[p].judge_damage[0][1] = -2.0;
+				gp->player[p].judge_damage[0][0] = -1.5;
+
+				gp->player[p].judge_damage[1][5] = 0.1;
+				gp->player[p].judge_damage[1][4] = 0.1;
+				gp->player[p].judge_damage[1][3] = 0.05;
+				gp->player[p].judge_damage[1][2] = dmg * (-6.0);
+				gp->player[p].judge_damage[1][1] = dmg * (-10.0);
+				gp->player[p].judge_damage[1][0] = dmg * (-2.0);
+
+				gp->player[p].judge_damage[2][5] = 0.0;
+				gp->player[p].judge_damage[2][4] = 0.0;
+				gp->player[p].judge_damage[2][3] = 0.0;
+				gp->player[p].judge_damage[2][2] = -100.0;
+				gp->player[p].judge_damage[2][1] = -100.0;
+				gp->player[p].judge_damage[2][0] = 0.0;
+
+				gp->player[p].judge_damage[3][5] = 0.12;
+				gp->player[p].judge_damage[3][4] = 0.12;
+				gp->player[p].judge_damage[3][3] = 0.048;
+				gp->player[p].judge_damage[3][2] = -1.2;
+				gp->player[p].judge_damage[3][1] = -1.6;
+				gp->player[p].judge_damage[3][0] = -1.2;
+
+				gp->player[p].judge_damage[4][5] = 0.1;
+				gp->player[p].judge_damage[4][4] = -1.0;
+				gp->player[p].judge_damage[4][3] = -100.0;
+				gp->player[p].judge_damage[4][2] = -100.0;
+				gp->player[p].judge_damage[4][1] = -100.0;
+				gp->player[p].judge_damage[4][0] = -100.0;
+
+				gp->player[p].judge_damage[5][5] = dmg * (-10.0);
+				gp->player[p].judge_damage[5][4] = -1.0;
+				gp->player[p].judge_damage[5][3] = 0.1;
+				gp->player[p].judge_damage[5][2] = -6.0;
+				gp->player[p].judge_damage[5][1] = dmg * (-10.0);
+				gp->player[p].judge_damage[5][0] = dmg * (-2.0);
 			}
 		}
 	}

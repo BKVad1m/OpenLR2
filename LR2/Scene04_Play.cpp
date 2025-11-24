@@ -10,14 +10,39 @@
 #include "Engine.h"
 #include "LR2.h"
 
+static int PerformGAS(gameplay& gameplay, int playerIdx, CONFIG_PLAY& cfg) {
+	PLAYERSTATUS& player = gameplay.player[playerIdx];
+	if (playerIdx == 1 && gameplay.ghostBattle) return player.gaugeType;
+	if (cfg.gaugeOption[playerIdx] == 5) return 5;
+	constexpr std::array<int, 5> gaugeArr({ 4, 2, 1, 0, 3 });
+	unsigned int i = 0;
+	for (; i < gaugeArr.size(); i++)
+		if (gaugeArr[i] == cfg.gaugeOption[playerIdx])
+			break;
+	auto is_gauge_alive = [](int gaugeIdx, double hp) {
+		switch (gaugeIdx) {
+		case 0:
+		case 3:
+			return hp >= 80.;
+		default: return hp >= 2.;
+		}
+	};
+	for (; i < gaugeArr.size(); i++)
+		if (is_gauge_alive(gaugeArr[i], player.HP[gaugeArr[i]]))
+			return gaugeArr[i];
+	if (gameplay.courseType == 2) return 0;
+	return 3;
+}
+
 //405Fb0
-int ApplyJudgeNote(int judge, game *g, int player, int lane, Timer *T, char isReplay) {
+int ApplyJudgeNote(int judge, game *g, int _player, int lane, Timer *T, char isReplay) {
 
 	if (g->gameplay.replay.status == 2) return 0; //playing replay
 	if (g->gameplay.replay.status == 1 && isReplay == 0) { //recording replay, not playing replay??
-		AddReplayData(&g->gameplay.replay, GetTimeLapse(41, &g->timer1), player * 2 + (lane >= 10) + 210, judge);
+		AddReplayData(&g->gameplay.replay, GetTimeLapse(41, &g->timer1), _player * 2 + (lane >= 10) + 210, judge);
 	}
 
+	auto& player = g->gameplay.player[_player];
 	if (g->gameplay.isAutoplay == 0 && g->config.play.m_lunaris == 0 && g->gameplay.replay.status != 2) {
 
 		switch (judge) {
@@ -53,7 +78,7 @@ int ApplyJudgeNote(int judge, game *g, int player, int lane, Timer *T, char isRe
 	if (!(0 <= judge && judge <= 5)) return 0;
 
 	if (judge >= 1) {
-		if (player == 0) {
+		if (_player == 0) {
 			if(isReplay == 0) g->gameplay.p1Score.AddJudgeQueue(judge);
 			if (g->gameplay.ghostBattle == 0 && g->gameplay.isAutoplay == 0 && g->config.play.battle != 1) {
 				while (g->gameplay.highScore.DealJudgeFromQueue() == 0) {}
@@ -68,97 +93,103 @@ int ApplyJudgeNote(int judge, game *g, int player, int lane, Timer *T, char isRe
 			}
 
 		}
-		g->gameplay.player[player].note_current++ ;
-		g->gameplay.player[player].note_current2++ ;
-		if (g->gameplay.player[player].note_current == g->gameplay.player[player].totalnotes) SetTimeLapse(143 + player, T); //final note timer
+		player.note_current++ ;
+		player.note_current2++ ;
+		if (player.note_current == player.totalnotes) SetTimeLapse(143 + _player, T); //final note timer
 
 	}
 	else {
 		if (judge == 0) {
-			if (isReplay == 0 && player == 0) g->gameplay.p1Score.AddJudgeQueue(player); //0
+			if (isReplay == 0 && _player == 0) g->gameplay.p1Score.AddJudgeQueue(_player); //0
 		}
 	}
 
-	g->gameplay.player[player].recent_judge = judge;
+	player.recent_judge = judge;
 	if (judge < 3) {
-		if (g->gameplay.ghostBattle == 0 || player == 0) {
+		if (g->gameplay.ghostBattle == 0 || _player == 0) {
 			g->gameplay.lastMissTime = GetTimeWrap();
 		}
-		g->gameplay.misslayerTime[player]= GetTimeWrap();
+		g->gameplay.misslayerTime[_player]= GetTimeWrap();
 	}
 
 	if (judge == 0) {
-		g->gameplay.player[player].judgecount[1]++;
-		g->gameplay.player[player].judgecount2[1]++;
+		player.judgecount[1]++;
+		player.judgecount2[1]++;
 	}
 	else {
-		g->gameplay.player[player].judgecount[judge]++;
-		g->gameplay.player[player].judgecount2[judge]++;
+		player.judgecount[judge]++;
+		player.judgecount2[judge]++;
 	}
 
-	int hp = ((int)g->gameplay.player[player].HP / 2) * 2;
-	double damage;
-	if (hp <= 30 && (!(g->config.play.gaugeOption[player] == 0 || g->config.play.gaugeOption[player] == 3) || g->gameplay.isCourse != 0) && judge <= 2) {
-		damage = g->gameplay.player[player].judge_damage[judge] * 0.6;
-	}
-	else {
-		damage = g->gameplay.player[player].judge_damage[judge];
-	}
-	g->gameplay.player[player].HP += damage;
-
-	if (g->gameplay.isCourse == 0 && g->gameplay.player[player].HP <= 2.0 && (g->config.play.gaugeOption[player] == 0 || g->config.play.gaugeOption[player] == 3)) {
-		g->gameplay.player[player].HP = 2.0;
-	}
-
-	if (g->gameplay.player[player].HP >= 100.0) g->gameplay.player[player].HP = 100.0;
-	if (g->gameplay.player[player].HP < 0.0) g->gameplay.player[player].HP = 0.0;
-
-	int newhp = ((int)g->gameplay.player[player].HP / 2) * 2;
-	if (hp <= 0) {
-		g->gameplay.player[player].HP = 0; //prevents revive after death
-		newhp = 0;
-		ResetTimeLapse(44 + player, T);
-	}
-	else if (newhp != 100)
-		ResetTimeLapse(44 + player, T);
-
-	if (hp < newhp) {
-		if (newhp == 100) {
-			ResetTimeLapse(42 + player, T);
-			SetTimeLapse(44 + player, T);
+	int oldHp = ((int)player.HP[player.gaugeType] / 2) * 2;
+	for (int gauge = 0; gauge < 6; gauge++) {
+		int hp = ((int)player.HP[gauge] / 2) * 2;
+		double damage;
+		if (hp <= 30 && (!(gauge == 0 || gauge == 3) || g->gameplay.isCourse != 0) && judge <= 2) {
+			damage = player.judge_damage[gauge][judge] * 0.6;
 		}
 		else {
-			SetTimeLapse(42 + player, T);
+			damage = player.judge_damage[gauge][judge];
+		}
+		player.HP[gauge] += damage;
+
+		if (g->gameplay.isCourse == 0 && player.HP[gauge] <= 2.0 && (gauge == 0 || gauge == 3)) {
+			player.HP[gauge] = 2.0;
+		}
+
+		if (player.HP[gauge] >= 100.0) player.HP[gauge] = 100.0;
+		if (player.HP[gauge] < 0.0) player.HP[gauge] = 0.0;
+
+		if (hp <= 0) player.HP[gauge] = 0; //prevents revive after death
+	}
+	if (g->config.play.m_gas)
+		player.gaugeType = PerformGAS(g->gameplay, _player, g->config.play);
+
+	int newHp = ((int)player.HP[player.gaugeType] / 2) * 2;
+	if (oldHp <= 0) {
+		newHp = 0;
+		ResetTimeLapse(44 + _player, T);
+	}
+	else if (newHp != 100)
+		ResetTimeLapse(44 + _player, T);
+
+	if (oldHp < newHp) {
+		if (newHp == 100) {
+			ResetTimeLapse(42 + _player, T);
+			SetTimeLapse(44 + _player, T);
+		}
+		else {
+			SetTimeLapse(42 + _player, T);
 		}
 	}
 
-	if (g->gameplay.player[player].totalnotes > 0) {
-		g->gameplay.player[player].score = (g->gameplay.player[player].judgecount[3] + (g->gameplay.player[player].judgecount[4] + g->gameplay.player[player].judgecount[5] * 2) * 2) * 50000 / g->gameplay.player[player].totalnotes;
+	if (player.totalnotes > 0) {
+		player.score = (player.judgecount[3] + (player.judgecount[4] + player.judgecount[5] * 2) * 2) * 50000 / player.totalnotes;
 	}
-	g->gameplay.player[player].exscore = g->gameplay.player[player].judgecount[4] + g->gameplay.player[player].judgecount[5] * 2;
+	player.exscore = player.judgecount[4] + player.judgecount[5] * 2;
 
-	if (g->gameplay.player[player].note_current > 0) g->gameplay.player[player].rate = g->gameplay.player[player].exscore * 100 / (double)(g->gameplay.player[player].note_current * 2);
+	if (player.note_current > 0) player.rate = player.exscore * 100 / (double)(player.note_current * 2);
 
 	switch (judge) {
 		case 1:
 		case 2:
-			g->gameplay.player[player].now_combo = 0;
-			g->gameplay.player[player].now_combo_course = 0;
+			player.now_combo = 0;
+			player.now_combo_course = 0;
 			break;
 		case 3:
 		case 4:
 		case 5:
-			g->gameplay.player[player].now_combo++;
-			if (g->gameplay.player[player].now_combo > g->gameplay.player[player].max_combo) g->gameplay.player[player].max_combo = g->gameplay.player[player].now_combo;
-			g->gameplay.player[player].now_combo_course++;
-			if (g->gameplay.player[player].now_combo_course > g->gameplay.player[player].max_combo_course) g->gameplay.player[player].max_combo_course = g->gameplay.player[player].now_combo_course;
+			player.now_combo++;
+			if (player.now_combo > player.max_combo) player.max_combo = player.now_combo;
+			player.now_combo_course++;
+			if (player.now_combo_course > player.max_combo_course) player.max_combo_course = player.now_combo_course;
 			break;
 	}
 
-	if (g->gameplay.player[player].now_combo == g->gameplay.player[player].totalnotes) SetTimeLapse(48 + player, T); //fullcombo timer
+	if (player.now_combo == player.totalnotes) SetTimeLapse(48 + _player, T); //fullcombo timer
 
 	if (lane >= 10) {
-		if (player == 0) {
+		if (_player == 0) {
 			g->gameplay.player[1].judge_draw = g->gameplay.player[0].recent_judge;
 			g->gameplay.player[1].combo_song_draw = g->gameplay.player[0].now_combo;
 			g->gameplay.player[1].combo_draw = g->gameplay.player[0].now_combo_course;
@@ -166,14 +197,14 @@ int ApplyJudgeNote(int judge, game *g, int player, int lane, Timer *T, char isRe
 			return 1;
 		}
 	}
-	else if (player == 0) {
+	else if (_player == 0) {
 		g->gameplay.player[0].judge_draw = g->gameplay.player[0].recent_judge;
 		g->gameplay.player[0].combo_song_draw = g->gameplay.player[0].now_combo;
 		g->gameplay.player[0].combo_draw = g->gameplay.player[0].now_combo_course;
 		SetTimeLapse(46, T);
 		return 1;
 	}
-	if (player == 1 && lane >= 10) {
+	if (_player == 1 && lane >= 10) {
 		g->gameplay.player[1].judge_draw = g->gameplay.player[1].recent_judge;
 		g->gameplay.player[1].combo_song_draw = g->gameplay.player[1].now_combo;
 		g->gameplay.player[1].combo_draw = g->gameplay.player[1].now_combo_course;
@@ -183,39 +214,45 @@ int ApplyJudgeNote(int judge, game *g, int player, int lane, Timer *T, char isRe
 }
 
 //406530
-int ApplyJudgeMine(int judge, game *g, int player, int lane, int damage) {
+int ApplyJudgeMine(int judge, game *g, int _player, int lane, int damage) {
 
 	if (g->gameplay.replay.status == 2) return 0; //playing replay
 	if (g->gameplay.replay.status == 1) {
-		AddReplayData(&g->gameplay.replay, GetTimeLapse(41, &g->timer1), player*2 + (lane>=10) + 214, damage); //214 = 0xD6
+		AddReplayData(&g->gameplay.replay, GetTimeLapse(41, &g->timer1), _player*2 + (lane>=10) + 214, damage); //214 = 0xD6
 	}
 
+	auto& player = g->gameplay.player[_player];
 	if (judge >= 0) {
-		if (judge == 0) g->gameplay.player[player].judgecount[1]++;
-		else g->gameplay.player[player].judgecount[judge]++;
+		if (judge == 0) player.judgecount[1]++;
+		else player.judgecount[judge]++;
 	}
-	g->gameplay.player[player].judgecount[judge]++;
-	g->gameplay.player[player].HP -= damage;
+	player.judgecount[judge]++;
 
-	if (g->gameplay.player[player].HP <= 2.0 && (g->config.play.gaugeOption[player] == 0 || g->config.play.gaugeOption[player] == 3)) {
-		g->gameplay.player[player].HP = 2.0;
-	}
-	if (g->gameplay.player[player].HP >= 100.0) {
-		g->gameplay.player[player].HP = 100.0;
-	}
-	if (g->gameplay.player[player].HP < 0.0) {
-		g->gameplay.player[player].HP = 0.0;
-	}
+	for (int gauge = 0; gauge < 6; gauge++) {
+		player.HP[gauge] -= damage;
 
-	if ((int)g->gameplay.player[player].HP / 2 != 50) ResetTimeLapse(44 + player, &g->timer1);
+		if (player.HP[gauge] <= 2.0 && (gauge == 0 || gauge == 3)) {
+			player.HP[gauge] = 2.0;
+		}
+		if (player.HP[gauge] >= 100.0) {
+			player.HP[gauge] = 100.0;
+		}
+		if (player.HP[gauge] < 0.0) {
+			player.HP[gauge] = 0.0;
+		}
+	}
+	if (g->config.play.m_gas)
+		player.gaugeType = PerformGAS(g->gameplay, _player, g->config.play);
+
+	if ((int)player.HP[player.gaugeType] / 2 != 50) ResetTimeLapse(44 + _player, &g->timer1);
 
 	if (lane >= 10) {
-		if (player == 0) {
+		if (_player == 0) {
 			g->gameplay.player[1].judge_draw = g->gameplay.player[0].recent_judge;
 			g->gameplay.player[1].combo_song_draw = g->gameplay.player[0].now_combo;
 			g->gameplay.player[1].combo_draw = g->gameplay.player[0].now_combo_course;
 		}
-		else if (player == 1) {
+		else if (_player == 1) {
 			g->gameplay.player[1].judge_draw = g->gameplay.player[1].recent_judge;
 			g->gameplay.player[1].combo_song_draw = g->gameplay.player[1].now_combo;
 			g->gameplay.player[1].combo_draw = g->gameplay.player[1].now_combo_course;
@@ -223,7 +260,7 @@ int ApplyJudgeMine(int judge, game *g, int player, int lane, int damage) {
 
 		SetTimeLapse(47, &g->timer1);
 	}
-	else if (player == 0) {
+	else if (_player == 0) {
 		g->gameplay.player[0].judge_draw = g->gameplay.player[0].recent_judge;
 		g->gameplay.player[0].combo_song_draw = g->gameplay.player[0].now_combo;
 		g->gameplay.player[0].combo_draw = g->gameplay.player[0].now_combo_course;
@@ -645,7 +682,7 @@ int DrawHPgauge(game *g){
 	char survival;
 
 	for (int i = 0; i < 2; i++) {
-		if (g->gameplay.isCourse == 0 && (g->config.play.gaugeOption[i] == 0 || g->config.play.gaugeOption[i] == 3)) {
+		if (g->gameplay.isCourse == 0 && (g->gameplay.player[i].gaugeType == 0 || g->gameplay.player[i].gaugeType == 3)) {
 			survival = 0;
 		}
 		else {
@@ -1177,7 +1214,7 @@ int ProcGame(game *g) {
 	}
 		
 	while (true) {
-
+		int gaugeType[2] = { g->gameplay.player[0].gaugeType, g->gameplay.player[1].gaugeType };
 		if (g->gameplay.bmsobj.notes[g->gameplay.bmsobj.note_count].realTiming >= t142 || g->gameplay.bpmChangedBmstime >= 0) {
 			SoundGetCurrentTime(&g->audio, &g->gameplay.muon); //anti cheat
 			NONE_004b6770();
@@ -1187,8 +1224,7 @@ int ProcGame(game *g) {
 			}
 
 			if (g->is_starter || (g->procSelecter == 4 && g->procPhase != 2 && g->procPhase != 3)) {
-
-				if ((g->gameplay.player[0].HP >= 2.0 || g->config.play.battle == 1) && (g->gameplay.player[0].HP >= 2.0 || g->gameplay.player[1].HP >= 2.0 || g->config.play.battle != 1) || g->gameplay.isPreviewLoad) {
+				if ((g->gameplay.player[0].HP[gaugeType[0]] >= 2.0 || g->config.play.battle == 1) && (g->gameplay.player[0].HP[gaugeType[0]] >= 2.0 || g->gameplay.player[1].HP[gaugeType[1]] >= 2.0 || g->config.play.battle != 1) || g->gameplay.isPreviewLoad) {
 
 					if (g->gameplay.isAutoplay == 0 && g->config.play.m_lunaris == 0 && g->gameplay.isPreviewLoad == 0) {
 						oldt142 = t142;
@@ -1219,12 +1255,12 @@ int ProcGame(game *g) {
 					}
 
 					for (int p = 0; p < 2; p++) {
-						if (g->gameplay.player[p].HP_unk != g->gameplay.player[p].HP) {
+						if (g->gameplay.player[p].HP_unk != g->gameplay.player[p].HP[gaugeType[p]]) {
 							g->gameplay.player[p].HP_old = g->gameplay.player[p].HP_print;
 							g->gameplay.player[p].time_oldHP = GetTimeWrap();
-							g->gameplay.player[p].time_newHP = (int)GetTimeWrap() + abs((int)(g->gameplay.player[p].HP_old - g->gameplay.player[p].HP)) * 10;
+							g->gameplay.player[p].time_newHP = (int)GetTimeWrap() + abs((int)(g->gameplay.player[p].HP_old - g->gameplay.player[p].HP[gaugeType[p]])) * 10;
 						}
-						g->gameplay.player[p].HP_unk = g->gameplay.player[p].HP;
+						g->gameplay.player[p].HP_unk = g->gameplay.player[p].HP[gaugeType[p]];
 						if (g->gameplay.player[p].score != g->gameplay.player[p].score_unk) {
 							g->gameplay.player[p].score_old = g->gameplay.player[p].score_print;
 							g->gameplay.player[p].time_oldScore = GetTimeWrap();
@@ -1232,7 +1268,7 @@ int ProcGame(game *g) {
 						}
 						g->gameplay.player[p].score_unk = g->gameplay.player[p].score;
 
-						g->gameplay.player[p].HP_print = ChangeValueByTime(g->gameplay.player[p].HP_old, g->gameplay.player[p].HP, g->gameplay.player[p].time_oldHP, g->gameplay.player[p].time_newHP, GetTimeWrap(), 0);
+						g->gameplay.player[p].HP_print = ChangeValueByTime(g->gameplay.player[p].HP_old, g->gameplay.player[p].HP[gaugeType[p]], g->gameplay.player[p].time_oldHP, g->gameplay.player[p].time_newHP, GetTimeWrap(), 0);
 						g->gameplay.player[p].score_print = ChangeValueByTime(g->gameplay.player[p].score_old, g->gameplay.player[p].score, g->gameplay.player[p].time_oldScore, g->gameplay.player[p].time_newScore, GetTimeWrap(), 0);
 					}
 
@@ -1482,8 +1518,8 @@ int ProcGame(game *g) {
 				break;
 			}
 		}
-
-		if ((g->gameplay.player[0].HP < 2.0 && g->config.play.battle != 1 && g->gameplay.ghostBattle == 0) || (g->gameplay.player[0].HP < 2.0 && g->gameplay.player[1].HP < 2.0 && (g->config.play.battle == 1 || g->gameplay.ghostBattle)) && (g->gameplay.isPreviewLoad == 0)) {
+		
+		if ((g->gameplay.player[0].HP[gaugeType[0]] < 2.0 && g->config.play.battle != 1 && g->gameplay.ghostBattle == 0) || (g->gameplay.player[0].HP[gaugeType[0]] < 2.0 && g->gameplay.player[1].HP[gaugeType[1]] < 2.0 && (g->config.play.battle == 1 || g->gameplay.ghostBattle)) && (g->gameplay.isPreviewLoad == 0)) {
 			SetTimeLapse(3, &g->timer1);
 			g->procPhase = 3;
 			for (int i = 0; i < 6480; i++) {
@@ -1519,14 +1555,14 @@ int ProcGame(game *g) {
 	if (g->procSelecter != 2) {
 		if (g->is_recordmode == 0 || g->rec.recMode == 2) {
 			ReactInput(g);
-
+			int gaugeType[2] = { g->gameplay.player[0].gaugeType, g->gameplay.player[1].gaugeType };
 			for (int p = 0; p < 2; p++) {
-				if (g->gameplay.player[p].HP_unk != g->gameplay.player[p].HP) {
+				if (g->gameplay.player[p].HP_unk != g->gameplay.player[p].HP[gaugeType[p]]) {
 					g->gameplay.player[p].HP_old = g->gameplay.player[p].HP_print;
 					g->gameplay.player[p].time_oldHP = GetTimeWrap();
-					g->gameplay.player[p].time_newHP = (int)GetTimeWrap() + abs((int)(g->gameplay.player[p].HP_old - g->gameplay.player[p].HP)) * 10;
+					g->gameplay.player[p].time_newHP = (int)GetTimeWrap() + abs((int)(g->gameplay.player[p].HP_old - g->gameplay.player[p].HP[gaugeType[p]])) * 10;
 				}
-				g->gameplay.player[p].HP_unk = g->gameplay.player[p].HP;
+				g->gameplay.player[p].HP_unk = g->gameplay.player[p].HP[gaugeType[p]];
 				if (g->gameplay.player[p].score != g->gameplay.player[p].score_unk) {
 					g->gameplay.player[p].score_old = g->gameplay.player[p].score_print;
 					g->gameplay.player[p].time_oldScore = GetTimeWrap();
@@ -1534,7 +1570,7 @@ int ProcGame(game *g) {
 				}
 				g->gameplay.player[p].score_unk = g->gameplay.player[p].score;
 
-				g->gameplay.player[p].HP_print = ChangeValueByTime(g->gameplay.player[p].HP_old, g->gameplay.player[p].HP, g->gameplay.player[p].time_oldHP, g->gameplay.player[p].time_newHP, GetTimeWrap(), 0);
+				g->gameplay.player[p].HP_print = ChangeValueByTime(g->gameplay.player[p].HP_old, g->gameplay.player[p].HP[gaugeType[p]], g->gameplay.player[p].time_oldHP, g->gameplay.player[p].time_newHP, GetTimeWrap(), 0);
 				g->gameplay.player[p].score_print = ChangeValueByTime(g->gameplay.player[p].score_old, g->gameplay.player[p].score, g->gameplay.player[p].time_oldScore, g->gameplay.player[p].time_newScore, GetTimeWrap(), 0);
 			}
 
@@ -1548,7 +1584,10 @@ int ProcGame(game *g) {
 				g->procPhase = 2;
 			}
 			for (int p = 0; p < 2; p++) {
-				if (g->gameplay.player[p].totalnotes > g->gameplay.player[p].note_current) g->gameplay.player[p].HP = 0;
+				if (g->gameplay.player[p].totalnotes > g->gameplay.player[p].note_current) {
+					for (int gauge = 0; gauge < 6; gauge++)
+						g->gameplay.player[p].HP[gauge] = 0;
+				}
 			}
 			LogGraphPlayerDataToEnd(&g->gameplay.statgraph[0], &g->gameplay.player[0]);
 			if(g->config.play.battle == 1)
@@ -1576,7 +1615,7 @@ int ProcGame(game *g) {
 					g->gameplay.player[0].clearType = 1;
 					if(g->gameplay.player[0].totalnotes == g->gameplay.player[0].max_combo)
 						g->gameplay.player[0].clearType = 5;
-					else if (g->gameplay.player[0].note_current == g->gameplay.player[0].totalnotes && g->gameplay.player[0].HP >= 80.0) {
+					else if (g->gameplay.player[0].note_current == g->gameplay.player[0].totalnotes && g->gameplay.player[0].HP[gaugeType[0]] >= 80.0) {
 						//if(g->gameplay.player[0].judgecount[2] + g->gameplay.player[0].judgecount[1] < 10) //TOFIX: BP under 10 is considered as hard clear, but not working. now, do we want it? // it's starter mode or plugout4 code, don't mind it
 						//	g->gameplay.player[0].clearType = 4;
 						g->gameplay.player[0].clearType = 3;
@@ -1701,11 +1740,11 @@ void ProcGameThread(game *g) {
 		}
 	}
 
-	int gauge = g->config.play.gaugeOption[0];
+	int gauge = g->gameplay.player[0].gaugeType;
 	if (gauge == 1 || gauge == 2 || gauge == 4 || gauge == 5) {
 		SetTimeLapse(44, &g->timer1);
 	}
-	gauge = g->config.play.gaugeOption[1];
+	gauge = g->gameplay.player[1].gaugeType;
 	if (gauge == 1 || gauge == 2 || gauge == 4 || gauge == 5) {
 		SetTimeLapse(45, &g->timer1);
 	}

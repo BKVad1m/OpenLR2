@@ -8,6 +8,9 @@
 #include <thread>
 #include "FMOD/fmod.h"
 #include "strclass.h"
+
+struct sqlite3;
+
 typedef unsigned char   undefined;
 typedef unsigned int    ImageBaseOffset32;
 //typedef unsigned char    bool;
@@ -200,6 +203,7 @@ struct CONFIG_PLAY {
 	int is_extra;
 	int m_extra;
 	char m_lunaris;
+	bool m_gas;
 	char unk_f1;
 	char unk_f2;
 	int gomiscore; 
@@ -1201,7 +1205,7 @@ struct EXTENDEDPLAYERSTATS {
 struct PLAYERSTATUS {
 	int flag_active = 0;
 	int judgecount[6] = {}; /* 0unknown 1poor 2bad 3good 4great 5pgreat */
-	int max_combo = 0; 
+	int max_combo = 0;
 	int now_combo = 0;
 	int combo_song_draw = 0;
 	int max_combo_course = 0;
@@ -1210,7 +1214,7 @@ struct PLAYERSTATUS {
 	int judgecount2[6] = {}; /* 0unknown 1poor 2bad 3good 4great 5pgreat */
 	int total_note = 0;
 	int note_current2 = 0;
-	double HP = 0.;
+	std::array<double, 6> HP = {};
 	double HP_unk = 0.;
 	double HP_print = 0.;
 	double HP_old = 0.;
@@ -1218,7 +1222,9 @@ struct PLAYERSTATUS {
 	uint time_newHP = 0;
 	int recent_judge = 0;
 	int judge_draw = 0;
-	double judge_damage[6] = {};
+	int gaugeType = 0;
+	int lastCourseGaugeType = 0;
+	std::array<std::array<double, 6>, 6> judge_damage = {}; 
 	int judgetime[6] = {}; /* 0unknown 1poor 2bad 3good 4great 5pgreat */
 	int totalnotes = 0;
 	int score = 0;
@@ -1231,10 +1237,10 @@ struct PLAYERSTATUS {
 	int time_newScore = 0;
 	int note_current = 0;
 	int clearType = 0;
-	EXTENDEDPLAYERSTATS extendedStats;
-	std::array<EXTENDEDPLAYERSTATS, 20> extendedColumnStats;
-	EXTENDEDPLAYERSTATS extendedStatsCourse;
-	std::array<EXTENDEDPLAYERSTATS, 20> extendedColumnStatsCourse;
+	EXTENDEDPLAYERSTATS extendedStats = {};
+	std::array<EXTENDEDPLAYERSTATS, 20> extendedColumnStats = {};
+	EXTENDEDPLAYERSTATS extendedStatsCourse = {};
+	std::array<EXTENDEDPLAYERSTATS, 20> extendedColumnStatsCourse = {};
 	int lastJudgedColumnIdx = 0;
 };
 
@@ -1266,10 +1272,10 @@ struct PLAYSCORE {
 };
 
 struct GRAPHDATA {
-	int hp[1000];
-	int combo[1000];
-	int exscore[1000];
-	int cursor;
+	std::array<std::array<int, 1000>, 6> hp = {};
+	int combo[1000] = {};
+	int exscore[1000] = {};
+	int cursor = 0;
 };
 
 struct PLAYERSTATISTIC {

@@ -329,26 +329,27 @@ int REPLAY_ApplyJudgeNote(gameplay *gp, Timer *T, game *g, uint judge, int playe
 		gp->player[player].judgecount2[judge]++;
 	}
 
-	int hp = ((int)gp->player[player].HP / 2) * 2;
+	int gauge = gp->player[player].gaugeType;
+	int hp = ((int)gp->player[player].HP[gauge] / 2) * 2;
 	double damage;
-	if (hp <= 30 && (!(g->config.play.gaugeOption[player] == 0 || g->config.play.gaugeOption[player] == 3) || gp->isCourse != 0) && judge <= 2) {
-		damage = gp->player[player].judge_damage[judge] * 0.6;
+	if (hp <= 30 && (!(gauge == 0 || gauge == 3) || gp->isCourse != 0) && judge <= 2) {
+		damage = gp->player[player].judge_damage[gauge][judge] * 0.6;
 	}
 	else {
-		damage = gp->player[player].judge_damage[judge];
+		damage = gp->player[player].judge_damage[gauge][judge];
 	}
-	gp->player[player].HP += damage;
+	gp->player[player].HP[gauge] += damage;
 
-	if (gp->isCourse == 0 && gp->player[player].HP <= 2.0 && (g->config.play.gaugeOption[player] == 0 || g->config.play.gaugeOption[player] == 3)) {
-		gp->player[player].HP = 2.0;
+	if (gp->isCourse == 0 && gp->player[player].HP[gauge] <= 2.0 && (gauge == 0 || gauge == 3)) {
+		gp->player[player].HP[gauge] = 2.0;
 	}
 
-	if (gp->player[player].HP >= 100.0) gp->player[player].HP = 100.0;
-	if (gp->player[player].HP < 0.0) gp->player[player].HP = 0.0;
+	if (gp->player[player].HP[gauge] >= 100.0) gp->player[player].HP[gauge] = 100.0;
+	if (gp->player[player].HP[gauge] < 0.0) gp->player[player].HP[gauge] = 0.0;
 
-	int newhp = ((int)gp->player[player].HP / 2) * 2;
+	int newhp = ((int)gp->player[player].HP[gauge] / 2) * 2;
 	if (hp <= 0) {
-		gp->player[player].HP = 0; //?
+		gp->player[player].HP[gauge] = 0; //?
 		newhp = 0;
 		ResetTimeLapse(44 + player, T);
 	}
@@ -422,19 +423,20 @@ int REPLAY_ApplyJudgeMine(gameplay *gp, Timer *T, game *g, int dmg, int player, 
 
 	gp->player[player].judgecount[1]++;
 	gp->player[player].recent_judge = 0;
-	gp->player[player].HP -= dmg;
+	int gauge = gp->player[player].gaugeType;
+	gp->player[player].HP[gauge] -= dmg;
 
-	if (gp->player[player].HP <= 2.0 && (g->config.play.gaugeOption[player] == 0 || g->config.play.gaugeOption[player] == 3)) {
-		gp->player[player].HP = 2.0;
+	if (gp->player[player].HP[gauge] <= 2.0 && (gauge == 0 || gauge == 3)) {
+		gp->player[player].HP[gauge] = 2.0;
 	}
-	if (gp->player[player].HP >= 100.0) {
-		gp->player[player].HP = 100.0;
+	if (gp->player[player].HP[gauge] >= 100.0) {
+		gp->player[player].HP[gauge] = 100.0;
 	}
-	if (gp->player[player].HP < 0.0) {
-		gp->player[player].HP = 0.0;
+	if (gp->player[player].HP[gauge] < 0.0) {
+		gp->player[player].HP[gauge] = 0.0;
 	}
 
-	if ((int)gp->player[player].HP / 2 != 50) ResetTimeLapse(44 + player, T); //this may be different
+	if ((int)gp->player[player].HP[gauge] / 2 != 50) ResetTimeLapse(44 + player, T); //this may be different
 
 	if (dp == 1) {
 		if (player == 0) {

@@ -299,6 +299,9 @@ int WriteConfigXml(game *g, const char *filename){
 
 	sprintf(buf, "\t\t<%s>%d</%s>\n", "disablecurspeedchange", (g->config).play.disablecurspeedchange, "disablecurspeedchange");
 	fputs(buf, pFile);
+
+	sprintf(buf, "\t\t<%s>%d</%s>\n", "gaugeautoshift", (g->config).play.m_gas, "gaugeautoshift");
+	fputs(buf, pFile);
 	fputs("\t</play>\n", pFile);
 
 	fputs("\t<sound>\n", pFile);
@@ -1019,13 +1022,13 @@ int WriteSkinCustomizeXml(SkinUser *sku, char *filepath) {
 }
 
 //441d30
-int ReadConfig(game *g, const char *filepath){
-	int *piVar1;
+int ReadConfig(game* g, const char* filepath) {
+	int* piVar1;
 	bool bVar2;
-	TiXmlDocument *hXml;
-	TiXmlDocument *pTVar7;
+	TiXmlDocument* hXml;
+	TiXmlDocument* pTVar7;
 	uint uStack32;
-	int *local_c;
+	int* local_c;
 
 	memset(&g->config.play, 0, sizeof(g->config.play));
 	g->config.play.hiSpeed[0] = 200;
@@ -1090,7 +1093,7 @@ int ReadConfig(game *g, const char *filepath){
 	ReadXml_Int("config", "select", "ignorekeydouble", 0, &g->config.select.ignorekeydouble, hXml);
 	ReadXml_Int("config", "select", "ignoredp", 0, &g->config.select.ignoredp, hXml);
 	ReadXml_Int("config", "select", "ignorepms", 0, &g->config.select.ignorepms, hXml);
-	ReadXml_Int("config", "select", "ignoredifficultyall", 0, &g->config.select.ignoredifficultyall,	hXml);
+	ReadXml_Int("config", "select", "ignoredifficultyall", 0, &g->config.select.ignoredifficultyall, hXml);
 	ReadXml_Int("config", "select", "ignore5key", 0, &g->config.select.ignore5key, hXml);
 	ReadXml_Int("config", "select", "levelbarflash_7", 12, &g->config.select.levelbarflash_7, hXml);
 	ReadXml_Int("config", "select", "levelbarflash_5", 9, &g->config.select.levelbarflash_5, hXml);
@@ -1136,7 +1139,7 @@ int ReadConfig(game *g, const char *filepath){
 	ReadXml_Int("config", "sound", "fxp2_2", 0, &g->config.sound.fxp2_2, hXml);
 	ReadXml_Int("config", "sound", "fxtarget_2", 0, &g->config.sound.fxtarget_2, hXml);
 	ReadXml_Int("config", "sound", "fxtype_2", 0, &g->config.sound.fxtype_2, hXml);
-	
+
 	g->config.sound.disabledsp = (uint)(g->config.sound.output != 2);
 	if (g->config.sound.bufferlength == 0) g->config.sound.bufferlength = 256;
 	if (g->config.sound.bufferlength < 16) g->config.sound.bufferlength = 16;
@@ -1171,7 +1174,12 @@ int ReadConfig(game *g, const char *filepath){
 	ReadXml_Int("config", "play", "basespeed", 100, &g->config.play.basespeed, hXml);
 	ReadXml_Int("config", "play", "gomiscore", 0, &g->config.play.gomiscore, hXml);
 	ReadXml_Int("config", "play", "disableleftclickexit", 0, &g->config.play.disableleftclickexit, hXml);
-	ReadXml_Int("config", "play", "disablecurspeedchange", 0, &g->config.play.disablecurspeedchange,	hXml);
+	ReadXml_Int("config", "play", "disablecurspeedchange", 0, &g->config.play.disablecurspeedchange, hXml);
+	{
+		int gasInt = 0;
+		ReadXml_Int("config", "play", "gaugeautoshift", 0, &gasInt, hXml);
+		g->config.play.m_gas = gasInt > 0 ? true : false;
+	}
 	ReadXml_Str("config", "skin", "play_7", "", &g->config.skin.skinFilePath[0], hXml);
 	ReadXml_Str("config", "skin", "play_5", "", &g->config.skin.skinFilePath[1], hXml);
 	ReadXml_Str("config", "skin", "play_14", "", &g->config.skin.skinFilePath[2], hXml);

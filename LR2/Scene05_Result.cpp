@@ -37,15 +37,16 @@ int Proc_Result(game *g, skstruct *sk, Timer *T) {
 		
 		if (sk->src_GAUGECHART_1P[0].op1 <= 0) return 0;
 
-		int val = g->gameplay.statgraph[0].hp[0];
+		int gauge = g->gameplay.player[0].gaugeType;
+		int val = g->gameplay.statgraph[0].hp[gauge][0];
 		int length = ChangeValueByTime(0.0, sk->src_GAUGECHART_1P[0].op1, sk->src_GAUGECHART_1P[0].op3, sk->src_GAUGECHART_1P[0].op4, GetTimeLapse(0, T), 0);
 		for (int i = 0; i < length; i += sk->dst_GAUGECHART_1P[0].draw->w) {
 			int axis = i * 1000 / sk->src_GAUGECHART_1P[0].op1;
 
 			int last = 0;
-			while (val != g->gameplay.statgraph[0].hp[axis]) {
+			while (val != g->gameplay.statgraph[0].hp[gauge][axis]) {
 				
-				if (g->gameplay.isCourse == 0 && g->config.play.gaugeOption[0] != 1 && g->config.play.gaugeOption[0] != 2 && g->config.play.gaugeOption[0] != 5 && g->config.play.gaugeOption[0] != 4 && val < 80) {
+				if (g->gameplay.isCourse == 0 && gauge != 1 && gauge != 2 && gauge != 5 && gauge != 4 && val < 80) {
 					
 					int targetval = sk->src_GAUGECHART_1P[0].op2 * val / (-100);
 					if (last != targetval) {
@@ -61,15 +62,15 @@ int Proc_Result(game *g, skstruct *sk, Timer *T) {
 					}
 				}
 
-				if (val < g->gameplay.statgraph[0].hp[axis]) val++;
-				if (val > g->gameplay.statgraph[0].hp[axis]) val--;
+				if (val < g->gameplay.statgraph[0].hp[gauge][axis]) val++;
+				if (val > g->gameplay.statgraph[0].hp[gauge][axis]) val--;
 			}
 
-			if (g->gameplay.isCourse == 0 && g->config.play.gaugeOption[0] != 1 && g->config.play.gaugeOption[0] != 2 && g->config.play.gaugeOption[0] != 5 && g->config.play.gaugeOption[0] != 4 && g->gameplay.statgraph[0].hp[axis] < 80) {
-				AddDrawingBuffer_Object(&sk->drBuf, &sk->src_GAUGECHART_1P[0], &sk->dst_GAUGECHART_1P[0], T, i, sk->src_GAUGECHART_1P[0].op2 * g->gameplay.statgraph[0].hp[axis] / (-100));
+			if (g->gameplay.isCourse == 0 && gauge != 1 && gauge != 2 && gauge != 5 && gauge != 4 && g->gameplay.statgraph[0].hp[gauge][axis] < 80) {
+				AddDrawingBuffer_Object(&sk->drBuf, &sk->src_GAUGECHART_1P[0], &sk->dst_GAUGECHART_1P[0], T, i, sk->src_GAUGECHART_1P[0].op2 * g->gameplay.statgraph[0].hp[gauge][axis] / (-100));
 			}
 			else {
-				AddDrawingBuffer_Object(&sk->drBuf, &sk->src_GAUGECHART_1P[1], &sk->dst_GAUGECHART_1P[1], T, i, sk->src_GAUGECHART_1P[1].op2 * g->gameplay.statgraph[0].hp[axis] / (-100));
+				AddDrawingBuffer_Object(&sk->drBuf, &sk->src_GAUGECHART_1P[1], &sk->dst_GAUGECHART_1P[1], T, i, sk->src_GAUGECHART_1P[1].op2 * g->gameplay.statgraph[0].hp[gauge][axis] / (-100));
 			}
 		}
 	}
@@ -80,15 +81,16 @@ int Proc_Result(game *g, skstruct *sk, Timer *T) {
 
 		if (sk->src_GAUGECHART_2P[0].op1 <= 0) return 0;
 
-		int val = g->gameplay.statgraph[1].hp[0];
+		int gauge = g->gameplay.player[1].gaugeType;
+		int val = g->gameplay.statgraph[1].hp[gauge][0];
 		int length = ChangeValueByTime(0.0, sk->src_GAUGECHART_2P[0].op1, sk->src_GAUGECHART_2P[0].op3, sk->src_GAUGECHART_2P[0].op4, GetTimeLapse(0, T), 0);
 		for (int i = 0; i < length; i += sk->dst_GAUGECHART_2P[0].draw->w) {
 			int axis = i * 1000 / sk->src_GAUGECHART_2P[0].op1;
 
 			int last = 0;
-			while (val != g->gameplay.statgraph[1].hp[axis]) {
+			while (val != g->gameplay.statgraph[1].hp[gauge][axis]) {
 
-				if (g->gameplay.isCourse == 0 && g->config.play.gaugeOption[p] != 1 && g->config.play.gaugeOption[p] != 2 && val < 80) {
+				if (g->gameplay.isCourse == 0 && gauge != 1 && gauge != 2 && val < 80) {
 
 					int targetval = sk->src_GAUGECHART_2P[0].op2 * val / (-100);
 					if (last != targetval) {
@@ -104,15 +106,15 @@ int Proc_Result(game *g, skstruct *sk, Timer *T) {
 					}
 				}
 
-				if (val < g->gameplay.statgraph[1].hp[axis]) val++;
-				if (val > g->gameplay.statgraph[1].hp[axis]) val--;
+				if (val < g->gameplay.statgraph[1].hp[gauge][axis]) val++;
+				if (val > g->gameplay.statgraph[1].hp[gauge][axis]) val--;
 			}
 
-			if (g->gameplay.isCourse == 0 && g->config.play.gaugeOption[p] != 1 && g->config.play.gaugeOption[p] != 2 && g->gameplay.statgraph[1].hp[axis] < 80) {
-				AddDrawingBuffer_Object(&sk->drBuf, &sk->src_GAUGECHART_2P[0], &sk->dst_GAUGECHART_2P[0], T, i, sk->src_GAUGECHART_2P[0].op2 * g->gameplay.statgraph[1].hp[axis] / (-100));
+			if (g->gameplay.isCourse == 0 && gauge != 1 && gauge != 2 && g->gameplay.statgraph[1].hp[gauge][axis] < 80) {
+				AddDrawingBuffer_Object(&sk->drBuf, &sk->src_GAUGECHART_2P[0], &sk->dst_GAUGECHART_2P[0], T, i, sk->src_GAUGECHART_2P[0].op2 * g->gameplay.statgraph[1].hp[gauge][axis] / (-100));
 			}
 			else {
-				AddDrawingBuffer_Object(&sk->drBuf, &sk->src_GAUGECHART_2P[1], &sk->dst_GAUGECHART_2P[1], T, i, sk->src_GAUGECHART_2P[1].op2 * g->gameplay.statgraph[1].hp[axis] / (-100));
+				AddDrawingBuffer_Object(&sk->drBuf, &sk->src_GAUGECHART_2P[1], &sk->dst_GAUGECHART_2P[1], T, i, sk->src_GAUGECHART_2P[1].op2 * g->gameplay.statgraph[1].hp[gauge][axis] / (-100));
 			}
 		}
 	}
@@ -193,6 +195,40 @@ int Proc_Result(game *g, skstruct *sk, Timer *T) {
 //409300
 char fWaitHiScoreUpdateInput = 0;
 int ProcI_Result(game *g) {
+
+	auto switch_gauge_display = [](gameplay& gameplay, int buttonVal, PLAYERSTATUS& player) {
+		if (buttonVal == 1 && player.gaugeType != 5) {
+			int& gauge = player.gaugeType;
+			if (gameplay.courseType != 2) [[likely]] {
+				switch (gauge) {
+				case 0: gauge = 1; break;
+				case 1: gauge = 2; break;
+				case 2: gauge = 4; break;
+				case 3: gauge = 0; break;
+				case 4: gauge = 3; break;
+				default: break;
+				}
+			}
+			else {
+				switch (gauge) {
+				case 0: gauge = 1; break;
+				case 1: gauge = 2; break;
+				case 2: gauge = 4; break;
+				case 4: gauge = 0; break;
+				default: break;
+				}
+			}
+		}
+	};
+	if (g->config.play.m_gas && g->procSelecter != 13) {
+		switch_gauge_display(g->gameplay, g->KeyInput.p1_buttonInput[13], g->gameplay.player[0]);
+		if (g->config.play.battle == 1) {
+			switch_gauge_display(g->gameplay, g->KeyInput.p2_buttonInput[13], g->gameplay.player[1]);
+		}
+		else {
+			switch_gauge_display(g->gameplay, g->KeyInput.p2_buttonInput[13], g->gameplay.player[0]);
+		}
+	}
 
 	if ((g->KeyInput.mouse_buttonR == 2 || g->KeyInput.mouse_buttonL == 2 || g->KeyInput.inputID[KEY_INPUT_ESCAPE] == 1 || g->KeyInput.inputID[KEY_INPUT_RETURN] == 1
 		|| g->KeyInput.p1_buttonInput[1] == 1 || g->KeyInput.p1_buttonInput[2] == 1 || g->KeyInput.p1_buttonInput[3] == 1 || g->KeyInput.p1_buttonInput[4] == 1 || g->KeyInput.p1_buttonInput[5] == 1 || g->KeyInput.p1_buttonInput[6] == 1 || g->KeyInput.p1_buttonInput[7] == 1
