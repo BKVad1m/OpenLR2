@@ -18058,7 +18058,7 @@ int SearchCourseFromDB(sqlite3 *sql, SONGSELECT *ss, int keys, int multistagemod
 	while (sqlite3_step(pStmt) == 100) {
 
 		if (ss->prevListSize - 1 == ss->prevListCount) {
-			realloc(ss->prevList, (ss->prevListSize + 1000) * sizeof(SONGDATA));
+			ss->prevList = (SONGDATA*)realloc(ss->prevList, (ss->prevListSize + 1000) * sizeof(SONGDATA));
 			for (int i = ss->prevListSize; i < ss->prevListSize + 1000; i++) {
 				memset(&ss->prevList[i], 0, sizeof(SONGDATA));
 			}
