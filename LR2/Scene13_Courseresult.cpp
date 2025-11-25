@@ -170,7 +170,7 @@ int ProcS_CourseResult(game *g, sqlite3 *sql) {
 	PlayerCheckAndSwap(&g->gameplay);
 	CheckCourseClear(g);
 	ProcS_subCourseResult(g, sql);
-	LoadScene(&g->skstruct, g->config.skin.skinFilePath[15], g->skinData.Data[g->skinData.skinID[15]].informationP5, 0);
+	LoadSceneG(g, &g->skstruct, 15);
 	
 	if (g->skstruct.flag_flip) {
 		FlipScore(g);

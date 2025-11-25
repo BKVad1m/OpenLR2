@@ -244,6 +244,8 @@ int ParseLR2SkinCustom(SkinManage *skm, CSTR filepath) {
 			skm->Data[skm->Count].thumbnail.assign(&csvBuf.str[4]);
 			skm->Data[skm->Count].informationP5 = csvBuf.val[5];
 			skm->Data[skm->Count].unused18 = -1;
+			skm->Data[skm->Count].targetX = csvBuf.val[6] == 0 ? 640: csvBuf.val[6];
+			skm->Data[skm->Count].targetY = csvBuf.val[7] == 0 ? 480: csvBuf.val[7];
 			skm->Count ++;
 			if (skm->Count == skm->Max) {
 				ExpandSkinMax(skm);

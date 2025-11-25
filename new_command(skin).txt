@@ -1,0 +1,4 @@
+1. #INFORMATION now can declare it's own size.
+   ~~~,author , , , x, y  (val[6], val[7])
+
+2. SRC 106 is used in SkinSelect

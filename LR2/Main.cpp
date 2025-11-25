@@ -262,7 +262,7 @@ int main(int argc, char** argv) {
 		gs.timer1.movieFramerate = (double)gs.config.tools.movie_framerate;
 		gs.timer1.movieTimer = 0.0;
 
-		SetGraphMode(640, 480, (gs.config.system.highcolor == 0) ? 32 : 16, 60); //TODO_RESOULUTION
+		SetGraphMode(640, 480, (gs.config.system.highcolor == 0) ? 32 : 16, 60);
 		if (gs.rec.recMode == 3) {
 			SetGraphMode(256, 256, 32, 60);
 		}
@@ -658,7 +658,7 @@ int main(int argc, char** argv) {
 				if (ProcessMessage() || !gs.procSelecter || gs.auto2avi) break;
 
 #ifdef _WIN32
-				if (GetWindowModeFlag()) {
+				if (GetWindowModeFlag()) { // windowed
 					GetWindowSize(&wSizeX, &wSizeY);
 					if (0 < wSizeX && wSizeX < 9999 && gs.config.system.windowsize_x != wSizeX) {
 						gs.config.system.windowsize_x = wSizeX;
@@ -712,17 +712,17 @@ int main(int argc, char** argv) {
 							}
 							gs.gameplay.ghostBattle = '\0';
 							ReadKeyConfig(&gs, (gs.config.select.control == 0) ? "LR2files/Config/keyconfig.xml" : "LR2files/Config/keyconfig_p.xml");
-							DeleteGraph(gs.skstruct.GrHandle[100]);
-							gs.skstruct.GrHandle[100] = -1;
-							DeleteGraph(gs.skstruct.GrHandle[101]);
-							gs.skstruct.GrHandle[101] = -1;
+							DeleteGraph(gs.skstruct.GrHandle[GrH_Stage]);
+							gs.skstruct.GrHandle[GrH_Stage] = -1;
+							DeleteGraph(gs.skstruct.GrHandle[GrH_BackBMP]);
+							gs.skstruct.GrHandle[GrH_BackBMP] = -1;
 							gs.sSelect.is_clicked_autoplay_replay = '\0';
 							gs.sSelect.is_clicked_keyconfig = '\0';
 							gs.sSelect.is_clicked_skinselect = '\0';
 							gs.sSelect.course.isCourseCreated = 0;
 							gs.gameplay.replay.status = 0;
 							if (gs.po4MainMenuCursor == 3) {
-								LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[19], gs.skinData.Data[gs.skinData.skinID[19]].informationP5, 0);
+								LoadSceneG(&gs, &gs.skstruct, 19);
 								if (gs.sSelect.toRoot) {
 									gs.sSelect.bmsListCount = 1;
 									InitSongData(gs.sSelect.bmsList);
@@ -750,7 +750,7 @@ int main(int argc, char** argv) {
 								}
 							}
 							else {
-								LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[5], gs.skinData.Data[gs.skinData.skinID[5]].informationP5, 0);
+								LoadSceneG(&gs, &gs.skstruct, 5);
 								if (gs.sSelect.toRoot) {
 									gs.sSelect.cur = 0;
 									if (gs.is_starter == 0) {
@@ -821,39 +821,40 @@ int main(int argc, char** argv) {
 
 							ProcS_Select(&gs);
 							break;
-
+							
 						case 3:{
-							DeleteGraph(gs.skstruct.GrHandle[100]);
-							gs.skstruct.GrHandle[100] = -1;
-							DeleteGraph(gs.skstruct.GrHandle[101]);
-							gs.skstruct.GrHandle[101] = -1;
-							DeleteGraph(gs.skstruct.GrHandle[102]);
-							gs.skstruct.GrHandle[102] = -1;
+							DeleteGraph(gs.skstruct.GrHandle[GrH_Stage]);
+							gs.skstruct.GrHandle[GrH_Stage] = -1;
+							DeleteGraph(gs.skstruct.GrHandle[GrH_BackBMP]);
+							gs.skstruct.GrHandle[GrH_BackBMP] = -1;
+							DeleteGraph(gs.skstruct.GrHandle[GrH_Banner]);
+							gs.skstruct.GrHandle[GrH_Banner] = -1;
 							SetTransColor(0, 255, 0);
 							CSTR dir(gs.sSelect.bmsList[gs.sSelect.cur_song].filepath.getDirectory());
 							if (gs.sSelect.bmsList[gs.sSelect.cur_song].isStagefile) {
 								CSTR oBuf;
 								if (FindAltImage(gs.sSelect.bmsList[gs.sSelect.cur_song].stagefile, dir, &oBuf) != 1)
 									gs.sSelect.bmsList[gs.sSelect.cur_song].isStagefile = 0;
-								gs.skstruct.GrHandle[100] = LoadGraph(oBuf, 0);
-								if (gs.skstruct.GrHandle[100] == -1) gs.sSelect.bmsList[gs.sSelect.cur_song].isStagefile = 0;
+								gs.skstruct.GrHandle[GrH_Stage] = LoadGraph(oBuf, 0);
+								if (gs.skstruct.GrHandle[GrH_Stage] == -1) gs.sSelect.bmsList[gs.sSelect.cur_song].isStagefile = 0;
 							}
 							if (gs.sSelect.bmsList[gs.sSelect.cur_song].isBackBMP) {
 								CSTR oBuf;
 								if (FindAltImage(gs.sSelect.bmsList[gs.sSelect.cur_song].backBMP, dir, &oBuf) != 1)
 									gs.sSelect.bmsList[gs.sSelect.cur_song].isBackBMP = 0;
-								gs.skstruct.GrHandle[101] = LoadGraph(oBuf, 0);
-								if (gs.skstruct.GrHandle[101] == -1) gs.sSelect.bmsList[gs.sSelect.cur_song].isBackBMP = 0;
+								gs.skstruct.GrHandle[GrH_BackBMP] = LoadGraph(oBuf, 0);
+								if (gs.skstruct.GrHandle[GrH_BackBMP] == -1) gs.sSelect.bmsList[gs.sSelect.cur_song].isBackBMP = 0;
 							}
 							if (gs.sSelect.bmsList[gs.sSelect.cur_song].isBanner) {
 								CSTR oBuf;
 								if (FindAltImage(gs.sSelect.bmsList[gs.sSelect.cur_song].banner, dir, &oBuf) != 1) 
 									gs.sSelect.bmsList[gs.sSelect.cur_song].isBanner = 0;
-								gs.skstruct.GrHandle[102] = LoadGraph(oBuf, 0); //TOFIX : when banner size is not 300 80, this will break graph size and banner is not displayed until next song
-								if (gs.skstruct.GrHandle[102] == -1) gs.sSelect.bmsList[gs.sSelect.cur_song].isBanner = 0;
+								gs.skstruct.GrHandle[GrH_Banner] = LoadGraph(oBuf, 0); //TOFIX : when banner size is not 300 80, this will break graph size and banner is not displayed until next song
+								if (gs.skstruct.GrHandle[GrH_Banner] == -1) gs.sSelect.bmsList[gs.sSelect.cur_song].isBanner = 0;
 							}
 							SetTransColor(0, 255, 0);
-							LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[6], gs.skinData.Data[gs.skinData.skinID[6]].informationP5, 0);
+							
+							LoadSceneG(&gs, &gs.skstruct, 6);
 
 							StopSysSound(&gs);
 							if (gs.config.play.is_extra && gs.audio.sysSound.exdecide.load)
@@ -899,23 +900,23 @@ int main(int argc, char** argv) {
 							}
 							if (gs.gameplay.ghostBattle == 1) {
 								if (gs.sSelect.bmsList[gs.sSelect.cur_song].keymode == 5) {
-									LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[13], gs.skinData.Data[gs.skinData.skinID[13]].informationP5, 0);
+									LoadSceneG(&gs, &gs.skstruct, 13);
 									if (gs.skinData.Data[gs.skinData.skinID[13]].type != SKINTYPE_7KEYSBATTLE)
 										ReadKeyConfig(&gs, "LR2files/Config/keyconfig.xml");
 									else 
 										ReadKeyConfig(&gs, "LR2files/Config/keyconfig_5.xml");
 								}
 								else {
-									LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[12], gs.skinData.Data[gs.skinData.skinID[12]].informationP5, 0);
+									LoadSceneG(&gs, &gs.skstruct, 12);
 									ReadKeyConfig(&gs, "LR2files/Config/keyconfig.xml");
 								}
 							}
 							else if (gs.config.select.control == 1 && (gs.sSelect.metaSelected.keymode == 5 || gs.sSelect.metaSelected.keymode == 7)) {
 								if (gs.config.play.battle == 0 || gs.config.play.battle == 2) {
-									LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[4], gs.skinData.Data[gs.skinData.skinID[4]].informationP5, 0);
+									LoadSceneG(&gs, &gs.skstruct, 4);
 								}
 								else if (gs.config.play.battle == 1) {
-									LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[14], gs.skinData.Data[gs.skinData.skinID[14]].informationP5, 0);
+									LoadSceneG(&gs, &gs.skstruct, 14);
 								}
 								ReadKeyConfig(&gs,"LR2files/Config/keyconfig_p.xml");
 							}
@@ -923,21 +924,21 @@ int main(int argc, char** argv) {
 								switch (gs.sSelect.metaSelected.keymode) {
 									case 5:
 										if (gs.config.play.battle == 0) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[1], gs.skinData.Data[gs.skinData.skinID[1]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 1);
 											if (gs.skinData.Data[gs.skinData.skinID[1]].type != SKINTYPE_5KEYS)
 												ReadKeyConfig(&gs, "LR2files/Config/keyconfig.xml");
 											else
 												ReadKeyConfig(&gs, "LR2files/Config/keyconfig_5.xml");
 										}
 										else if (gs.config.play.battle == 1) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[13], gs.skinData.Data[gs.skinData.skinID[13]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 13);
 											if (gs.skinData.Data[gs.skinData.skinID[13]].type != SKINTYPE_7KEYSBATTLE)
 												ReadKeyConfig(&gs, "LR2files/Config/keyconfig.xml");
 											else
 												ReadKeyConfig(&gs, "LR2files/Config/keyconfig_5.xml");
 										}
 										else if (gs.config.play.battle == 2 || gs.config.play.battle == 3) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[3], gs.skinData.Data[gs.skinData.skinID[3]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 3);
 											if (gs.skinData.Data[gs.skinData.skinID[3]].type != SKINTYPE_10KEYS)
 												ReadKeyConfig(&gs, "LR2files/Config/keyconfig.xml");
 											else
@@ -947,49 +948,49 @@ int main(int argc, char** argv) {
 
 									default:
 										if (gs.config.play.battle == 0) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[0], gs.skinData.Data[gs.skinData.skinID[0]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 0);
 										}
 										else if (gs.config.play.battle == 1) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[12], gs.skinData.Data[gs.skinData.skinID[12]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 12);
 										}
 										else if (gs.config.play.battle == 2 || gs.config.play.battle == 3) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[2], gs.skinData.Data[gs.skinData.skinID[2]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 2);
 										}
 										ReadKeyConfig(&gs, "LR2files/Config/keyconfig.xml");
 										break;
 
 									case 9:
 										if (gs.config.play.battle == 3) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[0], gs.skinData.Data[gs.skinData.skinID[0]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 0);
 											ReadKeyConfig(&gs, "LR2files/Config/keyconfig.xml");
 											break;
 										}
 										else if (gs.config.play.battle == 0 || gs.config.play.battle == 2) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[4], gs.skinData.Data[gs.skinData.skinID[4]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 4);
 										}
 										else if (gs.config.play.battle == 1) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[14], gs.skinData.Data[gs.skinData.skinID[14]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 4);
 										}
 										ReadKeyConfig(&gs, "LR2files/Config/keyconfig_p.xml");
 										break;
 
 									case 10:
 										if (gs.config.play.battle == 0) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[3], gs.skinData.Data[gs.skinData.skinID[3]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 3);
 											if (gs.skinData.Data[gs.skinData.skinID[3]].type == SKINTYPE_10KEYS)
 												ReadKeyConfig(&gs, "LR2files/Config/keyconfig_5.xml"); 
 											else
 												ReadKeyConfig(&gs, "LR2files/Config/keyconfig.xml");
 										}
 										else if (gs.config.play.battle == 1 || gs.config.play.battle == 2) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[13], gs.skinData.Data[gs.skinData.skinID[13]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 13);
 											if (gs.skinData.Data[gs.skinData.skinID[13]].type == SKINTYPE_7KEYSBATTLE)
 												ReadKeyConfig(&gs, "LR2files/Config/keyconfig_5.xml");
 											else
 												ReadKeyConfig(&gs, "LR2files/Config/keyconfig.xml");
 										}
 										else if (gs.config.play.battle == 3) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[1], gs.skinData.Data[gs.skinData.skinID[1]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 1);
 											if (gs.skinData.Data[gs.skinData.skinID[1]].type == SKINTYPE_5KEYS)
 												ReadKeyConfig(&gs, "LR2files/Config/keyconfig_5.xml");
 											else
@@ -999,13 +1000,13 @@ int main(int argc, char** argv) {
 
 									case 14:
 										if (gs.config.play.battle == 0 || gs.config.play.battle == 2) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[2], gs.skinData.Data[gs.skinData.skinID[2]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 2);
 										}
 										else if (gs.config.play.battle == 1) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[12], gs.skinData.Data[gs.skinData.skinID[12]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 12);
 										}
 										else if(gs.config.play.battle == 3) {
-											LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[0], gs.skinData.Data[gs.skinData.skinID[0]].informationP5, 0);
+											LoadSceneG(&gs, &gs.skstruct, 0);
 										}
 										ReadKeyConfig(&gs, "LR2files/Config/keyconfig.xml");
 										break;
@@ -1013,7 +1014,7 @@ int main(int argc, char** argv) {
 							}
 
 							if (gs.config.play.m_lunaris) {
-								LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[0], gs.skinData.Data[gs.skinData.skinID[0]].informationP5, 0);
+								LoadSceneG(&gs, &gs.skstruct, 0);
 								ReadKeyConfig(&gs, "LR2files/Config/keyconfig.xml");
 								gs.gameplay.isAutoplay = 0;
 							}
@@ -1030,7 +1031,7 @@ int main(int argc, char** argv) {
 							ProcS_Result(&gs);
 							break;
 						case 6:
-							LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[8], gs.skinData.Data[gs.skinData.skinID[8]].informationP5, 0);
+							LoadSceneG(&gs, &gs.skstruct, 8);
 							gs.KeyInput.config_keymode = 0;
 							gs.KeyInput.config_button = 1;
 							gs.KeyInput.config_button_inMap = 1;
@@ -1038,16 +1039,16 @@ int main(int argc, char** argv) {
 							ProcS_Keyconfig(&gs);
 							break;
 						case 7:
-							LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[9], gs.skinData.Data[gs.skinData.skinID[9]].informationP5, 0);
+							LoadSceneG(&gs, &gs.skstruct, 9);
 							ProcS_SkinSelect(&gs);
 							break;
 						case 8:
-							LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[0], gs.skinData.Data[gs.skinData.skinID[0]].informationP5, 0);
+							LoadSceneG(&gs, &gs.skstruct, 0);
 							ReadKeyConfig(&gs, "LR2files/Config/keyconfig.xml");
 							LUNARIS_START(&gs);
 							break;
 						case 9:
-							LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[17], gs.skinData.Data[gs.skinData.skinID[17]].informationP5, 0);
+							LoadSceneG(&gs, &gs.skstruct, 17);
 							gs.sSelect.listCalculatedBar = gs.po4MainMenuCursor * 1000;
 							gs.sSelect.barMoveStartTime = GetTimeWrap();
 							gs.sSelect.barMoveEndTime = GetTimeWrap();
@@ -1106,7 +1107,7 @@ int main(int argc, char** argv) {
 							ProcS_Select(&gs);
 							break;
 						case 10:
-							LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[18], gs.skinData.Data[gs.skinData.skinID[18]].informationP5, 0);
+							LoadSceneG(&gs, &gs.skstruct, 18);
 							break;
 						case 11:
 							LoadScene(&gs.skstruct, CSTR("LR2files/event.csv"), 0, 0);
@@ -1798,6 +1799,14 @@ int main(int argc, char** argv) {
 					printfDx("maxGAP %f\n", gs.timer1.maxGAP);
 					printfDx("occured %d\n", gs.timer1.GAPcount);
 					//TEST END
+					//TEST2
+					int dx, dy;
+					GetDrawScreenSize(&dx, &dy);
+					printfDx("skinsize %d %d \n", dx, dy);
+					GetWindowSize(&screenSizeX, &screenSizeY);
+					printfDx("scrnsize %d %d \n", screenSizeX, screenSizeY);
+					printfDx("mode %d\n", gs.config.system.screenmode);
+					//TEST2 END
 				}
 				gs.sSelect.flag_maniacPanel = 0;
 				gs.sSelect.unk4f74 = '\0';
@@ -1819,7 +1828,7 @@ int main(int argc, char** argv) {
 #endif // _WIN32
 							SetWaitVSyncFlag(gs.config.system.vsync);
 							SetDrawScreen(DX_SCREEN_BACK);
-							LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[5], gs.skinData.Data[gs.skinData.skinID[5]].informationP5, 0);
+							LoadSceneG(&gs, &gs.skstruct, 5);
 							SetMouseDispFlag(0);
 							gs.is_clicked_screenModeChange = 0;
 #ifdef _WIN32
@@ -1863,7 +1872,7 @@ int main(int argc, char** argv) {
 #endif // _WIN32
 							SetWaitVSyncFlag(gs.config.system.vsync);
 							SetDrawScreen(DX_SCREEN_BACK);
-							LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[5], gs.skinData.Data[gs.skinData.skinID[5]].informationP5, 0);
+							LoadSceneG(&gs, &gs.skstruct, 5);
 							SetMouseDispFlag(0);
 							gs.is_clicked_screenModeChange = 0;
 						}
@@ -1973,20 +1982,20 @@ int main(int argc, char** argv) {
 						CSTR captureFilename;
 						GetDateTime(&date);
 						cstrSprintf(&captureFilename, "screenshot/LR2 %04d-%02d-%02d %02d-%02d-%02d.png", date.Year, date.Mon, date.Day, date.Hour, date.Min, date.Sec);
-						SaveDrawScreenToPNG(0, 0, 640, 480, captureFilename, -1); //TODO_RESOULUTION
+						SaveDrawScreenToPNG(0, 0, skinSizeX, skinSizeY, captureFilename, -1);
 						gs.flag_Screenshot = 0;
 						PlaySound(&gs.audio, &gs.audio.sysSound.screenshot, gs.audio.chnKey, -1);
 					}
 					else if (gs.flag_Screenshot == 2) {
 						CSTR captureFilename;
-						int scrdraw = MakeGraph(640, 480, 0); //TODO_RESOULUTION
-						GetDrawScreenGraph(0, 0, 640, 480, scrdraw, 1);
+						int scrdraw = MakeGraph(skinSizeX, skinSizeY, 0);
+						GetDrawScreenGraph(0, 0, skinSizeX, skinSizeY, scrdraw, 1);
 						SetDrawMode(1);
 						SetDrawBlendMode(0, 255);
-						DrawExtendGraph(0, 0, 320, 240, scrdraw, 0);
+						DrawExtendGraph(0, 0, skinSizeX/2, skinSizeY/2, scrdraw, 0);
 						GetDateTime(&date);
 						cstrSprintf(&captureFilename, "screenshot/LR2 %04d-%02d-%02d %02d-%02d-%02d.png", date.Year, date.Mon, date.Day, date.Hour, date.Min, date.Sec);
-						SaveDrawScreenToPNG(0, 0, 320, 240, captureFilename, -1);
+						SaveDrawScreenToPNG(0, 0, skinSizeX/2, skinSizeY/2, captureFilename, -1);
 						DrawGraph(0, 0, scrdraw, 0);
 						DeleteGraph(scrdraw);
 						gs.flag_Screenshot = 0;
@@ -2091,10 +2100,8 @@ int main(int argc, char** argv) {
 					SetObjectStrings_SongSelect(&gs);
 				}
 				if (gs.KeyInput.inputID[KEY_INPUT_F4] == 1 && gs.procSelecter == 2) {
-					gs.config.system.screenmode++;
+					LoopInRange(0, 1, 1, &gs.config.system.screenmode);
 					gs.is_clicked_screenModeChange = 1;
-					if (gs.config.system.screenmode >= 2) gs.config.system.screenmode = 0;
-					else if (gs.config.system.screenmode < 0) gs.config.system.screenmode = 1;
 				}
 				if (gs.sSelect.is_filter_changed) {
 					SetBmsFilter(&gs, sql3);
@@ -2122,7 +2129,7 @@ int main(int argc, char** argv) {
 						gs.skstruct.op[i] = 0;
 						gs.skstruct2.op[i] = 0;
 					}
-					LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[5], gs.skinData.Data[gs.skinData.skinID[5]].informationP5, 0);
+					LoadSceneG(&gs, &gs.skstruct, 5);
 					SetWaitVSyncFlag(gs.config.system.vsync);
 					SetMouseDispFlag(0);
 					gs.is_clicked_screenModeChange = 0;
@@ -2138,7 +2145,7 @@ int main(int argc, char** argv) {
 					}
 					SetGraphMode(640, 480, (gs.config.system.highcolor == 0 ? 32 : 16), 60); //TODO_RESOULUTION
 					SetDrawScreen(DX_SCREEN_BACK);
-					LoadScene(&gs.skstruct, gs.config.skin.skinFilePath[5], gs.skinData.Data[gs.skinData.skinID[5]].informationP5, 0);
+					LoadSceneG(&gs, &gs.skstruct, 5);
 					SetWaitVSyncFlag(gs.config.system.vsync);
 					SetMouseDispFlag(0);
 					gs.is_clicked_screenModeChange = 0;

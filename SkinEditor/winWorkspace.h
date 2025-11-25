@@ -13,6 +13,8 @@ typedef struct ARR {
     int Alloc(int structsize, int size);
     int Realloc(int size);
     int Free();
+
+    int push_back(void* data, int size);
 }ARR;
 
 typedef struct SKINFILELINEREAD {
@@ -40,7 +42,7 @@ typedef struct IFUNIT {
 
 typedef struct IMG {
     CSTR name;
-    void* data;
+    void* data = NULL;
     int sizeX;
     int sizeY;
     int parent;
@@ -58,7 +60,10 @@ typedef struct WORKSPACE {
     char mainpath[MAX_PATH];
     byte* filedata = NULL;
     unsigned int filedatasize = 0;
+
+    ARR subpath;
     ARR skinfileLines;
+    ARR imgs;
 
 
     int previewScreen;
@@ -79,6 +84,10 @@ typedef struct WORKSPACE {
 
     int LoadSkin(char* path);
     int LoadSkin2(char* path);
+    int SaveSkinScript(char* path, bool split, bool nocomment);
+
+    bool wSaveMenu;
+    int drawSaveMenu();
 
     bool wTextEdit;
     int drawTextEdit();
@@ -89,6 +98,7 @@ typedef struct WORKSPACE {
 
     bool wImgManager;
     int drawImgManager();
+    int loadSRC();
     
 
 }WORKSPACE;

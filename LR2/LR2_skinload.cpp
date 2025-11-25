@@ -483,14 +483,14 @@ int InitSkin(skstruct *sk, int /*unused*/, char font) {
 		sk->customfile[i].fillzero();
 	}
 	sk->customfile_count = 0;
-
-	DeleteGraph(sk->GrHandle[105]);
-	sk->GrHandle[105] = MakeGraph(640, 480); //TODO_RESOULUTION
+	
+	DeleteGraph(sk->GrHandle[GrH_Preview]);
+	sk->GrHandle[GrH_Preview] = MakeGraph(skinSizeX, skinSizeY); //TODO_RESOULUTION	
 	DeleteGraph(sk->GrHandle[104]);
 	sk->GrHandle[104] = MakeGraph(256, 256);
-	if (sk->GrHandle[100] == -1) sk->GrHandle[100] = MakeGraph(640, 480);
-	if (sk->GrHandle[101] == -1) sk->GrHandle[101] = MakeGraph(640, 480);
-	if (sk->GrHandle[102] == -1) sk->GrHandle[102] = MakeGraph(300, 80);
+	if (sk->GrHandle[GrH_Stage] == -1) sk->GrHandle[GrH_Stage] = MakeGraph(640, 480);
+	if (sk->GrHandle[GrH_BackBMP] == -1) sk->GrHandle[GrH_BackBMP] = MakeGraph(640, 480);
+	if (sk->GrHandle[GrH_Banner] == -1) sk->GrHandle[GrH_Banner] = MakeGraph(300, 80);
 	DeleteGraph(sk->GrHandle[110]);
 	sk->GrHandle[110] = LoadGraph("LR2files/Config/black.bmp");
 	DeleteGraph(sk->GrHandle[111]);
@@ -1858,7 +1858,7 @@ int ReadSkin(skstruct *sk,CSTR FilePath, int unused, int skin_num, SkinUser* sku
 }
 
 //4a7520 LoadScene
-int LoadScene(skstruct *sk, CSTR skinfile, int p5, char font) {
+int LoadScene(skstruct* sk, CSTR skinfile, int p5, char font) {
 	SkinUser tsku;
 	CSTR tStr;
 	InitSkin(sk, p5, font);
@@ -1891,4 +1891,12 @@ int LoadScene(skstruct *sk, CSTR skinfile, int p5, char font) {
 		if (t > 899 && t < 1000) sk->op[t] = 1;
 	}
 	return ReadSkin(sk, skinfile, p5, 0, &tsku, font);
+}
+int LoadSceneG(game* g, skstruct* sk, int skinNum, int font) {
+	CSTR skinfile(g->config.skin.skinFilePath[skinNum]);
+
+	Resize(g, g->skinData.Data[g->skinData.skinID[skinNum]].targetX, g->skinData.Data[g->skinData.skinID[skinNum]].targetY, 0);
+	
+	LoadScene(sk, skinfile, g->skinData.Data[g->skinData.skinID[skinNum]].informationP5, font);
+	return 0;
 }

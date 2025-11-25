@@ -70,6 +70,20 @@ typedef enum SKINTYPE {
 	SKINTYPE_COURSEEDIT = 20
 } SKINTYPE;
 
+typedef enum GRHANDLETYPE {
+	GRHTYPE_STAGE = 100,
+	GRHTYPE_BACKBMP = 101,
+	GRHTYPE_BANNER = 102,
+
+	GRHTYPE_PREVIEW = 105
+}GRHANDLETYPE;
+
+#define GrH_Stage 100
+#define GrH_BackBMP 101
+#define GrH_Banner 102
+#define GrH_Preview 105 
+
+
 typedef struct BMSMETA BMSMETA, *PBMSMETA;
 
 struct BMSMETA {
@@ -1591,6 +1605,10 @@ struct SkinHeader { /* SkinInfo */
 	int informationP5;
 	struct SkinCustom customs[100];
 	int custom_count;
+
+	//RESOLUTION
+	int targetX = 640;
+	int targetY = 480;
 };
 
 struct RANKINGPLAYER {

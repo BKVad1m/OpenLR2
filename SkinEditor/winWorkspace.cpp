@@ -56,23 +56,26 @@ int WORKSPACE::draw() {
             if (ImGui::MenuItem("Open", NULL, &wSkinList)) {
                 ScanSkins();
             }
+            if (loaded) {
+                ImGui::MenuItem("Save as", NULL, &wSaveMenu);
+            }
             ImGui::EndMenu();
         }
         if (loaded) {
+            
             if (ImGui::BeginMenu("Windows")) {
                 //HOW TO ADD FEATURE - STEP 3 : add menu and flag here
                 ImGui::MenuItem("Text Editor", NULL, &wTextEdit);
-                if (ImGui::MenuItem("Preview", NULL, &wPreview)) {
-                    SetWindowVisibleFlag(1);
-                }
+                ImGui::MenuItem("Preview", NULL, &wPreview);
                 ImGui::MenuItem("Customize", NULL, &wCustomize);
+                if (ImGui::MenuItem("ImgManager", NULL, &wImgManager)) { loadSRC(); };
                 ImGui::EndMenu();
             }
         }
         ImGui::EndMenuBar();
     }
 
-    ImGui::Text("%s", loaded? mainpath:"no skin loaded");
+    ImGui::Text("%s", loaded? "" : "no skin loaded");
 
     ImGui::End();
 
@@ -80,9 +83,12 @@ int WORKSPACE::draw() {
     //HOW TO ADD FEATURE - STEP 4 : call function
     if (wSkinList) drawSkinList();
 
+    if (wSaveMenu) drawSaveMenu();
+
     if (wTextEdit) drawTextEdit();
     if (wPreview) drawPreview();
     if (wCustomize) drawCustomize();
+    if (wImgManager) drawImgManager();
 
 
 
@@ -137,6 +143,7 @@ int WORKSPACE::drawSkinList() {
     ImGui::Text("%s", g.skinData.Data[m].title.outstr());
     ImGui::Text("%s", g.skinData.Data[m].maker.outstr());
     ImGui::Text("%s", SKINTYPESTR[g.skinData.Data[m].type]);
+    ImGui::Text("%d * %d", g.skinData.Data[m].targetX, g.skinData.Data[m].targetY);
 
     if (ImGui::Button("LOAD", { 0, 0 })) {
         meta = g.skinData.Data[m];
@@ -170,6 +177,8 @@ int WORKSPACE::LoadSkin2(char* path) {
         readS.line.resize(1024);
         sprintf(readS.line, "$FILE %s start", path);
         readS.isComment = true;
+        readS.numTotal = skinfileLines.count;
+        readS.num = 0;
         skinfileLines.count++;
 
         while (1) {
@@ -202,31 +211,32 @@ int WORKSPACE::LoadSkin2(char* path) {
         readE.line.resize(1024);
         sprintf(readE.line, "$FILE %s end", path);
         readE.isComment = true;
+        readE.numTotal = skinfileLines.count;
+        readE.num = 0;
         skinfileLines.count++;
         fclose(pFile);
     }
-    
 
     return 0;
 }
 
 int WORKSPACE::LoadSkin(char* path) {
-    FILE* pFile;
-    pFile = fopen(path, "rb");
-    if (pFile) {
-        fseek(pFile, 0, SEEK_END);
-        filedatasize = ftell(pFile);
+    //FILE* pFile;
+    //pFile = fopen(path, "rb");
+    //if (pFile) {
+    //    fseek(pFile, 0, SEEK_END);
+    //    filedatasize = ftell(pFile);
 
-        if (filedata) free(filedata);
-        filedata = (byte*)malloc(filedatasize + 1);//we need null to work
-        if (filedata) {
-            memset(filedata, 0, filedatasize + 1);
-            fseek(pFile, 0, SEEK_SET);
-            fread(filedata, 1, filedatasize, pFile);
-        }
+    //    if (filedata) free(filedata);
+    //    filedata = (byte*)malloc(filedatasize + 1);//we need null to work
+    //    if (filedata) {
+    //        memset(filedata, 0, filedatasize + 1);
+    //        fseek(pFile, 0, SEEK_SET);
+    //        fread(filedata, 1, filedatasize, pFile);
+    //    }
 
-        fclose(pFile);
-    }
+    //    fclose(pFile);
+    //}
 
     skinfileLines.Free();
     skinfileLines.Alloc(sizeof(SKINFILELINEREAD), 1000);
@@ -321,7 +331,7 @@ int WORKSPACE::drawPreview() {
     LoadTextureFromRawMemory(GetImageAddressSoftImage(previewScreen), renderer, &preview_tex, 640, 480, 4);
     ImGui::Image(preview_tex, { 640, 480 }, { 0, 0 }, { 1, 1 });
 
-    if (ImGui::Button("Restart")) {
+    if (ImGui::Button("Start")) {
         LR2SESceneInit(&g, meta.type);
     }
     LR2SESceneProc(&g, meta.type);
@@ -420,6 +430,119 @@ int WORKSPACE::drawTextEdit() {
     return 0;
 }
 
+int WORKSPACE::loadSRC() {
+
+
+
+    for (int n = 0; n < skinfileLines.count; n++) {
+        SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[n];
+        if (read.line.left(10).isSame("#SRC_IMAGE")) {
+            
+        }
+    }
+
+
+
+    return 0;
+}
+
+int WORKSPACE::drawImgManager() {
+    char title[260];
+    snprintf(title, sizeof(title), "ImageManager##%d", num);
+    ImGui::Begin(title, &wImgManager);
+
+
+
+
+    ImGui::End();
+    return 0;
+}
+
+
+//TODO apply split
+int WORKSPACE::SaveSkinScript(char* path, bool split, bool nocomment) {
+
+    FILE* pFile;
+    pFile = fopen(path, "wb");
+    if (pFile == NULL) return -1;
+    for (int i = 0; i < skinfileLines.count; i++) {
+        if (nocomment && ((SKINFILELINEREAD*)skinfileLines.data)[i].isComment) continue;
+
+        fputs(((SKINFILELINEREAD*)skinfileLines.data)[i].line, pFile);
+        fputs("\n", pFile);
+    }
+    fclose(pFile);
+    return 0;
+}
+
+int WORKSPACE::drawSaveMenu() {
+    char title[260], input[32], result[32];
+    snprintf(title, sizeof(title), "SaveMenu##%d", num);
+    snprintf(input, sizeof(input), "##savePathInput%d", num);
+
+    if(ImGui::Begin(title, &wSaveMenu, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse)) {
+        static int split, nocomment, exist, success;
+        static bool wSaveMenuResult;
+
+        ImGui::Text("old path is %s ", mainpath);
+        static char newPath[260] = "";
+        if (newPath[0] == '\0') { //very init
+            strncpy(newPath, mainpath, sizeof(newPath));
+        }
+
+        if (ImGui::Button("BROWSE", { 0, 0 })) {
+            //TODO
+        }
+        ImGui::SameLine(0, 0);
+        ImGui::InputText(input, newPath, IM_ARRAYSIZE(newPath));
+        exist = IsFileExist(newPath) || !strcmp(mainpath, newPath); //TODO reduce cpu usage
+
+        if (exist) ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "CAUTION: OVERWRITE");
+        ImGui::SeparatorText("Script files");
+        ImGui::RadioButton("merge scripts", &split, 0);
+        ImGui::RadioButton("split scripts", &split, 1);
+        ImGui::SeparatorText("Comments");
+        ImGui::RadioButton("maintain memo", &nocomment, 0);
+        ImGui::RadioButton("delete memo", &nocomment, 1);
+        
+        if (ImGui::Button("SAVE", { 0, 0 })) {
+            success = (SaveSkinScript(newPath, split, nocomment) == 0);
+        }
+
+        if (success) {
+            snprintf(result, sizeof(result), "SaveResult##Save%d", num);
+            if (ImGui::Begin(result, &wSaveMenuResult, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize)) {
+                ImGui::Text("save success");
+                if (ImGui::Button("OK")){
+                    wSaveMenuResult = 0;
+                    wSaveMenu = 0;
+                    success = 0;
+                }
+                ImGui::End();
+            }
+        }
+        /*if (success) { //why it doesn't work??
+            snprintf(result, sizeof(result), "SaveResult##Save%d", num);
+            if (ImGui::BeginPopupModal("Save?", &wSaveMenuResult, ImGuiWindowFlags_AlwaysAutoResize)){
+                ImGui::Text("save success");
+                if (ImGui::Button("OK")) {
+                    wSaveMenuResult = 0;
+                    wSaveMenu = 0;
+                    success = 0;
+                }
+                ImGui::EndPopup();
+            }
+        }*/
+        ImGui::End();
+    }
+    return 0;
+}
+//{
+//    CSTR savepath(mainpath);
+//    savepath.add("_master");
+//    SaveMaster(savepath);
+//}
+
 //HOW TO ADD FEATURE - STEP 2 : write function
 
 
@@ -460,5 +583,10 @@ int ARR::Free() {
     data = NULL;
     bufSize = 0;
     count = 0;
+    return 0;
+}
+
+int ARR::push_back(void* newdata, int size) {
+    //memcpy( this->data + unitSize * count, newdata, size);
     return 0;
 }

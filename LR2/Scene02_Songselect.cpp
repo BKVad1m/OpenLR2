@@ -69,10 +69,10 @@ void ThreadProc_LoadBanner(void *param) { // TODO: take game&
 		path = dir;
 		path.add(g->sSelect.bmsList[g->sSelect.cur_song].banner);
 
-		if (ReloadImage(path, &g->skstruct.GrHandle[102]) == -1) {
+		if (ReloadImage(path, &g->skstruct.GrHandle[GrH_Banner]) == -1) {
 			path = path.left(path.length() - 3);
 			path.add("png");
-			if (ReloadImage(path, &g->skstruct.GrHandle[102]) == -1) {
+			if (ReloadImage(path, &g->skstruct.GrHandle[GrH_Banner]) == -1) {
 				g->sSelect.bmsList[g->sSelect.cur_song].isBanner = 0;
 			}
 		}

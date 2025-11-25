@@ -53,7 +53,8 @@ int SkinSelect_SoundSet(game *g, CSTR filepath) {
 
 //419c00
 int ProcI_SkinSelect(game *g) {
-
+	
+	//retutn to SongSelect
 	if ((g->KeyInput.inputID[KEY_INPUT_ESCAPE] == 1 || g->KeyInput.mouse_buttonR == 1) && g->procPhase == 1) {
 		SetTimeLapse(2, &g->timer1);
 		g->procPhase = 2;
@@ -63,7 +64,10 @@ int ProcI_SkinSelect(game *g) {
 			g->procSelecter = 2;
 		}
 	}
+	//retutn to SongSelect END
 
+
+	//set text: skin title and customization
 	if (g->KeyInput.mousewheel <= -1) {
 		g->skinData.previewCustomID++;
 		if (g->skinData.previewCustomID >= g->skinData.Data[g->skinData.previewID].custom_count - 5) g->skinData.previewCustomID = g->skinData.Data[g->skinData.previewID].custom_count - 5;
@@ -93,10 +97,13 @@ int ProcI_SkinSelect(game *g) {
 			SetObjectString(110 + i, g->skinData.Data[g->skinData.previewID].customs[g->skinData.previewCustomID + i].op_label[g->skinData.Data[g->skinData.previewID].customs[g->skinData.previewCustomID + i].dst_op_selected - g->skinData.Data[g->skinData.previewID].customs[g->skinData.previewCustomID + i].dst_op_start], g->txtStruct.objectStr);
 		}
 	}
+	//set text: skin title and customization END
 
+	//skip no preview
 	if (g->config.system.disableskinpreview == 1 || g->skinData.Data[g->skinData.previewID].type == SKINTYPE_SOUNDSET) {
 		return 0;
 	}
+
 
 	if (GetTimeLapse(0, &g->timer2) > g->skstruct2.startinput_start && GetTimeLapse(1, &g->timer2) == -1.0){
 		SetTimeLapse(1, &g->timer2);
@@ -253,25 +260,46 @@ int ProcI_SkinSelect(game *g) {
 		Proc_Result(g, &g->skstruct2, &g->timer2);
 	}
 
+
+
+	int& tx = g->skinData.Data[g->skinData.previewID].targetX;
+	int& ty = g->skinData.Data[g->skinData.previewID].targetY;
+	if (!(tx == 640 && ty == 480)) {
+		g->skstruct.GrHandle[106] = MakeScreen(tx, ty);
+		SetDrawScreen(g->skstruct.GrHandle[106]);
+	}
+
 	for (int i = 0; i < g->skstruct2.drBuf.count; i++) {
 		LRDraw(&g->skstruct2.drBuf, &g->txtStruct, &g->sSelect, &g->skstruct2, i, 0, 0);
 	}
 
-	ScreenCapture(g->skstruct.GrHandle[105]);
+	SetDrawScreen(DX_SCREEN_BACK); //there is a flickering in not SD skins preview
+	if (!(tx == 640 && ty == 480)) {
+		DrawExtendGraph(0, 0, 640, 480, g->skstruct.GrHandle[106], 1);
+		DeleteGraph(g->skstruct.GrHandle[106]);
+	}
+	ScreenCapture(g->skstruct.GrHandle[GrH_Preview], 640, 480); //thumbnail size is fixed as SRC 105(GrH_Preview], in skin file
+	
 	clsDx();
 	InitDrawingBuffer(&g->skstruct2.drBuf);
 	return 1;
 }
 
 //41aff0
-int MakeSkinPreview(game *g, skstruct *sk, SkinManage *sm) {
+int MakeSkinPreview(game* g, skstruct* sk, SkinManage* sm) {
 	//disable
 	if (g->config.system.disableskinpreview == 1 || sm->Data[sm->previewID].type == SKINTYPE_SOUNDSET) {
 		int grh = LoadGraph(sm->Data[sm->previewID].thumbnail, 0);
 		if (grh != -1) {
-			DrawExtendGraph(0, 0, 640, 480, grh, 0); //TODO_RESOULUTION
-			ScreenCapture(g->skstruct.GrHandle[105]);
+			DrawExtendGraph(0, 0, 640, 480, grh, 0);
+			ScreenCapture(g->skstruct.GrHandle[GrH_Preview], 640, 480);
 			DeleteGraph(grh);
+		}
+		//TOFIX : when no thumbnail, previsous selected thumbnail remains, I don't know how to draw that "thumbnail" image)
+		//thumbnail size is fixed, in skin file. it is SRC 105
+		else {
+			DrawBox(0, 0, 640, 480, 0x00000000, 1, 1);
+			ScreenCapture(g->skstruct.GrHandle[GrH_Preview], 640, 480);
 		}
 		return 0;
 	}
@@ -284,8 +312,8 @@ int MakeSkinPreview(game *g, skstruct *sk, SkinManage *sm) {
 		g->skstruct.op[900 + i] = 0;
 		g->skstruct2.op[900 + i] = 0;
 	}
-	DeleteGraph(sk->GrHandle[100]);
-	sk->GrHandle[100] = LoadGraph("LR2files/Config/title.bmp", 0);
+	DeleteGraph(sk->GrHandle[GrH_Stage]);
+	sk->GrHandle[GrH_Stage] = LoadGraph("LR2files/Config/title.bmp", 0);
 	LoadScene(sk, sm->Data[sm->previewID].skinFile, 0, 1);
 	return 0;
 }

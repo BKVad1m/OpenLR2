@@ -7,8 +7,8 @@ int ReloadImage(CSTR filename, int *grHandle) {
 }
 
 //49ed30
-int ScreenCapture(uint iGrHandle){
-	GetDrawScreenGraph(0, 0, 640, 480, iGrHandle, 1); //TODO_RESOULUTION
+int ScreenCapture(uint iGrHandle, int x, int y){
+	GetDrawScreenGraph(0, 0, x, y, iGrHandle, 1);
 	return 0;
 }
 
@@ -19,3 +19,18 @@ int SetBackground(int hImage) {
 	return 1;
 }
 
+int screenSizeX, screenSizeY;
+int skinSizeX, skinSizeY;
+int Resize(game* g, double skinX, double skinY, bool bit16) {
+	int oldXpos = 320, oldYpos = 240;
+
+	GetWindowPosition(&oldXpos, &oldYpos);
+	SetGraphMode(skinX, skinY, bit16? 16 : 32, 60);
+	SetWindowSizeExtendRate((double)g->config.system.windowsize_x / skinX, (double)g->config.system.windowsize_y / skinY);
+	SetDrawScreen(DX_SCREEN_BACK);
+	SetWindowPosition(oldXpos, oldYpos);
+
+	skinSizeX = skinX;
+	skinSizeY = skinY;
+	return 0;
+}

@@ -5,7 +5,7 @@
 //408850
 int ProcS_Result(game *g) {
 
-	LoadScene(&g->skstruct, g->config.skin.skinFilePath[7], g->skinData.Data[g->skinData.skinID[7]].informationP5, 0);
+	LoadSceneG(g, &g->skstruct, 7);
 
 	if (g->skstruct.flag_flip)
 		FlipScore(g);
