@@ -269,6 +269,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		SetUseFPUPreserveFlag(1);
 		SetUseDirectInputFlag(1); //DXLIBVER: not in original, but we need it to make same reaction.
 		SetUseDirect3DVersion(DX_DIRECT3D_9); //DXLIBVER: if not set, it's DX11 (over 3.13e)
+				
+		
 		if (DxLib_Init() != -1) {
 			ChangeFont("", 0);
 			SetLogFontSize(14); //DXLIBVER: change this for further dxlib version
@@ -643,10 +645,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							}
 							gs.gameplay.ghostBattle = '\0';
 							ReadKeyConfig(&gs, (gs.config.select.control == 0) ? "LR2files\\Config\\keyconfig.xml" : "LR2files\\Config\\keyconfig_p.xml");
-							DeleteGraph(gs.skstruct.GrHandle[100]);
-							gs.skstruct.GrHandle[100] = -1;
-							DeleteGraph(gs.skstruct.GrHandle[101]);
-							gs.skstruct.GrHandle[101] = -1;
+							DeleteGraph(gs.skstruct.GrHandle[GrH_Stage]);
+							gs.skstruct.GrHandle[GrH_Stage] = -1;
+							DeleteGraph(gs.skstruct.GrHandle[GrH_BackBMP]);
+							gs.skstruct.GrHandle[GrH_BackBMP] = -1;
 							gs.sSelect.is_clicked_autoplay_replay = '\0';
 							gs.sSelect.is_clicked_keyconfig = '\0';
 							gs.sSelect.is_clicked_skinselect = '\0';
@@ -752,36 +754,36 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 							ProcS_Select(&gs);
 							break;
-
+							
 						case 3:{
-							DeleteGraph(gs.skstruct.GrHandle[100]);
-							gs.skstruct.GrHandle[100] = -1;
-							DeleteGraph(gs.skstruct.GrHandle[101]);
-							gs.skstruct.GrHandle[101] = -1;
-							DeleteGraph(gs.skstruct.GrHandle[102]);
-							gs.skstruct.GrHandle[102] = -1;
+							DeleteGraph(gs.skstruct.GrHandle[GrH_Stage]);
+							gs.skstruct.GrHandle[GrH_Stage] = -1;
+							DeleteGraph(gs.skstruct.GrHandle[GrH_BackBMP]);
+							gs.skstruct.GrHandle[GrH_BackBMP] = -1;
+							DeleteGraph(gs.skstruct.GrHandle[GrH_Banner]);
+							gs.skstruct.GrHandle[GrH_Banner] = -1;
 							SetTransColor(0, 255, 0);
 							CSTR dir(gs.sSelect.bmsList[gs.sSelect.cur_song].filepath.getDirectory());
 							if (gs.sSelect.bmsList[gs.sSelect.cur_song].isStagefile) {
 								CSTR oBuf;
 								if (FindAltImage(gs.sSelect.bmsList[gs.sSelect.cur_song].stagefile, dir, &oBuf) != 1)
 									gs.sSelect.bmsList[gs.sSelect.cur_song].isStagefile = 0;
-								gs.skstruct.GrHandle[100] = LoadGraph(oBuf, 0);
-								if (gs.skstruct.GrHandle[100] == -1) gs.sSelect.bmsList[gs.sSelect.cur_song].isStagefile = 0;
+								gs.skstruct.GrHandle[GrH_Stage] = LoadGraph(oBuf, 0);
+								if (gs.skstruct.GrHandle[GrH_Stage] == -1) gs.sSelect.bmsList[gs.sSelect.cur_song].isStagefile = 0;
 							}
 							if (gs.sSelect.bmsList[gs.sSelect.cur_song].isBackBMP) {
 								CSTR oBuf;
 								if (FindAltImage(gs.sSelect.bmsList[gs.sSelect.cur_song].backBMP, dir, &oBuf) != 1)
 									gs.sSelect.bmsList[gs.sSelect.cur_song].isBackBMP = 0;
-								gs.skstruct.GrHandle[101] = LoadGraph(oBuf, 0);
-								if (gs.skstruct.GrHandle[101] == -1) gs.sSelect.bmsList[gs.sSelect.cur_song].isBackBMP = 0;
+								gs.skstruct.GrHandle[GrH_BackBMP] = LoadGraph(oBuf, 0);
+								if (gs.skstruct.GrHandle[GrH_BackBMP] == -1) gs.sSelect.bmsList[gs.sSelect.cur_song].isBackBMP = 0;
 							}
 							if (gs.sSelect.bmsList[gs.sSelect.cur_song].isBanner) {
 								CSTR oBuf;
 								if (FindAltImage(gs.sSelect.bmsList[gs.sSelect.cur_song].banner, dir, &oBuf) != 1) 
 									gs.sSelect.bmsList[gs.sSelect.cur_song].isBanner = 0;
-								gs.skstruct.GrHandle[102] = LoadGraph(oBuf, 0); //TOFIX : when banner size is not 300 80, this will break graph size and banner is not displayed until next song
-								if (gs.skstruct.GrHandle[102] == -1) gs.sSelect.bmsList[gs.sSelect.cur_song].isBanner = 0;
+								gs.skstruct.GrHandle[GrH_Banner] = LoadGraph(oBuf, 0); //TOFIX : when banner size is not 300 80, this will break graph size and banner is not displayed until next song
+								if (gs.skstruct.GrHandle[GrH_Banner] == -1) gs.sSelect.bmsList[gs.sSelect.cur_song].isBanner = 0;
 							}
 							SetTransColor(0, 255, 0);
 							

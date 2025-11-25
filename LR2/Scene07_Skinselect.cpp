@@ -270,7 +270,7 @@ int MakeSkinPreview(game *g, skstruct *sk, SkinManage *sm) {
 		int grh = LoadGraph(sm->Data[sm->previewID].thumbnail, 0);
 		if (grh != -1) {
 			DrawExtendGraph(0, 0, 640, 480, grh, 0); //TODO_RESOULUTION
-			ScreenCapture(g->skstruct.GrHandle[105]);
+			ScreenCapture(g->skstruct.GrHandle[GrH_Preview], 640, 480);
 			DeleteGraph(grh);
 		}
 		return 0;
