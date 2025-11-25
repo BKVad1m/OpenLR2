@@ -629,8 +629,8 @@ int WINAPI WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, LPSTR _lpCmdL
 					gs.gameplay.flag_gameinput = 0;
 					gs.gameplay.previewStatus = 0;
 					for (int i = 0; i < 900; i++) {
-						gs.skstruct.op[i] = (GetOptionFlag_dst(&gs, i) > 0);
-						gs.skstruct2.op[i] = (GetOptionFlag_dst(&gs, i) > 0);
+						gs.skstruct.op[i] = GetOptionFlag_dst(&gs, i);
+						gs.skstruct2.op[i] = GetOptionFlag_dst(&gs, i);
 					}
 					for (int i = 900; i < 1000; i++) {
 						gs.skstruct.op[i] = 0;
@@ -2045,8 +2045,8 @@ int WINAPI WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, LPSTR _lpCmdL
 					SetWaitVSyncFlag(gs.config.system.vsync);
 					SetDrawScreen(DX_SCREEN_BACK);
 					for (int i = 0; i < 900; i++) {
-						gs.skstruct.op[i] = (GetOptionFlag_dst(&gs, i) > 0);
-						gs.skstruct2.op[i] = (GetOptionFlag_dst(&gs, i) > 0);
+						gs.skstruct.op[i] = GetOptionFlag_dst(&gs, i);
+						gs.skstruct2.op[i] = GetOptionFlag_dst(&gs, i);
 					}
 					for (int i = 900; i < 1000; i++) {
 						gs.skstruct.op[i] = 0;

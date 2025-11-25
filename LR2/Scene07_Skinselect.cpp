@@ -277,8 +277,8 @@ int MakeSkinPreview(game *g, skstruct *sk, SkinManage *sm) {
 	}
 	//enable
 	for (int i = 0; i < 900; i++) {
-		g->skstruct.op[i] = (GetOptionFlag_dst(g, i) > 0);
-		g->skstruct2.op[i] = (GetOptionFlag_dst(g, i) > 0);
+		g->skstruct.op[i] = GetOptionFlag_dst(g, i);
+		g->skstruct2.op[i] = GetOptionFlag_dst(g, i);
 	}
 	for (int i = 0; i < 100; i++) {
 		g->skstruct.op[900 + i] = 0;
@@ -438,7 +438,7 @@ int ProcS_SkinSelect(game *g) {
 		SetObjectString(110 + i, skd.customs[d.previewCustomID + i].op_label[skd.customs[d.previewCustomID + i].dst_op_selected - skd.customs[d.previewCustomID + i].dst_op_start], g->txtStruct.objectStr);
 	}
 	for (int i = 0; i < 1000; i++) {
-		g->skstruct2.op[i] = (GetOptionFlag_dst(g, i) > 0);
+		g->skstruct2.op[i] = GetOptionFlag_dst(g, i);
 	}
 	MakeSkinPreview(g, &g->skstruct2, &d);
 	PlayPreviewSample(g);

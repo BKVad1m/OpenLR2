@@ -1451,7 +1451,7 @@ void CheckNewSong(glb_dbgame *glb) {
 	sqlite3_stmt *pStmt;
 	char buf[1024];
 	int filDiff, filKey;
-	int err = 0;
+	bool err = false;
 
 	std::unique_lock l{g_db_lock};
 	glb->pGame->sSelect.searchFocused = 2;
