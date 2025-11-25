@@ -77,8 +77,9 @@ int REC_CpyAVIStreamToFile(PAVIFILE pfile, PAVISTREAM pavi, int unused) {
 		for (; lpos <= totalLength; lpos += samples) {
 			if (!(AVIStreamRead(pavi, lpos, -1, NULL, 0, &sz, &samples) == 0 && sz > 0 && samples > 0)) break;
 			if (AVIStreamRead(pavi, lpos, 4096, NULL, 0, &sz, &samples) != 0) break;
-			lpFormat = realloc(lpFormat, sz);
-			if (lpFormat == NULL) break;
+			auto* format = realloc(lpFormat, sz);
+			if (format == nullptr) break;
+			lpFormat = format;
 			if (AVIStreamRead(pavi, lpos, samples, lpFormat, sz, &sz, &samples) != 0) break;
 			if (AVIStreamWrite(pNewavi, lpos, samples, lpFormat, sz, 0, NULL, NULL) != 0) break;
 		}
