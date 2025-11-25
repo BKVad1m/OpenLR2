@@ -1586,7 +1586,7 @@ void ThreadProc_RankingAutoUpdate(void *param) { // TODO: take game&
 	SetTimeLapse(177, &g->timer1);
 	g->net.IRstatus = 3;
 	while (GetTimeLapse(177, &g->timer1) <g->net.waitTime) {
-		Sleep(4);
+		std::this_thread::sleep_for(std::chrono::milliseconds(4));
 		if (g->net.waitForHandle || (isIR2 && (g->KeyInput.p1_buttonInput[4] == 2 || g->KeyInput.p2_buttonInput[4] == 2))) {
 			g->sSelect.isRankingAutoUpdateThread = 0;
 			ResetTimeLapse(177, &g->timer1);

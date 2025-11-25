@@ -295,7 +295,7 @@ int LR2SEDrawLoop(game* g, int gHandle) {
 				ErrorLogAdd("アイコン化が終わるまで待ちます\n");
 				while (ProcessMessage() == 0) {
 					if (IsIconic(GetMainWindowHandle()) == 0) break;
-					Sleep(16);
+					std::this_thread::sleep_for(std::chrono::milliseconds(16));
 				}
 				SetObjectStrings_SongSelect(g);
 				for (int i = 0; i < 200; i++) {
@@ -316,7 +316,7 @@ int LR2SEDrawLoop(game* g, int gHandle) {
 			g->KeyInput.inputID[KEY_INPUT_F1] = 0; //why F1?
 			g->sSelect.is_buttonIRpage = 0;
 			InitInputStructure2(&g->KeyInput);
-			Sleep(1000);
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 			if (g->sSelect.flag_maniacPanel || g->sSelect.unk4f74) ClsDrawScreen();
 		}
 		else if (g->KeyInput.inputID[KEY_INPUT_F2] == 2) {

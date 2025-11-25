@@ -330,7 +330,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					DrawGraph(0, 0, loadingGrHandle, 0);
 				}
 				ScreenFlip();
-				Sleep(500);
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			}
 
 			//mainphase
@@ -1775,7 +1775,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							ErrorLogAdd("アイコン化が終わるまで待ちます\n");
 							while (ProcessMessage() == 0) {
 								if (IsIconic(GetMainWindowHandle()) == 0) break;
-								Sleep(16);
+								std::this_thread::sleep_for(std::chrono::milliseconds(16));
 							}
 							SetObjectStrings_SongSelect(&gs);
 							for (int i = 0; i < 200; i++) {
@@ -1796,7 +1796,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						gs.KeyInput.inputID[KEY_INPUT_F1] = 0; //why F1?
 						gs.sSelect.is_buttonIRpage = 0;
 						InitInputStructure2(&gs.KeyInput);
-						Sleep(1000);
+						std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 						if (gs.sSelect.flag_maniacPanel || gs.sSelect.unk4f74) ClsDrawScreen();
 					}
 					else if (gs.KeyInput.inputID[KEY_INPUT_F2] == 2) {
@@ -2099,7 +2099,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			gs.gameplay.flag_closingPhase = 1;
 			double threadExitTimer = GetTimeWrap();
 			while (gs.gameplay.flag_threadExist) {
-				Sleep(10);
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 				if (GetTimeWrap() - threadExitTimer > 5000.0) break;
 			}
 			DxLib_End();
