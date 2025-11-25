@@ -3763,7 +3763,7 @@ int ParseBmsFile(gameplay *gp, CSTR filename, AUDIO *aud, ConfigStruct* cfg, BMS
 			if (recover <= 0) recover = 1;
 
 			double dmg_totalbase = 100.0 / (double)recover;
-			double dmg = max(dmg_notebase * 10, dmg_totalbase) / 10.0;
+			double dmg = std::max(dmg_notebase * 10, dmg_totalbase) / 10.0;
 
 			if (!gp->isCourse) {
 				gp->player[p].judge_damage[0][5] = total[p] / (float)notes;

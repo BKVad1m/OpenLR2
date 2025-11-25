@@ -2,6 +2,8 @@
 #include "Engine.h"
 #include "LR2_statlong.h"
 
+#include <shellapi.h>
+
 int EnabledInsane;
 //404fe0 thiscall in original code
 SONGDATA * COPY_SONGDATA(SONGDATA *s1, SONGDATA *s2){

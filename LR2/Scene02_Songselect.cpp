@@ -1811,7 +1811,7 @@ void SubProcI_Select(game *g, sqlite3 *sql) {
 				else if (GetTimeLapse(175, &g->timer1) > 120.0) {
 					ResetTimeLapse(175, &g->timer1);
 					SetTimeLapse(176, &g->timer1);
-					g->sSelect.prevListCount = min(g->net.rankingData.rankingCount, 999);
+					g->sSelect.prevListCount = std::min(g->net.rankingData.rankingCount, 999);
 					for (int i = 0; i < g->sSelect.prevListCount; i++) {
 						InitSongData(&g->sSelect.prevList[i]);
 						COPY_SONGDATA(&g->sSelect.prevList[i], &g->sSelect.bmsList[g->sSelect.cur_song]);

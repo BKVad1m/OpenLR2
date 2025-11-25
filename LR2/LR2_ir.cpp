@@ -5,7 +5,8 @@
 #include "En_dbio.h"
 #include "En_fileutil.h"
 #include "En_timer.h"
-#include <process.h>
+
+#include <shellapi.h>
 
 //401000
 void MYRANKING::InitRanking() {

@@ -1,5 +1,8 @@
 #pragma once
+
 #include "strclass.h"
+
+typedef unsigned char byte;
 
 //43ad60
 CSTR::CSTR(int size) {
