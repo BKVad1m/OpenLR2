@@ -547,7 +547,6 @@ int ProcI_PO4Select(game *g, sqlite3 *sql) { //not tested
 		}
 
 		for (int i = l44c + 1; i < l44c + 5; i++) {
-			g->skstruct.dst_BAR_BODY_ON[l44c].dstCount;
 			if (g->skstruct.dst_BAR_BODY_ON[i].dstCount > 0 && g->skstruct.dst_BAR_BODY_ON[i-1].dstCount > 0) {
 				DSTdraw dstd1, dstd2, dstd3;
 				InitDSTdraw(&dstd1);
@@ -573,9 +572,6 @@ int ProcI_PO4Select(game *g, sqlite3 *sql) { //not tested
 					AddDrawingBuffer_EventLoading(&g->skstruct.drBuf, g->sSelect.bmsList[curmod].grHandle, &g->skstruct.dst_BAR_STAGEFILE, &g->timer1, dstd3.x, dstd3.y);
 					AddDrawingBuffer_Lunaris(&g->skstruct.drBuf, &g->skstruct.src_BAR_BODY[g->po4cur_song], &dstd3, &g->timer1);
 
-					g->skstruct.dst_BAR_STAR[g->po4cur_song].draw->w;
-					((g->sSelect.bmsList[curmod].level - 1) * (int)g->skstruct.dst_BAR_STAR[g->po4cur_song].draw->w /2);
-					
 					for (int i = 0; i < g->sSelect.bmsList[curmod].level; i++) {
 						AddDrawingBuffer_ObjectAlpha(&g->skstruct.drBuf, &g->skstruct.src_BAR_STAR[g->po4cur_song], &g->skstruct.dst_BAR_STAR[g->po4cur_song], &g->timer1, dstd3.x - ((g->sSelect.bmsList[curmod].level - 1) * (int)g->skstruct.dst_BAR_STAR[g->po4cur_song].draw->w / 2) + i, dstd3.y, 255);
 					}

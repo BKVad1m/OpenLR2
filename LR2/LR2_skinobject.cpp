@@ -3701,7 +3701,6 @@ int SetObjectValue_Button(game *g, skstruct *sk, Timer *T, char flag) {
 			}
 
 			case 190: {
-				sk->otherObject[1].src[i];
 				iTmp = (g->KeyInput.config_key == op - 150);
 				isClickSuccess = ButtonByInput(&sk->drBuf, &sk->otherObject[1].src[i], &sk->otherObject[1].dst[i], T, &g->KeyInput, &iTmp, -1, 1, g->sSelect.panel);
 				if (isClickSuccess == 2) {

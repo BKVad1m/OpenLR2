@@ -852,7 +852,6 @@ int ReadSkinCustomize(SkinUser *sku, char *FilePath) {
 
 	//it's doubled code, so changed a little
 	for (int i = 0; i < 40; i++) {
-		sku->customize_value[i];
 		CSTR tmp;
 
 		cstrSprintf(&tmp, "config_%d", i); //cstrSprintf(&tmp, "confit_%d", i);

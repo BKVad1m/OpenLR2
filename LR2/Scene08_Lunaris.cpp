@@ -362,7 +362,6 @@ int DrawLunaris(game *g) {
 		}
 	}
 
-	g->skstruct.dst_NOTE[0].draw->y * 0.0625;
 	int yy = (int)(g->skstruct.dst_NOTE[0].draw->y * 0.0625) * 16 - g->skstruct.dst_NOTE[0].draw->h;
 	int oldyy = yy;
 	int hh = g->skstruct.dst_NOTE[0].draw->y * 0.0625;

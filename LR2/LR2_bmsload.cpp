@@ -1127,7 +1127,6 @@ void MakeExtraChart(gameplay *gp, CHARTCONVERTER *cc) {  //test completed
 
 			for (int j = cur; j <= i-1; j++) {
 
-				gp->bmsobj.notes[j].bmsTiming;
 				if (gp->bmsobj.notes[j].op == 1 && gp->bmsobj.notes[j].bmsTiming >= 0) {
 					
 					int newLane = laneOfSound[(int)gp->bmsobj.notes[j].val];
@@ -1388,14 +1387,12 @@ void PMStoSP(gameplay *gp) { //test&fix completed
 				}
 				ErrorLogFmtAdd("つめるレーンは%d\n", emptyLane);
 				for (int j = prev; j < i; j++) {
-					gp->bmsobj.notes[j].op;
 					if (emptyLane + 10 < gp->bmsobj.notes[j].op && gp->bmsobj.notes[j].op <= 19) {
 						gp->bmsobj.notes[j].op--;
 					}
 				}
 				ErrorLogFmtAdd("さらに全体左シフト\n");
 				for (int j = prev; j < i; j++) {
-					gp->bmsobj.notes[j].op;
 					if (11 <= gp->bmsobj.notes[j].op && gp->bmsobj.notes[j].op <= 19) {
 						gp->bmsobj.notes[j].op--;
 					}
@@ -1433,13 +1430,11 @@ void PMStoSP(gameplay *gp) { //test&fix completed
 					}
 					ErrorLogFmtAdd("つめるレーンは%dと%d\n", emptyLaneL, emptyLaneR);
 					for (int j = prev; j < i; j++) {
-						gp->bmsobj.notes[j].op;
 						if (emptyLaneL + 10 < gp->bmsobj.notes[j].op && gp->bmsobj.notes[j].op <= 19) {
 							gp->bmsobj.notes[j].op--;
 						}
 					}
 					for (int j = prev; j < i; j++) {
-						gp->bmsobj.notes[j].op;
 						if (emptyLaneR + 9 < gp->bmsobj.notes[j].op && gp->bmsobj.notes[j].op <= 19) {
 							gp->bmsobj.notes[j].op--;
 						}
@@ -1738,7 +1733,6 @@ int SPtoDP(LaneStruct *lane, int baseNoteID, CHARTCONVERTER *cc) {
 	for (int i = 0; i < 1296; i++) {
 		if (cc->arr1[i].count > 0) {
 			if (fB && cc->arr2[cc->arr1[i].ID].field3_0xc != -1 && i == 0) {
-				cc->arr2[cc->arr1[i].ID].field3_0xc;
 				unkArr[cc->arr2[cc->arr1[0].ID].field3_0xc] += cc->arr1[0].count; //really 0. not i
 				cc->arr1[0].field3_0xc = cc->arr2[cc->arr1[i].ID].field3_0xc;
 			}
@@ -3533,7 +3527,6 @@ int ParseBmsFile(gameplay *gp, CSTR filename, AUDIO *aud, ConfigStruct* cfg, BMS
 				}
 			}
 			
-			gp->bmsobj.notes[i].op;
 			chArr[gp->bmsobj.notes[i].op - 10] = 1;
 			if (meta->keymode == 14) {
 				if (gp->bmsobj.notes[i].op == 10) {
@@ -3950,9 +3943,6 @@ int ParseBmsFile(gameplay *gp, CSTR filename, AUDIO *aud, ConfigStruct* cfg, BMS
 						if (gp->bmsobj_note[i].count == gp->bmsobj_note[i].size) {
 							ExpandNoteBuffer(&gp->bmsobj_note[i], 1000);
 						}
-						gp->bmsobj_note[i].notes;
-						gp->bmsobj_note[i].notes[j + 1].realTiming_ln;
-						gp->bmsobj_note[i].notes[j + 1].realTiming;
 
 						if (gp->bmsobj_note[i].notes[j + 1].realTiming_ln > gp->bmsobj_note[i].notes[j + 1].realTiming) {
 							if (200.0 < gp->bmsobj_note[i].notes[j + 1].realTiming - gp->bmsobj_note[i].notes[j].realTiming_ln) {
