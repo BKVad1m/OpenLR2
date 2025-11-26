@@ -14846,13 +14846,10 @@ int Read_JukeboxPath(CONFIG_JUKEBOX *box, TiXmlDocument *xml){
 		
 		cstrSprintf(&box->path[0], "%s", cur->ToElement()->GetText());
 		CSTR tp2;
-		CSTR tp3;
 		tp2.assign(&box->path[0]);
 		if (tp2.right(2).isSame("\\\\") ) {
-			CSTR tp4;
 			tp2.left(tp2.length() -1);
-			str = tp4.outstr();
-			box->path[0].assign(str);
+			box->path[0].assign(tp2.outstr());
 		}
 		box->numOfPath = 1;
 
