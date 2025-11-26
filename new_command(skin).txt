@@ -2,3 +2,6 @@
    ~~~,author , , , x, y  (val[6], val[7])
 
 2. SRC 106 is used in SkinSelect
+
+251126 6:41(UTC)
+3. #RESOLUTION added
