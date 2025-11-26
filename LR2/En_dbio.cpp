@@ -6,11 +6,15 @@
 #include <windows.h>
 #else
 using LPCSTR = const char*;
+enum {
+	CP_ACP,
+	CP_UTF8,
+};
 #endif // _WIN32
 
-//444130 //TODO more readable
-//ANSI >> UTF-16(unicode) >> UTF-8
-bool ANSItoUTF8(LPCSTR str, char *oBuf, size_t *oSize){
+// \param oBuf If nullptr, just count the required for conversion size into oSize
+// 'from' >> UTF-16(unicode) >> 'to'
+static bool convert(LPCSTR str, char *oBuf, size_t *oSize, int from, int to){
 #ifdef _WIN32
 	int cchWideChar;
 	LPWSTR lpWideCharStr;
@@ -18,18 +22,18 @@ bool ANSItoUTF8(LPCSTR str, char *oBuf, size_t *oSize){
 	size_t size;
 
 	*oSize = 0;
-	cchWideChar = MultiByteToWideChar(CP_ACP, 0, str, -1, (LPWSTR)0x0, 0);
+	cchWideChar = MultiByteToWideChar(from, 0, str, -1, (LPWSTR)0x0, 0);
 	lpWideCharStr = (LPWSTR)malloc(cchWideChar * 2 + 2);
-	MultiByteToWideChar(CP_ACP, 0, str, -1, lpWideCharStr, cchWideChar);
-	size = WideCharToMultiByte(CP_UTF8, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
-	if (oBuf == NULL) {
+	MultiByteToWideChar(from, 0, str, -1, lpWideCharStr, cchWideChar);
+	size = WideCharToMultiByte(to, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
+	if (oBuf == nullptr) {
 		*oSize = size;
 		free(lpWideCharStr);
 		return true;
 	}
 	lpMultiByteStr = (LPSTR)malloc(size * 2);
 	memset(lpMultiByteStr, '\0', size * 2);
-	WideCharToMultiByte(CP_UTF8, 0, lpWideCharStr, -1, lpMultiByteStr, size, (LPCSTR)0x0, (LPBOOL)0x0);
+	WideCharToMultiByte(to, 0, lpWideCharStr, -1, lpMultiByteStr, size, (LPCSTR)0x0, (LPBOOL)0x0);
 	size = lstrlenA(lpMultiByteStr);
 	*oSize = size;
 	memcpy(oBuf, lpMultiByteStr, size);
@@ -37,128 +41,66 @@ bool ANSItoUTF8(LPCSTR str, char *oBuf, size_t *oSize){
 	free(lpMultiByteStr);
 	return true;
 #else
-	return {}; // FIXME(linux): stub
+	(void)from;
+	(void)to;
+	*oSize = strlen(str);
+	if (oBuf != nullptr) {
+		memcpy(oBuf, str, *oSize);
+	}
+	return false; // FIXME(linux): stub
 #endif // _WIN32
 }
 
-//444210
-//UTF-8 >> UTF-16(unicode) >> ANSI
-bool UTF8toANSI(LPCSTR str, char *oBuf, size_t *oSize){
-#ifdef _WIN32
-	int cchWideChar;
-	LPWSTR lpWideCharStr;
-	LPSTR lpMultiByteStr;
-	size_t size;
-	
-	*oSize = 0;
-	cchWideChar = MultiByteToWideChar(CP_UTF8, 0, str, -1, (LPWSTR)0x0, 0);
-	lpWideCharStr = (LPWSTR)malloc(cchWideChar * 2 + 2);
-	MultiByteToWideChar(CP_UTF8, 0, str, -1, lpWideCharStr, cchWideChar);
-	size = WideCharToMultiByte(CP_ACP, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
-	if (oBuf == NULL) {
-		*oSize = size;
-		free(lpWideCharStr);
-		return true;
-	}
-	lpMultiByteStr = (LPSTR)malloc(size * 2);
-	memset(lpMultiByteStr, '\0', size * 2);
-	WideCharToMultiByte(CP_ACP, 0, lpWideCharStr, -1, lpMultiByteStr, size, (LPCSTR)0x0, (LPBOOL)0x0);
-	size = lstrlenA(lpMultiByteStr);
-	*oSize = size;
-	memcpy(oBuf, lpMultiByteStr, size);
-	free(lpWideCharStr);
-	free(lpMultiByteStr);
-	return true;
-#else
-	return {}; // FIXME(linux): stub
-#endif // _WIN32
+static bool ANSItoUTF8(LPCSTR str, char *oBuf, size_t *oSize){
+	return convert(str, oBuf, oSize, CP_ACP, CP_UTF8);
+}
+
+static bool UTF8toANSI(LPCSTR str, char *oBuf, size_t *oSize){
+	return convert(str, oBuf, oSize, CP_UTF8, CP_ACP);
 }
 
 //4442f0
-int SQL_Run(CSTR queryStr, sqlite3 *sql){
-#ifdef _WIN32
-	int result;
-	int cchWideChar;
-	LPCWSTR lpWideCharStr;
-	LPCSTR lpMultiByteStr;
+int SQL_Run(CSTR queryStr, sqlite3 *sql) {
 	size_t size;
-	char *oBuf;
-	size_t newsize;
-
-	lpMultiByteStr = queryStr;
-
-	cchWideChar = MultiByteToWideChar(CP_ACP, 0, queryStr, -1, (LPWSTR)0x0, 0);
-	lpWideCharStr = (LPWSTR)malloc(cchWideChar * 2 + 2);
-	MultiByteToWideChar(CP_ACP, 0, lpMultiByteStr, -1, (LPWSTR)lpWideCharStr, cchWideChar);
-	size = WideCharToMultiByte(CP_UTF8, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
-	newsize = size;
-	free((void*)lpWideCharStr);
-
-	oBuf = (char *)malloc(size + 1);
-	memset(oBuf, '\0', size + 1);
-	ANSItoUTF8(queryStr, oBuf, &newsize);
-	oBuf[newsize] = '\0';
-	result = sqlite3_exec(sql, oBuf, NULL, NULL, NULL);
-	free((void*)oBuf);
-	return result;
-#else
-	return {}; // FIXME(linux): stub
-#endif // _WIN32
+	ANSItoUTF8(queryStr, nullptr, &size);
+	CSTR oBuf;
+	oBuf.resize2(size + 1);
+	memset(oBuf.body, 0, size + 1);
+	ANSItoUTF8(queryStr, oBuf.body, &size);
+	return sqlite3_exec(sql, oBuf.body, nullptr, nullptr, nullptr);
 }
 
 //4443f0
-int SQL_prepare(CSTR queryStr, sqlite3 *sql, sqlite3_stmt **ppStmt){
-#ifdef _WIN32
-	int cchWideChar;
-	LPCWSTR lpWideCharStr;
-	LPCSTR lpMultiByteStr;
+int SQL_prepare(CSTR queryStr, sqlite3 *sql, sqlite3_stmt **ppStmt) {
 	size_t size;
-	char *oBuf;
-	size_t newsize;
-	int result;
-
-	lpMultiByteStr = queryStr;
-
-	cchWideChar = MultiByteToWideChar(CP_ACP, 0, queryStr, -1, (LPWSTR)0x0, 0);
-	lpWideCharStr = (LPCWSTR)malloc(cchWideChar * 2 + 2);
-	MultiByteToWideChar(CP_ACP, 0, lpMultiByteStr, -1, (LPWSTR)lpWideCharStr, cchWideChar);
-	size = WideCharToMultiByte(CP_UTF8, 0, lpWideCharStr, -1, (LPSTR)0x0, 0, (LPCSTR)0x0, (LPBOOL)0x0);
-	newsize = size;
-	free((void*)lpWideCharStr);
-
-	oBuf = (char *)malloc(size + 1);
-	memset(oBuf, '\0', size + 1);
-	ANSItoUTF8(queryStr, oBuf, &newsize);
-	oBuf[newsize] = '\0';
-	result = sqlite3_prepare(sql, oBuf, -1, ppStmt, NULL);
-	free((void*)oBuf);
-	return result;
-#else
-	return sqlite3_prepare(sql, queryStr.body, -1, ppStmt, nullptr); // FIXME(linux): stub
-#endif // _WIN32
+	ANSItoUTF8(queryStr, nullptr, &size);
+	CSTR oBuf;
+	oBuf.resize2(size + 1);
+	memset(oBuf.body, 0, size + 1);
+	ANSItoUTF8(queryStr, oBuf.body, &size);
+	return sqlite3_prepare(sql, oBuf.body, -1, ppStmt, nullptr);
 }
 
 //4444f0
 CSTR SQL_GetColumn(int i, sqlite3_stmt *pStmt){
-	CSTR oBuf;
-	size_t size;
-	LPCSTR columnText;
-
 	if (sqlite3_column_type(pStmt, i) == SQLITE_NULL) {
-		oBuf.fillzero();
+		return {};
 	}
-	else {
-		sqlite3_column_bytes(pStmt, i);
-		columnText = (LPCSTR)sqlite3_column_text(pStmt, i);
-#ifdef _WIN32
-		UTF8toANSI(columnText, NULL, &size);
-		oBuf.resize2(size + 1);
-		memset(oBuf.body, 0, size + 1);
-		UTF8toANSI(columnText, oBuf.body, &size);
-		*oBuf.atPos(size) = 0;
-#else
-		oBuf = columnText; // FIXME(linux): stub
-#endif // _WIN32
-	}
+
+	// sqlite3_column_bytes(pStmt, i);
+
+	// Cast safety: it's safe to cast from unsigned char* to char*
+	const char* columnText = reinterpret_cast<const char*>(sqlite3_column_text(pStmt, i));
+
+	size_t size;
+	UTF8toANSI(columnText, nullptr, &size);
+
+	CSTR oBuf;
+	oBuf.resize2(size + 1);
+	memset(oBuf.body, 0, size + 1);
+
+	UTF8toANSI(columnText, oBuf.body, &size);
+	oBuf.body[size] = '\0';
+
 	return oBuf;
 }
