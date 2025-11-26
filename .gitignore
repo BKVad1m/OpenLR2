@@ -1,2 +1,7 @@
 
 project/*.user
+/.vs
+/OpenLR2_vs22/Release
+/Release
+/SkinEditor
+/Win32
