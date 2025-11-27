@@ -180,7 +180,7 @@ struct CONFIG_PLAY {
 	int p1_assist;
 	int p2_assist;
 	int dpflip;
-	int hsfix; // 1:max 2:min 3:average 4:constant
+	int hsfix; // 1:max 2:min 3:average 4:constant 5:main
 	int battle; // 1:battle 2:d-battle 3:sp-to-dp 4:g-battle
 	int autojudge;
 	int judgetiming;

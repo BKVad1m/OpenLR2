@@ -3,6 +3,7 @@
 #include "LR2_replay.h"
 
 #include <algorithm>
+#include <unordered_map>
 
 //4081d0
 int StopAllKeysound(game *g){
@@ -1808,6 +1809,7 @@ unsigned char channelConvert[] = { 0x00, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3
 									0x00, 0x3c, 0x35, 0x36, 0x37, 0x38, 0x39, 0x00, 0x3a, 0x3b };
 int ParseBmsFile(gameplay *gp, CSTR filename, AUDIO *aud, ConfigStruct* cfg, BMSMETA *meta, int bgaFlag, int scratchSide) {
 
+	std::unordered_map<double, int> notesPerBpm;
 	double avgBPM_bpmsum;
 	float prevStageLastNoteTime;
 	int avgBPM_notes;
@@ -2782,7 +2784,12 @@ int ParseBmsFile(gameplay *gp, CSTR filename, AUDIO *aud, ConfigStruct* cfg, BMS
 			}
 
 			if (10 <= gp->bmsobj.notes[i].op && gp->bmsobj.notes[i].op < 29) {
-				
+				if (!notesPerBpm.contains(nowBPM)) {
+					notesPerBpm[nowBPM] = 1;
+				}
+				else {
+					notesPerBpm[nowBPM] = notesPerBpm[nowBPM] + 1;
+				}
 				avgBPM_notes += 1;
 				avgBPM_bpmsum += nowBPM;
 				if (gp->maxBPM < nowBPM) gp->maxBPM = nowBPM;
@@ -3180,6 +3187,18 @@ int ParseBmsFile(gameplay *gp, CSTR filename, AUDIO *aud, ConfigStruct* cfg, BMS
 	qsort(gp->bmsobj.notes, gp->bmsobj.count, sizeof(NoteStruct), CMP_NotesByRealTiming);
 
 	if (gp->isCourse == 1 && gp->courseType == 1) gp->speedmultiplier = 1.0;
+	else if (cfg->play.hsfix == 5) {
+		double mainBpm = 0;
+		int highestCount = 0;
+		for (auto& [bpm, count] : notesPerBpm) {
+			if (count > highestCount) {
+				highestCount = count;
+				mainBpm = bpm;
+			}
+		}
+		if (mainBpm > 0.) gp->speedmultiplier = 150. / mainBpm; // calculate speed mult against bpm with most notes.
+		else gp->speedmultiplier = 1.0;
+	}
 	else if (avgBPM_notes > 0 && cfg->play.hsfix == 3) gp->speedmultiplier = 150.0 / (avgBPM_bpmsum / avgBPM_notes); //average
 	else if (gp->maxBPM > 0.0 && cfg->play.hsfix == 1) gp->speedmultiplier = 150.0 / gp->maxBPM;
 	else if (gp->minBPM > 0.0 && cfg->play.hsfix == 2) gp->speedmultiplier = 150.0 / gp->minBPM;
