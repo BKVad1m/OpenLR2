@@ -316,11 +316,13 @@ int AddDrawingBuffer_OnMouse(DrawingBuf *drb, SRCstruct *src, DSTstruct *dst, Ti
 }
 
 //49d240
-int AddDrawingBuffer_LN(DrawingBuf *drb, SRCstruct *srcLs, SRCstruct *srcLe, SRCstruct *srcLb, DSTstruct *dst, Timer *T, float shiftX, float shiftY, float longY, int alpha, float sizeX, float sizeY) {
+int AddDrawingBuffer_LN(DrawingBuf *drb, SRCstruct *srcLs, SRCstruct *srcLe, SRCstruct *srcLb, DSTstruct *dst, Timer *T, float shiftX, float shiftY, float longY, float sizeX, float sizeY, int active) {
 	DSTdraw tDstd;
 	int grh;
 
 	if (dst->dstCount <= 0 || dst->dataSize <= 0 || srcLs->graphcount <= 0 || srcLe->graphcount <= 0 || srcLb->graphcount <= 0) return 0;
+
+	int alpha = active != -1 ? 255 : 128;
 
 	//body
 	tDstd = SetDSTdrawByTime(*dst, GetTimeLapse(dst->timer, T));
@@ -328,7 +330,10 @@ int AddDrawingBuffer_LN(DrawingBuf *drb, SRCstruct *srcLs, SRCstruct *srcLe, SRC
 	tDstd.h += sizeY;
 	tDstd.x -= sizeX * 0.5;
 	tDstd.y -= sizeY * 0.5;
-	if (srcLb->timer == dst->timer) {
+	if (active == 0) {
+		grh = srcLb->grHandles[0];
+	}
+	else if (srcLb->timer == dst->timer) {
 		grh = srcLb->grHandles[GetSRCcycleNow(*srcLb, GetTimeLapse(srcLb->timer, T) - dst->draw->time)];
 	}
 	else {
@@ -349,11 +354,14 @@ int AddDrawingBuffer_LN(DrawingBuf *drb, SRCstruct *srcLs, SRCstruct *srcLe, SRC
 	tDstd.x -= sizeX * 0.5;
 	tDstd.y -= sizeY * 0.5;
 	tDstd.sortID += 2;
-	if (srcLs->timer == dst->timer) {
-		grh = srcLs->grHandles[GetSRCcycleNow(*srcLs, GetTimeLapse(srcLs->timer, T) - dst->draw->time)];
+	if (active == 0) {
+		grh = srcLb->grHandles[0];
+	}
+	else if (srcLb->timer == dst->timer) {
+		grh = srcLb->grHandles[GetSRCcycleNow(*srcLb, GetTimeLapse(srcLb->timer, T) - dst->draw->time)];
 	}
 	else {
-		grh = srcLs->grHandles[GetSRCcycleNow(*srcLs, GetTimeLapse(srcLs->timer, T))];
+		grh = srcLb->grHandles[GetSRCcycleNow(*srcLb, GetTimeLapse(srcLb->timer, T))];
 	}
 	tDstd.x += shiftX;
 	tDstd.subHandle = dst->n;
@@ -369,11 +377,14 @@ int AddDrawingBuffer_LN(DrawingBuf *drb, SRCstruct *srcLs, SRCstruct *srcLe, SRC
 	tDstd.x -= sizeX * 0.5;
 	tDstd.y -= sizeY * 0.5;
 	tDstd.sortID += 1;
-	if (srcLe->timer == dst->timer) {
-		grh = srcLe->grHandles[GetSRCcycleNow(*srcLe, GetTimeLapse(srcLe->timer, T) - dst->draw->time)];
+	if (active == 0) {
+		grh = srcLb->grHandles[0];
+	}
+	else if (srcLb->timer == dst->timer) {
+		grh = srcLb->grHandles[GetSRCcycleNow(*srcLb, GetTimeLapse(srcLb->timer, T) - dst->draw->time)];
 	}
 	else {
-		grh = srcLe->grHandles[GetSRCcycleNow(*srcLe, GetTimeLapse(srcLe->timer, T))];
+		grh = srcLb->grHandles[GetSRCcycleNow(*srcLb, GetTimeLapse(srcLb->timer, T))];
 	}
 	tDstd.x += shiftX;
 	tDstd.subHandle = dst->n;

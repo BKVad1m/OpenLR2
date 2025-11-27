@@ -21,7 +21,7 @@ int AddDrawingBuffer(DrawingBuf * drb, int grHandle, DSTdraw * dstd);
 int AddDrawingBuffer_BarGraph(DrawingBuf * drb, SRCstruct * src, DSTstruct * dst, Timer * T, double min, double max, double val);
 int AddDrawingBuffer_Image(DrawingBuf * drb, SRCstruct * src, DSTstruct * dst, Timer * T);
 int AddDrawingBuffer_OnMouse(DrawingBuf * drb, SRCstruct * src, DSTstruct * dst, Timer * T, inputStructure * input, int panel);
-int AddDrawingBuffer_LN(DrawingBuf * drb, SRCstruct * srcLs, SRCstruct * srcLe, SRCstruct * srcLb, DSTstruct * dst, Timer * T, float shiftX, float shiftY, float longY, int alpha, float sizeX, float sizeY);
+int AddDrawingBuffer_LN(DrawingBuf * drb, SRCstruct * srcLs, SRCstruct * srcLe, SRCstruct * srcLb, DSTstruct * dst, Timer * T, float shiftX, float shiftY, float longY, float sizeX, float sizeY, int active);
 int AddDrawingBuffer_PlayArea(DrawingBuf * drb, SRCstruct * src, DSTstruct * dst, Timer * T, float shiftX, float shiftY, int alpha, float sizeX, float sizeY, char flag);
 int AddDrawingBuffer_Gauge(DrawingBuf * drb, SRCstruct * src, DSTstruct * dst, Timer * T, int hp, char isSurvival);
 int AddDrawingBuffer_BGA(DrawingBuf * drb, SRCstruct * src, DSTstruct * dst, Timer * T, int grHandle, char flag);

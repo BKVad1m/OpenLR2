@@ -530,7 +530,7 @@ int DrawNotes(game *g, skstruct *sk, Timer *T, CONFIG_PLAY *cfg) {
 						AddDrawingBuffer_PlayArea(&sk->drBuf, &sk->src_NOTE[key], &sk->dst_NOTE[key], T, note_x, note_y, 255, notesize_x, notesize_y, 1);
 					}
 					else {
-						AddDrawingBuffer_LN(&sk->drBuf, &sk->src_LN_START[key], &sk->src_LN_END[key], &sk->src_LN_BODY[key], &sk->dst_NOTE[key], T, note_x, note_y, noteL_y, (g->gameplay.bmsobj_note[key].notes[i].active == -1) ? 128 : 255, notesize_x, notesize_y);
+						AddDrawingBuffer_LN(&sk->drBuf, &sk->src_LN_START[key], &sk->src_LN_END[key], &sk->src_LN_BODY[key], &sk->dst_NOTE[key], T, note_x, note_y, noteL_y, notesize_x, notesize_y, g->gameplay.bmsobj_note[key].notes[i].active);
 					}
 
 					if ((g->gameplay.bmsobj_note[key].notes[i].active == -1 || (g->gameplay.player[0].totalnotes <= g->gameplay.player[0].note_current && g->gameplay.replay.status == 2)) && g->gameplay.bmsobj_note[key].notes[i].bmsTiming <= songtimer && g->gameplay.bmsobj_note[key].notes[i].bmsTiming_ln <= songtimer) {
@@ -539,6 +539,7 @@ int DrawNotes(game *g, skstruct *sk, Timer *T, CONFIG_PLAY *cfg) {
 				}
 				else {
 					bool isAuto = g->gameplay.bmsobj_note[key].autoplay;
+					bool isLnActive = g->gameplay.bmsobj_note[key].notes[i].bmsTiming <= songtimer && g->gameplay.bmsobj_note[key].notes[i].bmsTiming_ln > songtimer;
 
 					if (isAuto && !isDpGbattle) {
 						if (g->gameplay.bmsobj_note[key].notes[i].mine > 0) {
@@ -548,7 +549,7 @@ int DrawNotes(game *g, skstruct *sk, Timer *T, CONFIG_PLAY *cfg) {
 							AddDrawingBuffer_PlayArea(&sk->drBuf, &sk->src_AUTO_NOTE[key], &sk->dst_NOTE[key], T, note_x, note_y, 255, notesize_x, notesize_y, 1);
 						}
 						else {
-							AddDrawingBuffer_LN(&sk->drBuf, &sk->src_AUTO_LN_START[key], &sk->src_AUTO_LN_END[key], &sk->src_AUTO_LN_BODY[key], &sk->dst_NOTE[key], T, note_x, note_y, noteL_y, 255, notesize_x, notesize_y);
+							AddDrawingBuffer_LN(&sk->drBuf, &sk->src_AUTO_LN_START[key], &sk->src_AUTO_LN_END[key], &sk->src_AUTO_LN_BODY[key], &sk->dst_NOTE[key], T, note_x, note_y, noteL_y, notesize_x, notesize_y, isLnActive ? 5 : 0);
 						}
 
 						if (g->gameplay.bmsobj_note[key].notes[i].bmsTiming <= songtimer && g->gameplay.bmsobj_note[key].notes[i].bmsTiming_ln <= songtimer) {
@@ -581,10 +582,10 @@ int DrawNotes(game *g, skstruct *sk, Timer *T, CONFIG_PLAY *cfg) {
 						}
 						else {
 							if (isAuto) {
-								AddDrawingBuffer_LN(&sk->drBuf, &sk->src_AUTO_LN_START[key], &sk->src_AUTO_LN_END[key], &sk->src_AUTO_LN_BODY[key], &sk->dst_NOTE[key], T, note_x, note_y, noteL_y, 255, notesize_x, notesize_y);
+								AddDrawingBuffer_LN(&sk->drBuf, &sk->src_AUTO_LN_START[key], &sk->src_AUTO_LN_END[key], &sk->src_AUTO_LN_BODY[key], &sk->dst_NOTE[key], T, note_x, note_y, noteL_y, notesize_x, notesize_y, isLnActive ? 5 : 0);
 							}
 							else {
-								AddDrawingBuffer_LN(&sk->drBuf, &sk->src_LN_START[key], &sk->src_LN_END[key], &sk->src_LN_BODY[key], &sk->dst_NOTE[key], T, note_x, note_y, noteL_y, 255, notesize_x, notesize_y);
+								AddDrawingBuffer_LN(&sk->drBuf, &sk->src_LN_START[key], &sk->src_LN_END[key], &sk->src_LN_BODY[key], &sk->dst_NOTE[key], T, note_x, note_y, noteL_y, notesize_x, notesize_y, isLnActive ? 5 : 0);
 							}
 
 							if (g->gameplay.bmsobj_note[key].notes[i].bmsTiming <= songtimer && g->gameplay.bmsobj_note[key].notes[i].bmsTiming_ln >= songtimer && GetTimeLapse(70 + key, T) == -1.0) {
