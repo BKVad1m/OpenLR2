@@ -1,38 +1,15 @@
-﻿#include "Engine.h"
-
-//4a8550
-PLAYSCORE::PLAYSCORE() {
-	name.fillzero();
-	totalnotes = 0;
-	nownote = 0;
-	exscore = 0;
-	rate = 0;
-	judgecount = 0;
-	judgeExpect[0] = 0;
-	judge[0] = 0;
-	judgeExpect[1] = 0;
-	judge[1] = 0;
-	judgeExpect[2] = 0;
-	judge[2] = 0;
-	judgeExpect[3] = 0;
-	judge[3] = 0;
-	judgeExpect[4] = 0;
-	judge[4] = 0;
-	judgeExpect[5] = 0;
-	judge[5] = 0;
-	ghostReadCount = 0;
-	judge_queue_count = 0;
-	judge_queue = NULL;
-}
+﻿#include "LR2_ghost.h"
+#include "structure.h"
 
 //4a8600
 int PLAYSCORE::InitJudgeQueue(void){
+	// TODO: replace this->judge_queue with std::vector, then remove this function
 	this->name.fillzero();
 	this->totalnotes = 0;
 	this->nownote = 0;
 	this->exscore = 0;
 	this->rate = 0;
-	this->judgecount = 0;
+	this->judge_queue_len = 0;
 	this->judgeExpect[0] = 0;
 	this->judge[0] = 0;
 	this->judgeExpect[1] = 0;
@@ -46,48 +23,43 @@ int PLAYSCORE::InitJudgeQueue(void){
 	this->judgeExpect[5] = 0;
 	this->judge[5] = 0;
 	this->ghostReadCount = 0;
-	this->judge_queue_count = 0;
-	if (this->judge_queue != NULL) {
-		free(this->judge_queue);
-	}
+	this->judge_queue_capacity = 0;
+	free(this->judge_queue);
 	this->judge_queue = NULL;
-	this->judge_queue_count = 0;
+	this->judge_queue_capacity = 0;
 	return 0;
 }
 
 //4a8660
 int PLAYSCORE::ResetJudgeQueue(int size){
-
-	if (this->judge_queue != NULL) {
-		free(this->judge_queue);
-	}
+	free(this->judge_queue);
 	this->judge_queue = NULL;
-	this->judge_queue_count = 0;
+	this->judge_queue_capacity = 0;
 	this->judge_queue = (char *)malloc(size);
 	for (int i = 0; i < size; i++) {
 		this->judge_queue[i] = -1;
 	}
-	this->judge_queue_count = size;
+	this->judge_queue_capacity = size;
 	return 1;
 }
 
 //4a86c0
 int PLAYSCORE::ResizeJudgeQueue(size_t size){
 	this->judge_queue = (char *)realloc(this->judge_queue, size);
-	for (int i = this->judge_queue_count; i < size; i++) {
+	for (int i = this->judge_queue_capacity; i < size; i++) {
 		this->judge_queue[i] = -1;
 	}
-	this->judge_queue_count = this->judge_queue_count + size;
+	this->judge_queue_capacity = this->judge_queue_capacity + size;
 	return 1;
 }
 
 //4a8740
 int PLAYSCORE::AddJudgeQueue(char judge){
-	if (this->judgecount == this->judge_queue_count) {
-		ResizeJudgeQueue(this->judge_queue_count + 1000);
+	if (this->judge_queue_len == this->judge_queue_capacity) {
+		ResizeJudgeQueue(this->judge_queue_capacity + 1000);
 	}
-	this->judge_queue[this->judgecount] = judge;
-	this->judgecount = this->judgecount + 1;
+	this->judge_queue[this->judge_queue_len] = judge;
+	this->judge_queue_len = this->judge_queue_len + 1;
 	return 1;
 }
 
@@ -100,13 +72,13 @@ int PLAYSCORE::DealJudgeFromQueue(void){
 	if (this->totalnotes < 1) {
 		return 1;
 	}
-	if (this->judge_queue_count != 0) {
-		note = this->judgecount;
+	if (this->judge_queue_capacity != 0) {
+		note = this->judge_queue_len;
 		ret = 1;
-		if ((note != this->judge_queue_count) && (val = this->judge_queue[note], val != 0xff)) {
+		if ((note != this->judge_queue_capacity) && (val = this->judge_queue[note], val != 0xff)) {
 			if ((val != 0) && (val < 6)) {
 				this->judge[val]++;
-				this->judgecount++;
+				this->judge_queue_len++;
 				this->nownote++;
 				this->rate = this->judge[4] + this->judge[5] * 2;
 				return ret;
@@ -114,7 +86,7 @@ int PLAYSCORE::DealJudgeFromQueue(void){
 			if (val == 0) {
 				this->judge[1]++;
 				this->rate = this->judge[4] + this->judge[5] * 2;
-				this->judgecount++;
+				this->judge_queue_len++;
 				ret = 0;
 			}
 		}
@@ -135,13 +107,13 @@ int PLAYSCORE::DealJudgeFromQueue(void){
 
 //4a8870
 char PLAYSCORE::GetJudgeFromQueue(void){
-	if (this->judge_queue_count == 0) {
+	if (this->judge_queue_capacity == 0) {
 		return -1;
 	}
-	if (this->judgecount <= 0) {
+	if (this->judge_queue_len <= 0) {
 		return *this->judge_queue;
 	}
-	return this->judge_queue[this->judgecount + -1];
+	return this->judge_queue[this->judge_queue_len + -1];
 }
 
 //4a88a0
@@ -204,13 +176,13 @@ int PLAYSCORE::SetGhost(int exscore, int notes, CSTR name){
 
 //4a8a90 
 CSTR PLAYSCORE::EncodeGhostData(void) {
-	if (this->judgecount == 0) return "GHOST_ERROR";
+	if (this->judge_queue_len == 0) return "GHOST_ERROR";
 
 	int rep = 0;
 	CSTR buf;
-	CSTR data(this->judgecount + 3);
+	CSTR data(this->judge_queue_len + 3);
 	char last = this->judge_queue[0];
-	for (int i = 0; i < judgecount; i++) {
+	for (int i = 0; i < judge_queue_len; i++) {
 		if (last == this->judge_queue[i]) {
 			rep++;
 		}
@@ -482,7 +454,7 @@ CSTR PLAYSCORE::EncodeGhostData(void) {
 	this->nownote = 0;
 	this->exscore = 0;
 	this->rate = 0;
-	this->judgecount = 0;
+	this->judge_queue_len = 0;
 	this->judgeExpect[0] = 0;
 	this->judge[0] = 0;
 	this->judgeExpect[1] = 0;
@@ -496,12 +468,10 @@ CSTR PLAYSCORE::EncodeGhostData(void) {
 	this->judgeExpect[5] = 0;
 	this->judge[5] = 0;
 	this->ghostReadCount = 0;
-	this->judge_queue_count = 0;
-	if (this->judge_queue != NULL) {
-		free(this->judge_queue);
-	}
+	this->judge_queue_capacity = 0;
+	free(this->judge_queue);
 	this->judge_queue = NULL;
-	this->judge_queue_count = 0;
+	this->judge_queue_capacity = 0;
 
 	return str;
 }
@@ -689,43 +659,15 @@ int PLAYSCORE::DecodeGhostData(CSTR data) {
 		rep--;
 	}
 
-	this->name.fillzero();
-	this->totalnotes = 0;
-	this->nownote = 0;
-	this->exscore = 0;
-	this->rate = 0;
-	this->judgecount = 0;
-	this->judgeExpect[0] = 0;
-	this->judge[0] = 0;
-	this->judgeExpect[1] = 0;
-	this->judge[1] = 0;
-	this->judgeExpect[2] = 0;
-	this->judge[2] = 0;
-	this->judgeExpect[3] = 0;
-	this->judge[3] = 0;
-	this->judgeExpect[4] = 0;
-	this->judge[4] = 0;
-	this->judgeExpect[5] = 0;
-	this->judge[5] = 0;
-	this->ghostReadCount = 0;
-	this->judge_queue_count = 0;
-	if (this->judge_queue != NULL) {
-		free(this->judge_queue);
-	}
-	this->judge_queue = NULL;
-	this->judge_queue_count = 0;
-	if (this->judge_queue != NULL) {
-		free(this->judge_queue);
-	}
-	this->judge_queue = NULL;
-	this->judge_queue_count = 0;
-	this->judge_queue = (char *)malloc(decode.length() + 1);
+	InitJudgeQueue();
+
+	this->judge_queue = static_cast<char *>(calloc(1, decode.length() + 1));
 
 	for (int i = 0; i < decode.length() + 1; i++) {
 		this->judge_queue[i] = -1;
 	}
 
-	this->judge_queue_count = decode.length() + 1;
+	this->judge_queue_capacity = decode.length() + 1;
 
 	for (int i = 0; i < decode.length(); i++) {
 		this->judge_queue[i] = *decode.atPos(i) + -0x40;

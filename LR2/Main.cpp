@@ -500,12 +500,6 @@ int main(int argc, char** argv) {
 			gs.gameplay.bmsobj_line.noteVal = 0;
 			gs.gameplay.bmsobj_line.autoplay = 0;
 			gs.gameplay.bpmt_buffersize = 0;
-			gs.gameplay.highScore.judge_queue_count = 0;
-			gs.gameplay.highScore.judge_queue = NULL;
-			gs.gameplay.p1Score.judge_queue_count = 0;
-			gs.gameplay.p1Score.judge_queue = NULL;
-			gs.gameplay.targetScore.judge_queue_count = 0;
-			gs.gameplay.targetScore.judge_queue = NULL;
 			gs.gameplay.isCourse = 0;
 			gs.gameplay.isPreviewLoad = 0;
 			gs.gameplay.previewStatus = 0;

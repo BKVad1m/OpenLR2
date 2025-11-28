@@ -1138,18 +1138,17 @@ struct PLAYERSTATUS {
 
 struct PLAYSCORE {
 	CSTR name;
-	char * judge_queue;
-	int judge_queue_count;
-	int ghostReadCount;
-	int judgecount;
-	int nownote;
-	int totalnotes;
-	int judgeExpect[6];
-	int judge[6];
-	int rate;
-	int exscore;
+	char* judge_queue{};
+	int judge_queue_capacity{};
+	int ghostReadCount{};
+	int judge_queue_len{};
+	int nownote{};
+	int totalnotes{};
+	int judgeExpect[6]{};
+	int judge[6]{};
+	int rate{};
+	int exscore{};
 
-	PLAYSCORE();
 	int InitJudgeQueue(void);
 	int ResetJudgeQueue(int size);
 	int ResizeJudgeQueue(size_t size);
