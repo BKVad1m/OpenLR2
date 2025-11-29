@@ -5,6 +5,7 @@
 #include "En_dbio.h"
 #include "En_fileutil.h"
 #include "En_timer.h"
+#include "filesystem.h"
 
 #ifdef _WIN32
 #include <shellapi.h>
@@ -246,7 +247,7 @@ int CheckRivaldataNew(int rivalID) {
 	sqlite3_stmt *pStmt;
 	CSTR path;
 	int ret = 0;
-	cstrSprintf(&path, "LR2files/Rival/%d.db", rivalID);
+	cstrSprintf(&path, fs::make_preferred("LR2files/Rival/%d.db").data(), rivalID);
 	
 	if (!IsFileExist(path)) return 0;
 
@@ -270,11 +271,11 @@ int ParseRivalData(long ID) {
 	TiXmlElement *cur, *val;
 	sqlite3 *pRivalDB;
 
-	cstrSprintf(&path, "LR2files/Rival/%d.db", ID);
+	cstrSprintf(&path, fs::make_preferred("LR2files/Rival/%d.db").data(), ID);
 	sqlite3_open(path, &pRivalDB);
 	SQL_Run("CREATE TABLE rival(hash TEXT primary key,r_clear INTEGER,r_totalnotes INTEGER,r_maxcombo INTEGER,r_perfect INTEGER,r_great INTEGER,r_good INTEGER,r_bad INTEGER,r_poor INTEGER,r_minbp INTEGER,r_option INTEGER,r_lastupdate INGEGER)", pRivalDB);
 	
-	cstrSprintf(&path, "LR2files/Rival/%d.xml", ID);
+	cstrSprintf(&path, fs::make_preferred("LR2files/Rival/%d.xml").data(), ID);
 	hXml = new TiXmlDocument(path);
 	if (hXml->LoadFile(TIXML_ENCODING_UNKNOWN) == false) {
 		if (hXml) {
@@ -400,7 +401,7 @@ int ParseRivalData(long ID) {
 
 	CSTR cfolder;
 	cstrSprintf(&cfolder, "#COMMAND __RIVAL__\n#MAXTRACKS %d\n#CATEGORY ライバルフォルダ\n#TITLE %s\n#INFORMATION_A %sのプレイした曲を表示します\n#INFORMAION_B\n", ID, name.body, name.body);
-	cstrSprintf(&path, "LR2files/Rival/%d.lr2folder", ID);
+	cstrSprintf(&path, fs::make_preferred("LR2files/Rival/%d.lr2folder").data(), ID);
 	cfolder.toFile(path);
 	printfDx("ID%06d:ライバルデータ[%s]を更新しました。更新スコア数%d\n", ID, name.body, count);
 	return 1;
@@ -416,7 +417,7 @@ int NETWORK::GetInsaneList() {
 	cstrSprintf(&this->param," ");
 	this->target_URL = "http://www.dream-pro.info/~lavalse/LR2IR/2/getinsanelist.cgi";
 	if (HTTPrequest() == 1) {
-		this->httpResult.toFile("LR2files/Database/exlevel.xml");
+		this->httpResult.toFile(fs::make_preferred("LR2files/Database/exlevel.xml").data());
 		printfDx("発狂難度リストをダウンロードしました。\n");
 		ErrorLogFmtAdd("発狂難度リストをダウンロードしました。\n");
 	}
@@ -426,7 +427,7 @@ int NETWORK::GetInsaneList() {
 	}
 	ScreenFlip();
 
-	hXml = new TiXmlDocument("LR2files/Database/exlevel.xml");
+	hXml = new TiXmlDocument(fs::make_preferred("LR2files/Database/exlevel.xml").data());
 	if (hXml->LoadFile(TIXML_ENCODING_UNKNOWN) == false) {
 		if (hXml) {
 			delete(hXml);
@@ -454,7 +455,7 @@ int NETWORK::GetInsaneList() {
 
 	CSTR query;
 	CSTR hash;
-	sqlite3_open("LR2files/Database/song.db", &pSongDB);
+	sqlite3_open(fs::make_preferred("LR2files/Database/song.db").data(), &pSongDB);
 	SQL_Run("BEGIN", pSongDB);
 	while (cur) {
 		if (TiXmlElement *val = cur->FirstChildElement("hash"); val && val->ToElement()) {
@@ -672,10 +673,10 @@ int NETWORK::GetRanking(CSTR hash, char flagInit) {
 	
 	ErrorLogAdd("IRxmlをダウンロードします\n");
 	if (hash.length() <= 50) {
-		cstrSprintf(&path, "LR2files/Ir/%s.xml", hash.body);
+		cstrSprintf(&path, fs::make_preferred("LR2files/Ir/%s.xml").data(), hash.body);
 	}
 	else {
-		cstrSprintf(&path, "LR2files/Ir/%s.xml", AssignCRC32(hash).body);
+		cstrSprintf(&path, fs::make_preferred("LR2files/Ir/%s.xml").data(), AssignCRC32(hash).body);
 	}
 
 	if (flagInit) this->rankingData.Init();
@@ -698,9 +699,9 @@ int NETWORK::GetRanking(CSTR hash, char flagInit) {
 //4bc4c0
 int NETWORK::GetRivalInfo(int rivalID) {
 	CSTR pathXML;
-	cstrSprintf(&pathXML, "LR2files/Rival/%d.xml", rivalID);
+	cstrSprintf(&pathXML, fs::make_preferred("LR2files/Rival/%d.xml").data(), rivalID);
 	CSTR pathDB;
-	cstrSprintf(&pathDB, "LR2files/Rival/%d.db", rivalID);
+	cstrSprintf(&pathDB, fs::make_preferred("LR2files/Rival/%d.db").data(), rivalID);
 	cstrSprintf(&this->param, "id=%d&lastupdate=%d", rivalID, CheckRivaldataNew(rivalID));
 	this->target_URL = "http://www.dream-pro.info/~lavalse/LR2IR/2/getplayerxml.cgi";
 	if (this->HTTPrequest() == 1) {
@@ -969,7 +970,7 @@ int SaveIRID(int IRID, CSTR ID) {
 
 	CSTR scorefile;
 	sqlite3 *pDb;
-	cstrSprintf(&scorefile, "LR2files/Database/Score/%s.db", ID.body);
+	cstrSprintf(&scorefile, fs::make_preferred("LR2files/Database/Score/%s.db").data(), ID.body);
 	sqlite3_open(scorefile, &pDb);
 	CSTR query;
 	cstrSprintf(&query, "UPDATE player SET irid = %d", IRID);

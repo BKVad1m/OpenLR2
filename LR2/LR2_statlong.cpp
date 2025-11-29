@@ -1,4 +1,5 @@
 ﻿#include "LR2_statlong.h"
+#include "filesystem.h"
 
 #ifndef _WIN32
 #include <iostream>
@@ -35,7 +36,7 @@ int ReadPlayerScore(CSTR id, CSTR pass, PLAYERSTATISTIC *pstat) {
 	sqlite3 *scoreDB;
 	sqlite3_stmt *stmt;
 
-	cstrSprintf(&dbPath, "LR2files/Database/Score/%s.db", id.body);
+	cstrSprintf(&dbPath, fs::make_preferred("LR2files/Database/Score/%s.db").data(), id.body);
 	passMD5 = MD5str(pass);
 	
 	sqlite3_open(dbPath, &scoreDB);

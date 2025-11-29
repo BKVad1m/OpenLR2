@@ -1,6 +1,7 @@
 #include "Scene06_Keyconfig.h"
 #include "LR2_configsave.h"
 #include "LR2_skinobject.h"
+#include "filesystem.h"
 
 //401da0
 int ProcS_Keyconfig(game *g) {
@@ -50,13 +51,13 @@ int ProcI_Keyconfig(game *g) {
 			g->config.input.buttonMap[g->KeyInput.config_button_inMap][g->KeyInput.config_key] = (g->KeyInput.inputID[KEY_INPUT_DELETE] == 1)? 0 : fndkey;
 			PlaySound(&g->audio, &g->audio.sysSound.option_change, g->audio.chnKey, -1);
 			if (g->KeyInput.config_keymode == 0) {
-				WriteKeyConfig(g, "LR2files/Config/keyconfig.xml", 7);
+				WriteKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig.xml").data(), 7);
 			}
 			else if(g->KeyInput.config_keymode == 1){
-				WriteKeyConfig(g, "LR2files/Config/keyconfig_p.xml", 9);
+				WriteKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig_p.xml").data(), 9);
 			}
 			else if (g->KeyInput.config_keymode == 2) {
-				WriteKeyConfig(g, "LR2files/Config/keyconfig_5.xml", 5);
+				WriteKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig_5.xml").data(), 5);
 			}
 			ProcS_Keyconfig(g);
 		}
@@ -66,16 +67,16 @@ int ProcI_Keyconfig(game *g) {
 		memset(g->config.input.buttonMap, 0, 16 * 40 * sizeof(int));
 
 		if (g->KeyInput.config_keymode == 0) {
-			ReadKeyConfig(g, "LR2files/Config/keyconfig_def.xml");
-			WriteKeyConfig(g, "LR2files/Config/keyconfig.xml", 7);
+			ReadKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig_def.xml").data());
+			WriteKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig.xml").data(), 7);
 		}
 		else if (g->KeyInput.config_keymode == 1) {
-			ReadKeyConfig(g, "LR2files/Config/keyconfig_p_def.xml");
-			WriteKeyConfig(g, "LR2files/Config/keyconfig_p.xml", 9);
+			ReadKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig_p_def.xml").data());
+			WriteKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig_p.xml").data(), 9);
 		}
 		else if (g->KeyInput.config_keymode == 2) {
-			ReadKeyConfig(g, "LR2files/Config/keyconfig_5_def.xml");
-			WriteKeyConfig(g, "LR2files/Config/keyconfig_5.xml", 5);
+			ReadKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig_5_def.xml").data());
+			WriteKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig_5.xml").data(), 5);
 		}
 		ProcS_Keyconfig(g);
 	}

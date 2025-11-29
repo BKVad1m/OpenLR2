@@ -1,6 +1,7 @@
 ﻿#include "LR2_songmanage.h"
 #include "Engine.h"
 #include "LR2_statlong.h"
+#include "filesystem.h"
 
 #include <iterator>
 
@@ -902,7 +903,7 @@ int GetSongData(CSTR songMD5, SONGDATA *song, sqlite3 *sql, SONGSELECT *ss) {
 
 		song->tag = SQL_GetColumn(6, stmt);
 		song->difficulty = sqlite3_column_int(stmt, 15);
-		cstrSprintf(&replayPath, "LR2files/Replay/%s/%s.lr2rep", ss->playerID.body, song->hash.body);
+		cstrSprintf(&replayPath, fs::make_preferred("LR2files/Replay/%s/%s.lr2rep").data(), ss->playerID.body, song->hash.body);
 		song->replayExist = IsFileExist(replayPath);
 		if (song->keymode > 0) {
 			song->mybest.clear = sqlite3_column_int(stmt, 30);
@@ -1154,7 +1155,7 @@ int SearchSongsFromPath(CSTR root, sqlite3 *sql, CSTR path) {
 
 	ErrorLogFmtAdd("曲の検索を行います。パス%s\n", root.body);
 	ErrorLogTabAdd();
-	if (root.right(1).isDiff("/")) root.add("/");
+	if (root.right(1).isDiff("\\")) root.add("\\");
 
 	CSTR searchPath;
 	BMSMETA meta; 
@@ -1193,7 +1194,7 @@ int SearchSongsFromPath(CSTR root, sqlite3 *sql, CSTR path) {
 		}
 		else {
 			searchPath = root;
-			searchPath.add(findFileData.cFileName).add("/");
+			searchPath.add(findFileData.cFileName).add("\\");
 			ErrorLogFmtAdd("フォルダを発見しました。　パス:%s\n", searchPath.body);
 			
 			CSTR folderinfo(searchPath);
@@ -1209,7 +1210,7 @@ int SearchSongsFromPath(CSTR root, sqlite3 *sql, CSTR path) {
 				if (SQL_Run(str, sql) == 0) {
 					ErrorLogAdd("再帰検索を行います。\n");
 					CSTR subPath(root);
-					subPath.add(findFileData.cFileName).add("/");
+					subPath.add(findFileData.cFileName).add("\\");
 					count += SearchSongsFromPath(searchPath, sql, subPath);
 				}
 			}
@@ -1218,7 +1219,7 @@ int SearchSongsFromPath(CSTR root, sqlite3 *sql, CSTR path) {
 				if (SQL_Run(str, sql) == 0) {
 					ErrorLogAdd("再帰検索を行います。\n");
 					CSTR subPath(root);
-					subPath.add(findFileData.cFileName).add("/");
+					subPath.add(findFileData.cFileName).add("\\");
 					count += SearchSongsFromPath(searchPath, sql, subPath);
 				}
 			}
@@ -1496,10 +1497,10 @@ int SearchCourseFromDB(sqlite3 *sql, SONGSELECT *ss, int keys, int multistagemod
 		}
 
 		if (multistagemode == 1) { //nonstop
-			cstrSprintf(&str, "LR2files/Replay/%s/%s.lr2rep", ss->playerID.body, MD5str(song.hash));
+			cstrSprintf(&str, fs::make_preferred("LR2files/Replay/%s/%s.lr2rep").data(), ss->playerID.body, MD5str(song.hash));
 		}
 		else {
-			cstrSprintf(&str, "LR2files/Replay/%s/c/%s", ss->playerID.body, MD5str(song.hash));
+			cstrSprintf(&str, fs::make_preferred("LR2files/Replay/%s/c/%s").data(), ss->playerID.body, MD5str(song.hash));
 		}
 		song.replayExist = IsFileExist(str);
 		song.mybest.clear = sqlite3_column_int(pStmt, 6);
@@ -1749,7 +1750,7 @@ int GetFolderDataFromPath(CSTR path, sqlite3 *sql) {
 	ErrorLogTabAdd();
 	BMSMETA meta;
 	CSTR searchPath(path);
-	if (searchPath.right(1).isSame("/")) {
+	if (searchPath.right(1).isSame("\\") || searchPath.right(1).isSame("/")) {
 		*searchPath.atPos(searchPath.length() - 1) = 0;
 	}
 
@@ -1854,7 +1855,7 @@ int LoadFilteredBmsListFromDB(CSTR query, sqlite3 *sql, SONGSELECT *ss, int *dif
 		isRival = 1;
 		SQL_Run("DETACH rivaldb", sql);
 		CSTR str;
-		cstrSprintf(&str, "ATTACH \'LR2files/Rival/%d.db\' AS rivaldb", rivalID);
+		cstrSprintf(&str, fs::make_preferred("ATTACH \'LR2files/Rival/%d.db\' AS rivaldb").data(), rivalID);
 		SQL_Run(str, sql);
 		ss->rivalID = rivalID;
 		rivalID = 0;
@@ -2057,7 +2058,7 @@ int LoadFilteredBmsListFromDB(CSTR query, sqlite3 *sql, SONGSELECT *ss, int *dif
 
 					song.tag = SQL_GetColumn(6, pStmt);
 					song.difficulty = sqlite3_column_int(pStmt, 15);
-					cstrSprintf(&replayPath, "LR2files/Replay/%s/%s.lr2rep", ss->playerID.body, song.hash.body);
+					cstrSprintf(&replayPath, fs::make_preferred("LR2files/Replay/%s/%s.lr2rep").data(), ss->playerID.body, song.hash.body);
 					song.replayExist = IsFileExist(replayPath);
 					thisFolder = SQL_GetColumn(9, pStmt);
 					song.folder = thisFolder;
@@ -2489,59 +2490,59 @@ int LoadLR2CustomFolder(sqlite3 *sql, CONFIG_JUKEBOX *jb, CSTR scoreDBpath, char
 			// FIXME: out of bounds write if jb->numOfPath == jb->path.size(). Make jb->path a vector.
 			//TODO : make define customfolderoption constant
 			if (jb->customfolder & 1) {
-				jb->path[jb->numOfPath] = "LR2files/CustomFolder/RANDOM/";
+				jb->path[jb->numOfPath] = fs::make_preferred("LR2files/CustomFolder/RANDOM/").data();
 				jb->numOfPath++;
 				folderAddCount++;
 			}
 			if (jb->customfolder & 2) {
-				jb->path[jb->numOfPath] = "LR2files/CustomFolder/favorite.lr2folder";
+				jb->path[jb->numOfPath] = fs::make_preferred("LR2files/CustomFolder/favorite.lr2folder").data();
 				jb->numOfPath++;
 				folderAddCount++;
 			}
 			if (jb->customfolder & 4) {
-				jb->path[jb->numOfPath] = "LR2files/CustomFolder/TOP10.lr2folder";
+				jb->path[jb->numOfPath] = fs::make_preferred("LR2files/CustomFolder/TOP10.lr2folder").data();
 				jb->numOfPath++;
 				folderAddCount++;
 			}
 			if (jb->customfolder & 8) {
-				jb->path[jb->numOfPath] = "LR2files/CustomFolder/PLAYLEVEL/";
+				jb->path[jb->numOfPath] = fs::make_preferred("LR2files/CustomFolder/PLAYLEVEL/").data();
 				jb->numOfPath++;
 				folderAddCount++;
 			}
 			if (jb->customfolder & 0x10) {
-				jb->path[jb->numOfPath] = "LR2files/CustomFolder/CLEAR/";
+				jb->path[jb->numOfPath] = fs::make_preferred("LR2files/CustomFolder/CLEAR/").data();
 				jb->numOfPath++;
 				folderAddCount++;
 			}
 			if (jb->customfolder & 0x20) {
-				jb->path[jb->numOfPath] = "LR2files/CustomFolder/RANK/";
+				jb->path[jb->numOfPath] = fs::make_preferred("LR2files/CustomFolder/RANK/").data();
 				jb->numOfPath++;
 				folderAddCount++;
 			}
 			if (jb->customfolder & 0x40) {
-				jb->path[jb->numOfPath] = "LR2files/CustomFolder/ignore.lr2folder";
+				jb->path[jb->numOfPath] = fs::make_preferred("LR2files/CustomFolder/ignore.lr2folder").data();
 				jb->numOfPath++;
 				folderAddCount++;
 			}
 			if (jb->customfolder & 0x80) {
-				jb->path[jb->numOfPath] = "LR2files/CustomFolder/INSANE01/";
+				jb->path[jb->numOfPath] = fs::make_preferred("LR2files/CustomFolder/INSANE01/").data();
 				jb->numOfPath++;
-				jb->path[jb->numOfPath] = "LR2files/CustomFolder/INSANE02/";
+				jb->path[jb->numOfPath] = fs::make_preferred("LR2files/CustomFolder/INSANE02/").data();
 				jb->numOfPath++;
 				folderAddCount+=2;
 				EnabledInsane = 1;
 			}
-			jb->path[jb->numOfPath] = "LR2files/CustomFolder/course1.lr2folder";
+			jb->path[jb->numOfPath] = fs::make_preferred("LR2files/CustomFolder/course1.lr2folder").data();
 			jb->numOfPath++;
-			jb->path[jb->numOfPath] = "LR2files/CustomFolder/course2.lr2folder";
+			jb->path[jb->numOfPath] = fs::make_preferred("LR2files/CustomFolder/course2.lr2folder").data();
 			jb->numOfPath++;
-			jb->path[jb->numOfPath] = "LR2files/CustomFolder/course3.lr2folder";
+			jb->path[jb->numOfPath] = fs::make_preferred("LR2files/CustomFolder/course3.lr2folder").data();
 			jb->numOfPath++;
 			folderAddCount += 3;
 		}
 
 		sqlite3_open(scoreDBpath,&scoreDB);
-		sqlite3_open("LR2files/Database/tag.db", &tagDB);
+		sqlite3_open(fs::make_preferred("LR2files/Database/tag.db").data(), &tagDB);
 		SQL_Run("CREATE TABLE folder(title TEXT ,subtitle TEXT ,category TEXT,info_a TEXT,info_b TEXT,command TEXT,path TEXT primary key,type INTEGER,banner TEXT,parent TEXT,date INTEGER,max INTEGER,adddate INTEGER)", sql);
 		SQL_Run("CREATE TABLE song(hash TEXT ,title TEXT ,subtitle TEXT ,genre TEXT,artist TEXT,subartist TEXT,tag TEXT ,path TEXT primary key ,type INTEGER,folder TEXT,stagefile TEXT,banner TEXT,backbmp TEXT,parent TEXT,level INTEGER,difficulty INTEGER,maxbpm INTEGER,minbpm INTEGER,mode INTEGER,judge INTEGER,longnote INTEGER,bga INTEGER,random INTEGER,date INTEGER,favorite INTEGER,txt INTEGER,karinotes INTEGER,adddate INTEGER,exlevel INTEGER)", sql);
 		SQL_Run("CREATE INDEX hashidx ON song (hash)", sql);
@@ -2561,7 +2562,7 @@ int LoadLR2CustomFolder(sqlite3 *sql, CONFIG_JUKEBOX *jb, CSTR scoreDBpath, char
 			ErrorLogAdd("スコアデータベースの接続に失敗しました。\n");
 			return -1;
 		}
-		if (SQL_Run("ATTACH \'LR2files/Database/tag.db\' AS tagdb", sql) != 0) {
+		if (SQL_Run(fs::make_preferred("ATTACH \'LR2files/Database/tag.db\' AS tagdb").data(), sql) != 0) {
 			ErrorLogAdd("タグとかデータベースの接続に失敗しました。\n");
 			return -1;
 		}
@@ -2623,22 +2624,22 @@ int LoadLR2CustomFolder(sqlite3 *sql, CONFIG_JUKEBOX *jb, CSTR scoreDBpath, char
 		ErrorLogAdd("データベースチェックは終了しました。\n");
 
 		if (flag_starter == 0) {
-			SQL_Run("DELETE FROM folder WHERE path LIKE \'LR2files/Rival/%\'", sql);
+			SQL_Run(fs::make_preferred("DELETE FROM folder WHERE path LIKE \'LR2files/Rival/%\'").data(), sql);
 
 			for (int i = 0; i < 20; i++) {
 				if (jb->rival[i] < 1) break;
-				cstrSprintf(&jb->path[jb->numOfPath], "LR2files/Rival/%d.lr2folder", jb->rival[i]);
+				cstrSprintf(&jb->path[jb->numOfPath], fs::make_preferred("LR2files/Rival/%d.lr2folder").data(), jb->rival[i]);
 				GetFolderDataFromPath(jb->path[jb->numOfPath], sql);
 				jb->numOfPath++;
 				folderAddCount++;
 			}
 
-			SQL_Run("DELETE FROM folder WHERE path=\'LR2files/CustomFolder/newsong.lr2folder\'", sql);
+			SQL_Run(fs::make_preferred("DELETE FROM folder WHERE path=\'LR2files/CustomFolder/newsong.lr2folder\'").data(), sql);
 			sqlite3_snprintf(1024, query, "SELECT * FROM song WHERE adddate > %d", GetNowUnixtime() - jb->titleflash * 3600);
 			sqlite3_stmt *pStmt;
 			SQL_prepare(query, sql, &pStmt);
 			if (sqlite3_step(pStmt) == 100) {
-				jb->path[jb->numOfPath] = "LR2files/CustomFolder/newsong.lr2folder";
+				jb->path[jb->numOfPath] = fs::make_preferred("LR2files/CustomFolder/newsong.lr2folder").data();
 				GetFolderDataFromPath(jb->path[jb->numOfPath], sql);
 				jb->numOfPath++;
 				folderAddCount++;

@@ -4,6 +4,8 @@
 #include "LR2_skinobject.h"
 #include "LR2_configsave.h"
 
+#include "filesystem.h"
+
 //4011f0
 int FxByMIDI(game *g) {
 	bool change = false;
@@ -335,7 +337,7 @@ int ReadLR2SoundSet(game *g, CSTR filepath, char reFlag) {
 	if (g->audio.is_fmod_disabled == 0) FMOD_System_Update(g->audio.fmodSys);
 
 	CSTR path;
-	cstrSprintf(&path, "LR2files/SkinCustomize/%s.xml", MD5str(filepath));
+	cstrSprintf(&path, fs::make_preferred("LR2files/SkinCustomize/%s.xml").data(), MD5str(filepath));
 	ReadSkinCustomize(&sku, path);
 	
 	CSTR dir(filepath.getDirectory());

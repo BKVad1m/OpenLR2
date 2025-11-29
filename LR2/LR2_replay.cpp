@@ -1,5 +1,6 @@
 ﻿#include "LR2_replay.h"
 #include "Engine.h"
+#include "filesystem.h"
 
 #include <filesystem>
 #include <system_error>
@@ -13,20 +14,20 @@ int MoveReplayFile(CSTR songMD5, CSTR localID) {
 	{
 		CSTR path;
 
-		cstrSprintf(&path, "LR2files/Replay/%s/c", localID.body);
+		cstrSprintf(&path, fs::make_preferred("LR2files/Replay/%s/c").data(), localID.body);
 		std::error_code ec; // ignore errors
 		std::filesystem::create_directories(path.body, ec);
 
-		cstrSprintf(&path, "LR2files/Replay/%s/c/%s", localID.body, songMD5.body);
+		cstrSprintf(&path, fs::make_preferred("LR2files/Replay/%s/c/%s").data(), localID.body, songMD5.body);
 		std::filesystem::create_directories(path.body, ec);
 	}
 
 	CSTR pathFrom;
 	int stage = 0;
-	cstrSprintf(&pathFrom, "LR2files/Replay/%s/__%d.lr2rep", localID.body, stage);
+	cstrSprintf(&pathFrom, fs::make_preferred("LR2files/Replay/%s/__%d.lr2rep").data(), localID.body, stage);
 	while (pathFrom.canOpenFile()) {
 		CSTR pathTo;
-		cstrSprintf(&pathTo, "LR2files/Replay/%s/c/%s/%d.lr2rep", localID.body, songMD5.body, stage);
+		cstrSprintf(&pathTo, fs::make_preferred("LR2files/Replay/%s/c/%s/%d.lr2rep").data(), localID.body, songMD5.body, stage);
 #ifdef _WIN32
 		MoveFileA(pathFrom, pathTo); //TOFIX : if file already exists at pathTo, it fails.
 #else // TODO: consolidate these two. Didn't check what fs::rename does if target already exists.
@@ -36,7 +37,7 @@ int MoveReplayFile(CSTR songMD5, CSTR localID) {
 		ErrorLogFmtAdd("リプレイの移動 stage%d\n", stage);
 
 		stage++;
-		cstrSprintf(&pathFrom, "LR2files/Replay/%s/__%d.lr2rep", localID.body, stage);
+		cstrSprintf(&pathFrom, fs::make_preferred("LR2files/Replay/%s/__%d.lr2rep").data(), localID.body, stage);
 	}
 	ErrorLogFmtAdd("リプレイの移動終了 stage%d\n", stage);
 
@@ -53,7 +54,7 @@ int LoadReplayFileCourse(REPLAY *rp, CSTR songMD5, int stage, CSTR localID){
 	}
 
 	CSTR path;
-	cstrSprintf(&path, "LR2files/Replay/%s/c/%s/%d.lr2rep", localID.body, songMD5.body, stage);
+	cstrSprintf(&path, fs::make_preferred("LR2files/Replay/%s/c/%s/%d.lr2rep").data(), localID.body, songMD5.body, stage);
 
 	if (!IsFileExist(path)) return 0;
 
@@ -91,7 +92,7 @@ int LoadReplayFile(REPLAY *rp, CSTR songMD5, CSTR localID) {
 	}
 
 	CSTR path;
-	cstrSprintf(&path, "LR2files/Replay/%s/%s.lr2rep", localID.body, songMD5.body);
+	cstrSprintf(&path, fs::make_preferred("LR2files/Replay/%s/%s.lr2rep").data(), localID.body, songMD5.body);
 
 	if (!IsFileExist(path)) return 0;
 
@@ -128,7 +129,7 @@ int SaveReplay(REPLAY *rp, CSTR songMD5, CSTR localID) {
 	}
 
 	CSTR path;
-	cstrSprintf(&path, "LR2files/Replay/%s/%s.lr2rep", localID.body, songMD5.body);
+	cstrSprintf(&path, fs::make_preferred("LR2files/Replay/%s/%s.lr2rep").data(), localID.body, songMD5.body);
 	pFile = fopen(path, "wb");
 	if (pFile == NULL) {
 		ErrorLogAdd("リプレイデータの保存に失敗しました。\n");

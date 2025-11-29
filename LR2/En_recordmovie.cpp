@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "structure.h"
+#include "filesystem.h"
 
 #include <DxLib/DxLib.h>
 
@@ -173,7 +174,7 @@ bool RECORDING::PrepareAVIRecord(double framerate, int bit, CSTR filename, uint 
 	this->curFrame = 0;
 
 	remove(filename);
-	CSTR dat("LR2files/Config/compvars.dat");
+	CSTR dat(fs::make_preferred("LR2files/Config/compvars.dat").data());
 
 	if (dat.canOpenFile()) {
 		FILE* pFile = fopen(dat, "rb");
@@ -186,7 +187,7 @@ bool RECORDING::PrepareAVIRecord(double framerate, int bit, CSTR filename, uint 
 		memset(&this->compvars, 0, sizeof(COMPVARS));
 		this->compvars.cbSize = 64;
 		if (ICCompressorChoose(NULL,0,NULL,NULL,&this->compvars,NULL) == 0) return false;
-		FILE *pFile = fopen("LR2files/Config/compvars.dat", "wb");
+		FILE *pFile = fopen(fs::make_preferred("LR2files/Config/compvars.dat").data(), "wb");
 		fwrite(&this->compvars, sizeof(COMPVARS), 1, pFile);
 		fclose(pFile);
 		MessageBoxA(NULL, "圧縮設定が保存されました。\n設定の変更はJUKEBOXタブ→詳細設定→動画圧縮設定で行えます。", "報告", 0);

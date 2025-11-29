@@ -6,6 +6,7 @@
 #include "LR2_configsave.h"
 #include "LR2_statplay.h"
 #include "Scenes.h"
+#include "filesystem.h"
 
 #include <DxLib/DxLib.h>
 
@@ -3577,13 +3578,13 @@ int SetObjectValue_Button(game *g, skstruct *sk, Timer *T, char flag) {
 					g->KeyInput.config_key = -1;
 					switch (g->KeyInput.config_keymode) {
 						case 0:
-							ReadKeyConfig(g, "LR2files/Config/keyconfig.xml");
+							ReadKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 							break;
 						case 1:
-							ReadKeyConfig(g, "LR2files/Config/keyconfig_p.xml");
+							ReadKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig_p.xml").data());
 							break;
 						case 2:
-							ReadKeyConfig(g, "LR2files/Config/keyconfig_5.xml");
+							ReadKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig_5.xml").data());
 							break;
 					}
 					ProcS_Keyconfig(g);
@@ -3644,7 +3645,7 @@ int SetObjectValue_Button(game *g, skstruct *sk, Timer *T, char flag) {
 					g->skinData.previewCustomID = 0;
 					CSTR tcstr;
 					SkinUser sku;
-					cstrSprintf(&tcstr, "LR2files/SkinCustomize/%s.xml", MD5str(g->skinData.Data[g->skinData.previewID].skinFile));
+					cstrSprintf(&tcstr, fs::make_preferred("LR2files/SkinCustomize/%s.xml").data(), MD5str(g->skinData.Data[g->skinData.previewID].skinFile));
 					ReadSkinCustomize(&sku, tcstr);
 
 					for (int j = 0; j < 100; j++) { // VULNERABILITY : out of index sku (array size 40, but access to 100)
@@ -3702,7 +3703,7 @@ int SetObjectValue_Button(game *g, skstruct *sk, Timer *T, char flag) {
 					g->skinData.previewCustomID = 0;
 					CSTR tcstr;
 					SkinUser sku;
-					cstrSprintf(&tcstr, "LR2files/SkinCustomize/%s.xml", MD5str(g->skinData.Data[g->skinData.previewID].skinFile));
+					cstrSprintf(&tcstr, fs::make_preferred("LR2files/SkinCustomize/%s.xml").data(), MD5str(g->skinData.Data[g->skinData.previewID].skinFile));
 					ReadSkinCustomize(&sku, tcstr);
 
 					for (int j = 0; j < 100; j++) { // VULNERABILITY : out of index sku (array size 40, but access to 100)
@@ -3797,7 +3798,7 @@ int SetObjectValue_Button(game *g, skstruct *sk, Timer *T, char flag) {
 
 					CSTR tcstr;
 					SkinUser sku;
-					cstrSprintf(&tcstr, "LR2files/SkinCustomize/%s.xml", MD5str(g->skinData.Data[g->skinData.previewID].skinFile));
+					cstrSprintf(&tcstr, fs::make_preferred("LR2files/SkinCustomize/%s.xml").data(), MD5str(g->skinData.Data[g->skinData.previewID].skinFile));
 					ReadSkinCustomize(&sku, tcstr);
 
 					for (int j = 0; j < 100; j++) { // VULNERABILITY : out of index sku (array size 40, but access to 100)

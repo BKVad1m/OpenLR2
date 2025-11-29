@@ -1,6 +1,7 @@
 ﻿#include "LR2_skinmanage.h"
 #include "Engine.h"
 #include "LR2_configsave.h"
+#include "filesystem.h"
 
 #include <filesystem>
 
@@ -101,8 +102,8 @@ int SetFirstSkins(game *g){
 	ErrorLogAdd("スキンを列挙します。\n");
 	sm = &g->skinData;
 	InitSkinData(sm);
-	MakeSkinList(sm, CSTR("LR2files/Theme/"));
-	MakeSkinList(sm, CSTR("LR2files/Sound/"));
+	MakeSkinList(sm, CSTR(fs::make_preferred("LR2files/Theme/").data()));
+	MakeSkinList(sm, CSTR(fs::make_preferred("LR2files/Sound/").data()));
 	ErrorLogAdd("スキンの列挙を終了しました。\n");
 
 	if (SetFirstSkin(sm, SKINTYPE_7KEYS, &g->config.skin.skinFilePath[0]) == -1) {
@@ -223,7 +224,7 @@ int ParseLR2SkinCustom(SkinManage *skm, CSTR filepath) {
 	FILE *pFile;
 	char* pBuffer;
 
-	cstrSprintf(&md5Filepath, "LR2files/SkinCustomize/%s.xml", MD5str(filepath) );
+	cstrSprintf(&md5Filepath, fs::make_preferred("LR2files/SkinCustomize/%s.xml").data(), MD5str(filepath) );
 	ReadSkinCustomize(&skCustom, md5Filepath);
 	pFile = fopen(filepath, "r");
 	if (!pFile) return 0;
