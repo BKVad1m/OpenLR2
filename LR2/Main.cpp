@@ -505,16 +505,12 @@ int main(int argc, char** argv) {
 			gs.gameplay.isCourse = 0;
 			gs.gameplay.isPreviewLoad = 0;
 			gs.gameplay.previewStatus = 0;
-			if (gs.gameplay.hThreadPreview.joinable()) {
-				gs.gameplay.hThreadPreview.join();
-			}
 			gs.gameplay.courseType = -1;
 			gs.gameplay.courseStageNow = 0;
 			gs.gameplay.timetick = GetTimeWrap();
 			gs.gameplay.flag_threadDoingProcGame = 0;
 			InitSkin(&gs.skstruct, 0, 0);
 			gs.skstruct.fontname.assign(&gs.config.skin.fontname);
-			if(gs.hThreadBanner.joinable()) gs.hThreadBanner.join();
 			for (int i = 0; i < 6480; i++) gs.gameplay.keysound->load = 0;
 			for (int i = 0; i < 200; i++) gs.skstruct2.caption[i].fillzero();
 			for (int i = 0; i < 10; i++) gs.skstruct2.helpfilePath[i].fillzero();

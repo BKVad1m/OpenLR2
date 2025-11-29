@@ -1681,6 +1681,8 @@ static void ThreadProc_LoadPreview(game *g) {
 		g->gameplay.previewStatus = 0;
 		g->gameplay.isPreviewLoad = 0;
 	}
+
+	g->gameplay.hThreadPreview.detach(); // Detach ourselves TODO: refactor surrounding code to avoid this
 }
 
 
