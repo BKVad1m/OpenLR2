@@ -903,7 +903,7 @@ int main(int argc, char** argv) {
 							if (gs.gameplay.ghostBattle == 1) {
 								if (gs.sSelect.bmsList[gs.sSelect.cur_song].keymode == 5) {
 									LoadSceneG(&gs, &gs.skstruct, 13);
-									if (gs.skinData.Data[gs.skinData.skinID[13]].type != SKINTYPE_7KEYSBATTLE)
+									if (gs.skinData.Data[gs.skinData.skinID[13]].type != SKINTYPE_5KEYSBATTLE)
 										ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 									else 
 										ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig_5.xml").data());
@@ -934,7 +934,7 @@ int main(int argc, char** argv) {
 										}
 										else if (gs.config.play.battle == 1) {
 											LoadSceneG(&gs, &gs.skstruct, 13);
-											if (gs.skinData.Data[gs.skinData.skinID[13]].type != SKINTYPE_7KEYSBATTLE)
+											if (gs.skinData.Data[gs.skinData.skinID[13]].type != SKINTYPE_5KEYSBATTLE)
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 											else
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig_5.xml").data());
@@ -986,7 +986,7 @@ int main(int argc, char** argv) {
 										}
 										else if (gs.config.play.battle == 1 || gs.config.play.battle == 2) {
 											LoadSceneG(&gs, &gs.skstruct, 13);
-											if (gs.skinData.Data[gs.skinData.skinID[13]].type == SKINTYPE_7KEYSBATTLE)
+											if (gs.skinData.Data[gs.skinData.skinID[13]].type == SKINTYPE_5KEYSBATTLE)
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig_5.xml").data());
 											else
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());

@@ -1848,10 +1848,10 @@ int ProcS_Play(game *g, sqlite3* sql) {
 		if (g->sSelect.metaSelected.keymode == 5 && (g->config.play.battle == 2 || g->config.play.battle == 3) && g->skinData.Data[g->skinData.skinID[3]].type == SKINTYPE_14KEYS) {
 			scratchside = g->skstruct.scratchside_1 + g->skstruct.scratchside_2 * 2;
 		}
-		if (g->sSelect.metaSelected.keymode == 10 && g->config.play.battle == 0 && g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_5KEYSBATTLE) {
+		if (g->sSelect.metaSelected.keymode == 10 && g->config.play.battle == 0 && g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_7KEYSBATTLE) {
 			scratchside = g->skstruct.scratchside_1 + g->skstruct.scratchside_2 * 2;
 		}
-		if (g->sSelect.metaSelected.keymode == 5 && g->config.play.battle == 1 && g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_5KEYSBATTLE) {
+		if (g->sSelect.metaSelected.keymode == 5 && g->config.play.battle == 1 && g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_7KEYSBATTLE) {
 			scratchside = g->skstruct.scratchside_1 + g->skstruct.scratchside_2 * 2;
 		}
 		if (g->sSelect.metaSelected.keymode == 5 && g->config.play.battle == 0 && g->skinData.Data[g->skinData.skinID[1]].type == SKINTYPE_7KEYS) {

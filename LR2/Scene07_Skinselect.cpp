@@ -331,7 +331,7 @@ int PlayPreviewSample(game *g) {
 		scratchSide = g->skstruct2.scratchside_1 + g->skstruct2.scratchside_2 * 2;
 	if (g->skinData.select == 1 && g->skinData.Data[g->skinData.skinID[1]].type == SKINTYPE_7KEYS)
 		scratchSide = g->skstruct2.scratchside_1 + g->skstruct2.scratchside_2 * 2;
-	if (g->skinData.select == 13 && g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_5KEYSBATTLE)
+	if (g->skinData.select == 13 && g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_7KEYSBATTLE)
 		scratchSide = g->skstruct2.scratchside_1 + g->skstruct2.scratchside_2 * 2;
 	ProcS_Select(g);
 	ReleaseBGA(g);
@@ -383,7 +383,7 @@ int PlayPreviewSample(game *g) {
 			break;
 
 		case 13:
-			if (g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_5KEYSBATTLE)
+			if (g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_7KEYSBATTLE)
 				ReadKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 			else
 				ReadKeyConfig(g, fs::make_preferred("LR2files/Config/keyconfig_5.xml").data());
@@ -504,8 +504,8 @@ int SkinPreviewNext(SkinManage *sm, SKINTYPE type){
 				return 1;
 			}
 		}
-		else if (type == SKINTYPE_7KEYSBATTLE) {
-			if (newType == SKINTYPE_5KEYSBATTLE) {
+		else if (type == SKINTYPE_5KEYSBATTLE) {
+			if (newType == SKINTYPE_7KEYSBATTLE) {
 				sm->previewID = i;
 				return 1;
 			}
@@ -530,8 +530,8 @@ int SkinPreviewNext(SkinManage *sm, SKINTYPE type){
 				return 1;
 			}
 		}
-		else if (type == SKINTYPE_7KEYSBATTLE) {
-			if (newType == SKINTYPE_5KEYSBATTLE) {
+		else if (type == SKINTYPE_5KEYSBATTLE) {
+			if (newType == SKINTYPE_7KEYSBATTLE) {
 				sm->previewID = i;
 				return 1;
 			}
@@ -567,8 +567,8 @@ int SkinPreviewPrev(SkinManage *sm, SKINTYPE type) {
 				return 1;
 			}
 		}
-		else if (type == SKINTYPE_7KEYSBATTLE) {
-			if (newType == SKINTYPE_5KEYSBATTLE) {
+		else if (type == SKINTYPE_5KEYSBATTLE) {
+			if (newType == SKINTYPE_7KEYSBATTLE) {
 				sm->previewID = i;
 				return 1;
 			}
@@ -593,8 +593,8 @@ int SkinPreviewPrev(SkinManage *sm, SKINTYPE type) {
 				return 1;
 			}
 		}
-		else if (type == SKINTYPE_7KEYSBATTLE) {
-			if (newType == SKINTYPE_5KEYSBATTLE) {
+		else if (type == SKINTYPE_5KEYSBATTLE) {
+			if (newType == SKINTYPE_7KEYSBATTLE) {
 				sm->previewID = i;
 				return 1;
 			}
