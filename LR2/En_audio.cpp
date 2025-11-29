@@ -236,6 +236,7 @@ const char* GetFMODerror(int errCode){
 
 //4b7f30
 int IsAltSoundExist(CSTR *filepath){
+	// TODO: .flac, like in FindAltSound
 	const char *str;
 	CSTR tStr(*filepath); //somewhat starnge
 
@@ -1167,18 +1168,16 @@ int InitSound(AUDIO *aud, uint bufferLength, int numBuffer, char fDisable, int o
 #endif // _WIN32
 
 		FMOD_System_GetNumDrivers(aud->fmodSys, &numDrivers);
-		if (driver > numDrivers - 1) {
+		if (driver + 1 > numDrivers) {
 			driver = 0;
 		}
 		if (FMOD_System_GetDriverInfo(aud->fmodSys, driver, driverName, sizeof(driverName), nullptr, nullptr, nullptr, nullptr) == FMOD_OK) {
 			ErrorLogFmtAdd("PLAYBACK DRIVER:%s\n", driverName);
 		} else {
-			ErrorLogFmtAdd("FMOD_System_GetDriverInfo failed");
+			ErrorLogFmtAdd("FMOD_System_GetDriverInfo failed\n");
 		}
 		FMOD_System_SetDriver(aud->fmodSys, driver);
-		ErrorLogAdd("バッファサイズの設定を行います...");
-		//FMOD_System_GetHardwareChannels(aud->fmodSys, &chn2D, &chn3D, &chnTotal);
-		//ErrorLogFmtAdd("2Dチャンネル%d 3Dチャンネル%d 合計%d\n", chn2D, chn3D, chnTotal);
+		ErrorLogAdd("バッファサイズの設定を行います...\n");
 		FMOD_System_CreateChannelGroup(aud->fmodSys, "bgm", &aud->chnBgm);
 		FMOD_System_CreateChannelGroup(aud->fmodSys, "key", &aud->chnKey);
 		FMOD_System_GetMasterChannelGroup(aud->fmodSys, &aud->chnMaster);
