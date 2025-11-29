@@ -2974,8 +2974,8 @@ int SkinPreviewNext(SkinManage *sm, SKINTYPE type){
 				return 1;
 			}
 		}
-		else if (type == SKINTYPE_7KEYSBATTLE) {
-			if (newType == SKINTYPE_5KEYSBATTLE) {
+		else if (type == SKINTYPE_5KEYSBATTLE) {
+			if (newType == SKINTYPE_7KEYSBATTLE) {
 				sm->previewID = i;
 				return 1;
 			}
@@ -3000,8 +3000,8 @@ int SkinPreviewNext(SkinManage *sm, SKINTYPE type){
 				return 1;
 			}
 		}
-		else if (type == SKINTYPE_7KEYSBATTLE) {
-			if (newType == SKINTYPE_5KEYSBATTLE) {
+		else if (type == SKINTYPE_5KEYSBATTLE) {
+			if (newType == SKINTYPE_7KEYSBATTLE) {
 				sm->previewID = i;
 				return 1;
 			}
@@ -3037,8 +3037,8 @@ int SkinPreviewPrev(SkinManage *sm, SKINTYPE type) {
 				return 1;
 			}
 		}
-		else if (type == SKINTYPE_7KEYSBATTLE) {
-			if (newType == SKINTYPE_5KEYSBATTLE) {
+		else if (type == SKINTYPE_5KEYSBATTLE) {
+			if (newType == SKINTYPE_7KEYSBATTLE) {
 				sm->previewID = i;
 				return 1;
 			}
@@ -3063,8 +3063,8 @@ int SkinPreviewPrev(SkinManage *sm, SKINTYPE type) {
 				return 1;
 			}
 		}
-		else if (type == SKINTYPE_7KEYSBATTLE) {
-			if (newType == SKINTYPE_5KEYSBATTLE) {
+		else if (type == SKINTYPE_5KEYSBATTLE) {
+			if (newType == SKINTYPE_7KEYSBATTLE) {
 				sm->previewID = i;
 				return 1;
 			}
@@ -3110,7 +3110,7 @@ int SetFirstSkin_5k(SkinManage *sm, SKINTYPE type, CSTR *skinName){
 	sm->skinID[type] = -1;
 	for (int i = 0; i < sm->Count; i++) {
 		if (sm->Data[i].skinFile.isSame(skinName) &&
-			(sm->Data[i].type == type || (sm->Data[i].type == type - 1 && (type == SKINTYPE_5KEYS || type == SKINTYPE_10KEYS || type == SKINTYPE_7KEYSBATTLE)))) {
+			(sm->Data[i].type == type || (sm->Data[i].type == type - 1 && (type == SKINTYPE_5KEYS || type == SKINTYPE_10KEYS || type == SKINTYPE_5KEYSBATTLE)))) {
 			sm->skinID[type] = i;
 			ErrorLogFmtAdd("SetFirstSkin 正しくスキン番号を設定しました。種別%d パス%s 番号%d\n", type, skinName->body, i);
 			return 1;
@@ -3118,7 +3118,7 @@ int SetFirstSkin_5k(SkinManage *sm, SKINTYPE type, CSTR *skinName){
 	}
 	ErrorLogFmtAdd("SetFirstSkin()で該当のタイプのスキンが見つかりませんでした。種別%d パス%s\n", type, skinName->body);
 	for (int i = 0; i < sm->Count; i++) {
-		if (sm->Data[i].type == type || (sm->Data[i].type == type -1 && (type == SKINTYPE_5KEYS || type == SKINTYPE_10KEYS || type == SKINTYPE_7KEYSBATTLE) )) {
+		if (sm->Data[i].type == type || (sm->Data[i].type == type -1 && (type == SKINTYPE_5KEYS || type == SKINTYPE_10KEYS || type == SKINTYPE_5KEYSBATTLE) )) {
 			skinName->assign(&sm->Data[i].skinFile);
 			sm->skinID[type] = i;
 			return 1;
@@ -3154,7 +3154,7 @@ int SetFirstSkin_5kb(SkinManage *sm, SKINTYPE type, CSTR *skinName) {
 
 	sm->skinID[type] = -1;
 	for (int i = 0; i < sm->Count; i++) {
-		if (sm->Data[i].skinFile.isSame(skinName) && (sm->Data[i].type == 13 || sm->Data[i].type == 12)) {
+		if (sm->Data[i].skinFile.isSame(skinName) && (sm->Data[i].type == SKINTYPE_5KEYSBATTLE || sm->Data[i].type == SKINTYPE_7KEYSBATTLE)) {
 			sm->skinID[type] = i;
 			ErrorLogFmtAdd("SetFirstSkin 正しくスキン番号を設定しました。種別%d パス%s 番号%d\n", type, skinName->body, i);
 			return 1;
@@ -9781,7 +9781,7 @@ int PlayPreviewSample(game *g) {
 		scratchSide = g->skstruct2.scratchside_1 + g->skstruct2.scratchside_2 * 2;
 	if (g->skinData.select == 1 && g->skinData.Data[g->skinData.skinID[1]].type == SKINTYPE_7KEYS)
 		scratchSide = g->skstruct2.scratchside_1 + g->skstruct2.scratchside_2 * 2;
-	if (g->skinData.select == 13 && g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_5KEYSBATTLE)
+	if (g->skinData.select == 13 && g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_7KEYSBATTLE)
 		scratchSide = g->skstruct2.scratchside_1 + g->skstruct2.scratchside_2 * 2;
 	ProcS_Select(g);
 	ReleaseBGA(g);
@@ -9833,7 +9833,7 @@ int PlayPreviewSample(game *g) {
 			break;
 
 		case 13:
-			if (g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_5KEYSBATTLE)
+			if (g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_7KEYSBATTLE)
 				ReadKeyConfig(g, "LR2files\\Config\\keyconfig.xml");
 			else
 				ReadKeyConfig(g, "LR2files\\Config\\keyconfig_5.xml");
@@ -13191,10 +13191,10 @@ int ProcS_Play(game *g, sqlite3* sql) {
 		if (g->sSelect.metaSelected.keymode == 5 && (g->config.play.battle == 2 || g->config.play.battle == 3) && g->skinData.Data[g->skinData.skinID[3]].type == SKINTYPE_14KEYS) {
 			scratchside = g->skstruct.scratchside_1 + g->skstruct.scratchside_2 * 2;
 		}
-		if (g->sSelect.metaSelected.keymode == 10 && g->config.play.battle == 0 && g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_5KEYSBATTLE) {
+		if (g->sSelect.metaSelected.keymode == 10 && g->config.play.battle == 0 && g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_7KEYSBATTLE) {
 			scratchside = g->skstruct.scratchside_1 + g->skstruct.scratchside_2 * 2;
 		}
-		if (g->sSelect.metaSelected.keymode == 5 && g->config.play.battle == 1 && g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_5KEYSBATTLE) {
+		if (g->sSelect.metaSelected.keymode == 5 && g->config.play.battle == 1 && g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_7KEYSBATTLE) {
 			scratchside = g->skstruct.scratchside_1 + g->skstruct.scratchside_2 * 2;
 		}
 		if (g->sSelect.metaSelected.keymode == 5 && g->config.play.battle == 0 && g->skinData.Data[g->skinData.skinID[1]].type == SKINTYPE_7KEYS) {
