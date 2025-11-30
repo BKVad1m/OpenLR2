@@ -14,7 +14,7 @@ typedef struct ARR {
     int Realloc(int size);
     int Free();
 
-    int push_back(void* data, int size);
+    int push_back(void* newdata);
 }ARR;
 
 typedef struct SKINFILELINEREAD {
@@ -58,13 +58,18 @@ typedef struct WORKSPACE {
 
     bool loaded = false;
     char mainpath[MAX_PATH];
+
     byte* filedata = NULL;
     unsigned int filedatasize = 0;
 
-    ARR subpath;
-    ARR skinfileLines;
-    ARR imgs;
+    int skinSizeX =640 , skinSizeY = 480;
 
+    ARR arr_subpath; //CSTR
+    ARR skinfileLines; //SKINFILELINEREAD
+    ARR arr_imgpath; //CSTR
+    ARR arr_texture; //SDL_Texture*
+    ARR arr_bigimg;
+    ARR arr_srcimg;
 
     int previewScreen;
 
@@ -99,6 +104,9 @@ typedef struct WORKSPACE {
     bool wImgManager;
     int drawImgManager();
     int loadSRC();
+
+    bool wFileManager;
+    int drawFileManager();
     
 
 }WORKSPACE;
