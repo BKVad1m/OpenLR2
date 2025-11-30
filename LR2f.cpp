@@ -11084,7 +11084,7 @@ int SetObjectValue_Button(game *g, skstruct *sk, Timer *T, char flag) {
 			case 231:
 				isClickSuccess = ButtonByInput(&sk->drBuf, &sk->otherObject[1].src[i], &sk->otherObject[1].dst[i], T, &g->KeyInput, &iTmp, -1, 1, (g->sSelect).panel);
 				if (isClickSuccess == 2) {
-					if (g->sSelect.course.count > 0 && g->sSelect.course.isMakingCourse == 1) {
+					if (g->sSelect.course.isMakingCourse == 1) {
 						ResetTimeLapse(17, &g->timer1);
 						SetTimeLapse(18, &g->timer1);
 						PlaySound(&g->audio, &g->audio.sysSound.panel_close, g->audio.chnKey, -1);
