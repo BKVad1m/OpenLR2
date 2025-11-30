@@ -253,8 +253,8 @@ int WORKSPACE::LoadSkin(char* path) {
     arr_subpath.Alloc(sizeof(CSTR), 1);
     arr_imgpath.Free();
     arr_imgpath.Alloc(sizeof(CSTR), 4);
-    arr_texture.Free();
-    arr_texture.Alloc(sizeof(SDL_Texture*), 10);
+    arr_IMG.Free();
+    arr_IMG.Alloc(sizeof(IMG), 10);
 
     LoadSkin2(path);
 
@@ -448,15 +448,16 @@ int WORKSPACE::drawTextEdit() {
 
 int WORKSPACE::loadSRC() {
 
-    int ox, oy;
-
-
     for (int n = 0; n < arr_imgpath.count; n++) {
-        SDL_Texture* textureTmp;
         CSTR& path = ((CSTR*) arr_imgpath.data)[n];
-        bool isLoaded = LoadTextureFromFile(path.outstr(), renderer, &textureTmp, &ox, &oy);
+        IMG& img = ((IMG*)arr_IMG.data)[n];
+
+        bool isLoaded = LoadTextureFromFile(path.outstr(), renderer, &(img.texture), &img.sizeX, &img.sizeY);
         
-        if(isLoaded)    arr_texture.push_back(textureTmp);
+        if (isLoaded) {
+            //img.path.assign(path.outstr());
+            arr_IMG.push_back(&img);
+        }
     }
     
 
@@ -478,11 +479,10 @@ int WORKSPACE::drawImgManager() {
         CSTR& path = ((CSTR*)arr_imgpath.data)[i];
         ImGui::Text("%03d : %s", i , path);
     }
-    for (int i = 0; i < arr_texture.count; i++) {
-        SDL_Texture& texture = ((SDL_Texture*)arr_texture.data)[i];
-        ImGui::Image(&texture, { 400,300 }, { 0,0 }, { 1, 1 });
-        ImTextureID;
-        //ImGui::ImageButton("dd", ((SDL_Texture**)arr_texture.data)[i],{ 400,300 });
+    for (int i = 0; i < arr_IMG.count; i++) {
+        IMG& img = ((IMG*)arr_IMG.data)[i];
+        ImGui::Text(" %d %d", img.sizeX, img.sizeY);
+        ImGui::Image(img.texture, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { 1, 1 });
     }
 
     

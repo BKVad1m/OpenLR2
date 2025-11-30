@@ -1,6 +1,7 @@
 #pragma once
 #include "seWindowManager.h"
 #include "../LR2/structure.h"
+#include <SDL3/SDL.h>
 
 
 typedef struct ARR {
@@ -41,11 +42,14 @@ typedef struct IFUNIT {
 }IFUNIT;
 
 typedef struct IMG {
-    CSTR name;
-    void* data = NULL;
+    CSTR path{};
+    SDL_Texture* texture;
+    CSTR name{};
     int sizeX;
     int sizeY;
-    int parent;
+    //
+    int parent = -1;
+    int posX, posY;
 }IMG;
 
 typedef struct WORKSPACE {
@@ -67,7 +71,7 @@ typedef struct WORKSPACE {
     ARR arr_subpath; //CSTR
     ARR skinfileLines; //SKINFILELINEREAD
     ARR arr_imgpath; //CSTR
-    ARR arr_texture; //SDL_Texture*
+    ARR arr_IMG; //IMG
     ARR arr_bigimg;
     ARR arr_srcimg;
 
