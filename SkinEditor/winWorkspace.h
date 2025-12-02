@@ -92,8 +92,11 @@ typedef struct WORKSPACE {
     int drawSkinList();
 
     int LoadSkin(char* path);
-    int LoadSkin2(char* path);
+    int ReadSkin(char* path);
+    int ParseSkin();
+
     int SaveSkinScript(char* path, bool split, bool nocomment);
+
 
     bool wSaveMenu;
     int drawSaveMenu();

@@ -268,7 +268,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		SetMultiThreadFlag(1);
 		SetUseFPUPreserveFlag(1);
 		SetUseDirectInputFlag(1); //DXLIBVER: not in original, but we need it to make same reaction.
-		SetUseDirect3DVersion(DX_DIRECT3D_9); //DXLIBVER: if not set, it's DX11 (over 3.13e)
+		//SetUseDirect3DVersion(DX_DIRECT3D_9); //DXLIBVER: if not set, it's DX11 (over 3.13e)
 				
 		
 		if (DxLib_Init() != -1) {
