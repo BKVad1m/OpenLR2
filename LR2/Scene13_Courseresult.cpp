@@ -170,7 +170,7 @@ int ProcS_CourseResult(game *g, sqlite3 *sql) {
 	PlayerCheckAndSwap(&g->gameplay);
 	CheckCourseClear(g);
 	ProcS_subCourseResult(g, sql);
-	LoadSceneG(g, &g->skstruct, 15);
+	LoadSceneG(g, &g->skstruct, SKINTYPE_COURSERESULT);
 	
 	if (g->skstruct.flag_flip) {
 		FlipScore(g);

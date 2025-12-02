@@ -5,8 +5,8 @@
 //408850
 int ProcS_Result(game *g) {
 
-	LoadSceneG(g, &g->skstruct, 7);
-
+	LoadSceneG(g, &g->skstruct, SKINTYPE_RESULT);
+	
 	if (g->skstruct.flag_flip)
 		FlipScore(g);
 	

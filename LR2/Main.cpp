@@ -724,7 +724,7 @@ int main(int argc, char** argv) {
 							gs.sSelect.course.isCourseCreated = 0;
 							gs.gameplay.replay.status = 0;
 							if (gs.po4MainMenuCursor == 3) {
-								LoadSceneG(&gs, &gs.skstruct, 19);
+								LoadSceneG(&gs, &gs.skstruct, SKINTYPE_COURSESELECT);
 								if (gs.sSelect.toRoot) {
 									gs.sSelect.bmsListCount = 1;
 									InitSongData(gs.sSelect.bmsList);
@@ -752,7 +752,7 @@ int main(int argc, char** argv) {
 								}
 							}
 							else {
-								LoadSceneG(&gs, &gs.skstruct, 5);
+								LoadSceneG(&gs, &gs.skstruct, SKINTYPE_SELECT);
 								if (gs.sSelect.toRoot) {
 									gs.sSelect.cur = 0;
 									if (gs.is_starter == 0) {
@@ -856,8 +856,8 @@ int main(int argc, char** argv) {
 							}
 							SetTransColor(0, 255, 0);
 							
-							LoadSceneG(&gs, &gs.skstruct, 6);
-
+							LoadSceneG(&gs, &gs.skstruct, SKINTYPE_DECIDE);
+							
 							StopSysSound(&gs);
 							if (gs.config.play.is_extra && gs.audio.sysSound.exdecide.load)
 								PlaySound(&gs.audio, &gs.audio.sysSound.exselect, gs.audio.chnBgm, -1);
@@ -902,23 +902,23 @@ int main(int argc, char** argv) {
 							}
 							if (gs.gameplay.ghostBattle == 1) {
 								if (gs.sSelect.bmsList[gs.sSelect.cur_song].keymode == 5) {
-									LoadSceneG(&gs, &gs.skstruct, 13);
+									LoadSceneG(&gs, &gs.skstruct, SKINTYPE_5KEYSBATTLE);
 									if (gs.skinData.Data[gs.skinData.skinID[13]].type != SKINTYPE_5KEYSBATTLE)
 										ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 									else 
 										ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig_5.xml").data());
 								}
 								else {
-									LoadSceneG(&gs, &gs.skstruct, 12);
+									LoadSceneG(&gs, &gs.skstruct, SKINTYPE_7KEYSBATTLE);
 									ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 								}
 							}
 							else if (gs.config.select.control == 1 && (gs.sSelect.metaSelected.keymode == 5 || gs.sSelect.metaSelected.keymode == 7)) {
 								if (gs.config.play.battle == 0 || gs.config.play.battle == 2) {
-									LoadSceneG(&gs, &gs.skstruct, 4);
+									LoadSceneG(&gs, &gs.skstruct, SKINTYPE_9KEYS);
 								}
 								else if (gs.config.play.battle == 1) {
-									LoadSceneG(&gs, &gs.skstruct, 14);
+									LoadSceneG(&gs, &gs.skstruct, SKINTYPE_9KEYSBATTLE);
 								}
 								ReadKeyConfig(&gs,fs::make_preferred("LR2files/Config/keyconfig_p.xml").data());
 							}
@@ -926,21 +926,21 @@ int main(int argc, char** argv) {
 								switch (gs.sSelect.metaSelected.keymode) {
 									case 5:
 										if (gs.config.play.battle == 0) {
-											LoadSceneG(&gs, &gs.skstruct, 1);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_5KEYS);
 											if (gs.skinData.Data[gs.skinData.skinID[1]].type != SKINTYPE_5KEYS)
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 											else
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig_5.xml").data());
 										}
 										else if (gs.config.play.battle == 1) {
-											LoadSceneG(&gs, &gs.skstruct, 13);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_5KEYSBATTLE);
 											if (gs.skinData.Data[gs.skinData.skinID[13]].type != SKINTYPE_5KEYSBATTLE)
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 											else
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig_5.xml").data());
 										}
 										else if (gs.config.play.battle == 2 || gs.config.play.battle == 3) {
-											LoadSceneG(&gs, &gs.skstruct, 3);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_10KEYS);
 											if (gs.skinData.Data[gs.skinData.skinID[3]].type != SKINTYPE_10KEYS)
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 											else
@@ -950,49 +950,49 @@ int main(int argc, char** argv) {
 
 									default:
 										if (gs.config.play.battle == 0) {
-											LoadSceneG(&gs, &gs.skstruct, 0);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_7KEYS);
 										}
 										else if (gs.config.play.battle == 1) {
-											LoadSceneG(&gs, &gs.skstruct, 12);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_7KEYSBATTLE);
 										}
 										else if (gs.config.play.battle == 2 || gs.config.play.battle == 3) {
-											LoadSceneG(&gs, &gs.skstruct, 2);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_14KEYS);
 										}
 										ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 										break;
 
 									case 9:
 										if (gs.config.play.battle == 3) {
-											LoadSceneG(&gs, &gs.skstruct, 0);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_7KEYS);
 											ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 											break;
 										}
 										else if (gs.config.play.battle == 0 || gs.config.play.battle == 2) {
-											LoadSceneG(&gs, &gs.skstruct, 4);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_9KEYS);
 										}
 										else if (gs.config.play.battle == 1) {
-											LoadSceneG(&gs, &gs.skstruct, 4);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_9KEYSBATTLE);
 										}
 										ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig_p.xml").data());
 										break;
 
 									case 10:
 										if (gs.config.play.battle == 0) {
-											LoadSceneG(&gs, &gs.skstruct, 3);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_10KEYS);
 											if (gs.skinData.Data[gs.skinData.skinID[3]].type == SKINTYPE_10KEYS)
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig_5.xml").data()); 
 											else
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 										}
 										else if (gs.config.play.battle == 1 || gs.config.play.battle == 2) {
-											LoadSceneG(&gs, &gs.skstruct, 13);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_5KEYSBATTLE);
 											if (gs.skinData.Data[gs.skinData.skinID[13]].type == SKINTYPE_5KEYSBATTLE)
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig_5.xml").data());
 											else
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 										}
 										else if (gs.config.play.battle == 3) {
-											LoadSceneG(&gs, &gs.skstruct, 1);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_5KEYS);
 											if (gs.skinData.Data[gs.skinData.skinID[1]].type == SKINTYPE_5KEYS)
 												ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig_5.xml").data());
 											else
@@ -1002,13 +1002,13 @@ int main(int argc, char** argv) {
 
 									case 14:
 										if (gs.config.play.battle == 0 || gs.config.play.battle == 2) {
-											LoadSceneG(&gs, &gs.skstruct, 2);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_14KEYS);
 										}
 										else if (gs.config.play.battle == 1) {
-											LoadSceneG(&gs, &gs.skstruct, 12);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_7KEYSBATTLE);
 										}
 										else if(gs.config.play.battle == 3) {
-											LoadSceneG(&gs, &gs.skstruct, 0);
+											LoadSceneG(&gs, &gs.skstruct, SKINTYPE_7KEYS);
 										}
 										ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 										break;
@@ -1016,7 +1016,7 @@ int main(int argc, char** argv) {
 							}
 
 							if (gs.config.play.m_lunaris) {
-								LoadSceneG(&gs, &gs.skstruct, 0);
+								LoadSceneG(&gs, &gs.skstruct, SKINTYPE_7KEYS);
 								ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 								gs.gameplay.isAutoplay = 0;
 							}
@@ -1033,7 +1033,7 @@ int main(int argc, char** argv) {
 							ProcS_Result(&gs);
 							break;
 						case 6:
-							LoadSceneG(&gs, &gs.skstruct, 8);
+							LoadSceneG(&gs, &gs.skstruct, SKINTYPE_KEYCONFIG);
 							gs.KeyInput.config_keymode = 0;
 							gs.KeyInput.config_button = 1;
 							gs.KeyInput.config_button_inMap = 1;
@@ -1041,16 +1041,16 @@ int main(int argc, char** argv) {
 							ProcS_Keyconfig(&gs);
 							break;
 						case 7:
-							LoadSceneG(&gs, &gs.skstruct, 9);
+							LoadSceneG(&gs, &gs.skstruct, SKINTYPE_SKINSELECT);
 							ProcS_SkinSelect(&gs);
 							break;
 						case 8:
-							LoadSceneG(&gs, &gs.skstruct, 0);
+							LoadSceneG(&gs, &gs.skstruct, SKINTYPE_7KEYS);
 							ReadKeyConfig(&gs, fs::make_preferred("LR2files/Config/keyconfig.xml").data());
 							LUNARIS_START(&gs);
 							break;
 						case 9:
-							LoadSceneG(&gs, &gs.skstruct, 17);
+							LoadSceneG(&gs, &gs.skstruct, SKINTYPE_MODESELECT);
 							gs.sSelect.listCalculatedBar = gs.po4MainMenuCursor * 1000;
 							gs.sSelect.barMoveStartTime = GetTimeWrap();
 							gs.sSelect.barMoveEndTime = GetTimeWrap();
@@ -1109,7 +1109,7 @@ int main(int argc, char** argv) {
 							ProcS_Select(&gs);
 							break;
 						case 10:
-							LoadSceneG(&gs, &gs.skstruct, 18);
+							LoadSceneG(&gs, &gs.skstruct, SKINTYPE_MODEDECIDE);
 							break;
 						case 11:
 							LoadScene(&gs.skstruct, fs::make_preferred("LR2files/event.csv").data(), 0, 0);
@@ -1831,7 +1831,7 @@ int main(int argc, char** argv) {
 #endif // _WIN32
 							SetWaitVSyncFlag(gs.config.system.vsync);
 							SetDrawScreen(DX_SCREEN_BACK);
-							LoadSceneG(&gs, &gs.skstruct, 5);
+							LoadSceneG(&gs, &gs.skstruct, SKINTYPE_SELECT);
 							SetMouseDispFlag(0);
 							gs.is_clicked_screenModeChange = 0;
 #ifdef _WIN32
@@ -1875,7 +1875,7 @@ int main(int argc, char** argv) {
 #endif // _WIN32
 							SetWaitVSyncFlag(gs.config.system.vsync);
 							SetDrawScreen(DX_SCREEN_BACK);
-							LoadSceneG(&gs, &gs.skstruct, 5);
+							LoadSceneG(&gs, &gs.skstruct, SKINTYPE_SELECT);
 							SetMouseDispFlag(0);
 							gs.is_clicked_screenModeChange = 0;
 						}
@@ -2118,7 +2118,7 @@ int main(int argc, char** argv) {
 						gs.skstruct.op[i] = 0;
 						gs.skstruct2.op[i] = 0;
 					}
-					LoadSceneG(&gs, &gs.skstruct, 5);
+					LoadSceneG(&gs, &gs.skstruct, SKINTYPE_SELECT);
 					SetWaitVSyncFlag(gs.config.system.vsync);
 					SetMouseDispFlag(0);
 					gs.is_clicked_screenModeChange = 0;
@@ -2134,7 +2134,7 @@ int main(int argc, char** argv) {
 					}
 					SetGraphMode(640, 480, (gs.config.system.highcolor == 0 ? 32 : 16), 60); //TODO_RESOULUTION
 					SetDrawScreen(DX_SCREEN_BACK);
-					LoadSceneG(&gs, &gs.skstruct, 5);
+					LoadSceneG(&gs, &gs.skstruct, SKINTYPE_SELECT);
 					SetWaitVSyncFlag(gs.config.system.vsync);
 					SetMouseDispFlag(0);
 					gs.is_clicked_screenModeChange = 0;
