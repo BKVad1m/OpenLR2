@@ -1,0 +1,111 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "windows-vs",
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "value": "Win32",
+        "strategy": "set"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-vs-asan",
+      "inherits": "windows-vs",
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS_INIT": "/fsanitize=address"
+      }
+    },
+    {
+      "name": "windows-vs-clang",
+      "inherits": "windows-vs",
+      "toolset": "ClangCL",
+      "vendor": {
+        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+          "intelliSenseMode": "windows-clang-x64"
+        }
+      }
+    },
+    {
+      "name": "clang",
+      "displayName": "Clang",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_FLAGS": "-pedantic",
+        "CMAKE_C_FLAGS": "-pedantic"
+      }
+    },
+    {
+      "name": "clang-asan",
+      "displayName": "Clang (ASAN)",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_FLAGS": "-fsanitize=address -pedantic",
+        "CMAKE_C_FLAGS": "-fsanitize=address -pedantic"
+      }
+    },
+    {
+      "name": "gcc",
+      "displayName": "GCC",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_FLAGS": "-pedantic -Wno-all -Wno-unused-variable -Wno-unknown-pragmas",
+        "CMAKE_C_FLAGS": "-pedantic -Wno-all -Wno-unused-variable -Wno-unknown-pragmas"
+      }
+    },
+    {
+      "name": "gcc-asan",
+      "displayName": "GCC (ASAN)",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_FLAGS": "-fsanitize=address -pedantic -Wno-all -Wno-unused-variable -Wno-unknown-pragmas",
+        "CMAKE_C_FLAGS": "-fsanitize=address -pedantic -Wno-all -Wno-unused-variable -Wno-unknown-pragmas"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-vs-asan-debug",
+      "configurePreset": "windows-vs-asan",
+      "displayName": "Debug (x86, ASAN)",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-vs-debug",
+      "configurePreset": "windows-vs",
+      "displayName": "Debug (x86)",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-vs-relwithdebinfo",
+      "configurePreset": "windows-vs",
+      "displayName": "RelWithDebInfo (x86)",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "windows-vs-clang-debug",
+      "configurePreset": "windows-vs-clang",
+      "displayName": "Debug (x86, ClangCL)",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-vs-clang-relwithdebinfo",
+      "configurePreset": "windows-vs-clang",
+      "displayName": "RelWithDebInfo (x86, ClangCL)",
+      "configuration": "RelWithDebInfo"
+    }
+  ]
+}
