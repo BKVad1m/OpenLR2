@@ -156,7 +156,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			gs.cmd_auto = '\x01';
 		}
 		else if (tStr2.left(2).isSame("-n")) {
-			atol(tStr1.right(tStr1.length() - 2));
+			gs.cmd_n = atol(tStr1.right(tStr1.length() - 2)); //TOFIX : never used
 		}
 	}
 	gs.config.system.thread = 0;
