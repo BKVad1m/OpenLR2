@@ -380,15 +380,13 @@ int Mp3toWavF(FILE *iFile, FILE *oFile) { //TODO : need test
 }
 
 bool Mp3toWavP(char *iPath, char *oPath) {
-	FILE *iFile, *oFile;
-
-	iFile = fopen(iPath, "rb");
+	FILE* iFile = fopen(iPath, "rb");
 	if (iFile == NULL) {
 		ErrorLogFmtAdd("入力ファイルが開けません(%s)。\n", iPath);
 		_exit(1);
 	}
 
-	oFile = fopen(iPath, "wb");
+	FILE* oFile = fopen(oPath, "wb");
 	if (oFile == NULL) {
 		ErrorLogFmtAdd("出力ファイルが開けません(%s)。\n", oPath);
 		_exit(1);

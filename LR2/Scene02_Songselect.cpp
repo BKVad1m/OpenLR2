@@ -1198,12 +1198,39 @@ int CmdSearch(game *g, CSTR *cmd, sqlite3 *sql) {
 				CSTR scorehash;
 				cstrSprintf(&scorehash, "%s%s%d%d", g->net.IR_passMD5.body, g->net.myRanking.songMD5.body, g->net.myRanking.exscore, g->net.myRanking.clear);
 				scorehash = MD5str(scorehash);
-				// TOFIX: metadata not escaped. Consolidate with the other score sending function.
-				cstrSprintf(&g->net.param, "songmd5=%s&id=%d&passmd5=%s&title=%s&genre=%s&artist=%s&maxbpm=%d&minbpm=%d&&playlevel=%d&clear=%d&exscore=%d&pg=%d&gr=%d&gd=%d&bd=%d&pr=%d&maxcombo=%d&playcount=%d&clearcount=%d&rate=%d&minbp=%d&totalnotes=%d&opt_history=%d&opt_this=%d&line=%d&judge=%d&inputtype=%d&ghost=%s&rseed=%d&clear_db=%d&clear_ex=%d&clear_sd=%d&scorehash=%s",
-					g->net.myRanking.songMD5.body, g->net.IR_ID, g->net.IR_passMD5.body, g->net.myRanking.title.body, g->net.myRanking.genre.body, g->net.myRanking.artist.body, g->net.myRanking.maxbpm, g->net.myRanking.minbpm, g->net.myRanking.playlevel, g->net.myRanking.clear,
-					g->net.myRanking.exscore, g->net.myRanking.pg, g->net.myRanking.gr, g->net.myRanking.gd, g->net.myRanking.bd, g->net.myRanking.pr, g->net.myRanking.maxcombo, g->net.myRanking.playcount, g->net.myRanking.clearcount, g->net.myRanking.rate,
-					g->net.myRanking.minbp, g->net.myRanking.totalnotes, g->net.myRanking.opt_history, g->net.myRanking.opt_this, g->net.myRanking.line, g->net.myRanking.judge, g->net.myRanking.inputtype, g->net.myRanking.ghost.body, g->net.myRanking.rseed,
-					g->net.myRanking.clear_db, g->net.myRanking.clear_ex, g->net.myRanking.clear_sd, scorehash.body);
+				// TODO: consolidate with the other score sending function.
+				cstrSprintf(
+						&g->net.param,
+						"songmd5=%s&id=%d&passmd5=%s&title=%s&genre=%s&artist=%s&maxbpm=%d&minbpm=%d&&playlevel=%d&clear=%d&exscore=%d&pg=%d&gr=%d&gd=%d&bd=%d&pr=%d&maxcombo=%d&playcount=%d&clearcount=%d&rate=%d&minbp=%d&totalnotes=%d&opt_history=%d&opt_this=%d&line=%d&judge=%d&inputtype=%d&ghost=%s&rseed=%d&clear_db=%d&clear_ex=%d&clear_sd=%d&scorehash=%s",
+						g->net.myRanking.songMD5.body, g->net.IR_ID,
+						g->net.IR_passMD5.body,
+						UrlEncode(utf2ansi(g->net.myRanking.title.body, 932).c_str()).body,
+						UrlEncode(utf2ansi(g->net.myRanking.genre.body, 932).c_str()).body,
+						UrlEncode(utf2ansi(g->net.myRanking.artist.body, 932).c_str()).body,
+						g->net.myRanking.maxbpm,
+						g->net.myRanking.minbpm,
+						g->net.myRanking.playlevel,
+						g->net.myRanking.clear,
+						g->net.myRanking.exscore,
+						g->net.myRanking.pg, g->net.myRanking.gr,
+						g->net.myRanking.gd, g->net.myRanking.bd,
+						g->net.myRanking.pr,
+						g->net.myRanking.maxcombo,
+						g->net.myRanking.playcount,
+						g->net.myRanking.clearcount,
+						g->net.myRanking.rate,
+						g->net.myRanking.minbp,
+						g->net.myRanking.totalnotes,
+						g->net.myRanking.opt_history,
+						g->net.myRanking.opt_this,
+						g->net.myRanking.line,
+						g->net.myRanking.judge,
+						g->net.myRanking.inputtype,
+						g->net.myRanking.ghost.body,
+						g->net.myRanking.rseed,
+						g->net.myRanking.clear_db,
+						g->net.myRanking.clear_ex,
+						g->net.myRanking.clear_sd, scorehash.body);
 				g->net.target_URL = "http://www.dream-pro.info/~lavalse/LR2IR/2/score.cgi";
 				g->net.HTTPrequest();
 				printfDx("%sを送信中です…", g->net.myRanking.title.body);

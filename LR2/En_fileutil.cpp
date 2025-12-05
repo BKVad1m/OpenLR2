@@ -1,13 +1,19 @@
 ﻿#include "En_fileutil.h"
 #include <md5.h>
 #include "DxLib/DxLib.h" //log
+
+#ifdef _WIN32
 #include <codecvt>
-#include "filesystem.h"
-#ifndef _WIN32
+#else
+#include <cassert>
 #include <chrono>
 #include <filesystem>
+
 #include <sys/stat.h>
+#include <iconv.h>
 #endif // _WIN32
+
+#ifdef _WIN32
 
 std::wstring utf2ws(const std::string_view str) {
 	int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.data(), str.size(), nullptr, 0);
@@ -39,7 +45,90 @@ std::string ansi2utf(const std::string_view str, unsigned int codepage) {
 	return converter.to_bytes(wstr.get(), wstr.get() + size_needed);
 }
 
-std::u32string utf8_to_utf32(const std::string& str) {
+#else
+
+struct IcdDeleter {
+	void operator()(iconv_t icd) {
+		int ret = iconv_close(icd);
+		if (ret == -1) {
+			const int error = errno;
+			// LOG_ERROR << "[Encoding] iconv_close() error: " << safe_strerror(error) << " (" << error << ")";
+		}
+	}
+};
+using IcdPtr = std::unique_ptr<std::remove_pointer_t<iconv_t>, IcdDeleter>;
+
+template <typename T = char>
+static void convert(std::string_view input, std::basic_string<T>& out, const char* from, const char* to)
+{
+	if (input.empty()) {
+		out.clear();
+		return;
+	}
+
+	auto icd = IcdPtr(iconv_open(to, from));
+	assert(icd != nullptr);
+	// > The following error can occur, among others:
+	// > EINVAL The conversion from fromcode to tocode is not supported by the
+	// implementation. Don't bother with such implementations.
+	assert(reinterpret_cast<size_t>(icd.get()) != static_cast<size_t>(-1));
+
+	// PERF: this buffer is MASSIVE. Don't initialize it or memset will dominate runtime.
+	std::array<T, 1024L * 32L / sizeof(T)> out_buf;
+
+	auto* buf_ptr = const_cast<char*>(input.data()); // SAFETY: iconv *shouldn't* modify the buffer. *shouldn't*.
+	size_t buf_len = input.length();
+	auto* out_ptr = reinterpret_cast<char*>(out_buf.data()); // SAFETY: using 'char' to read bytes is always safe.
+	size_t out_len = sizeof(out_buf);
+	const size_t initial_out_len = out_len;
+
+	size_t iconv_ret = iconv(icd.get(), &buf_ptr, &buf_len, &out_ptr, &out_len);
+	if (iconv_ret == static_cast<size_t>(-1))
+	{
+		const int error = errno;
+		// LOG_ERROR << "[Encoding] iconv() error: " << safe_strerror(error) << " (" << error << ")";
+		out.clear();
+		return;
+	}
+	const size_t bytes_written = initial_out_len - out_len;
+
+	assert(bytes_written % sizeof(T) == 0);
+	out.assign(out_buf.data(), bytes_written / sizeof(T));
+
+	// "In each series of calls to iconv(), the last should be one with inbuf or *inbuf equal to NULL, in order to flush
+	// out any partially converted input".
+	iconv_ret = iconv(icd.get(), nullptr, nullptr, nullptr, nullptr);
+	if (iconv_ret == static_cast<size_t>(-1))
+	{
+		const int error = errno;
+		// LOG_ERROR << "[Encoding] iconv() error: " << safe_strerror(error) << " (" << error << ")";
+		out.clear();
+	}
+}
+
+std::string ansi2utf(const std::string_view str, unsigned int codepage) {
+	if (codepage != 932) {
+		assert(false && "yep we ain't using the type system here lol");
+		return std::string{str};
+	}
+	std::string out;
+	convert(str, out, "CP932", "UTF-8");
+	return out;
+}
+
+std::string utf2ansi(const std::string_view str, unsigned int codepage) {
+	if (codepage != 932) {
+		assert(false && "yep we ain't using the type system here lol");
+		return std::string{str};
+	}
+	std::string out;
+	convert(str, out, "UTF-8", "CP932");
+	return out;
+}
+
+#endif // _WIN32
+
+std::u32string utf8_to_utf32(const std::string_view str) {
 	std::u32string out;
 	// FIXME: std::use_facet is already deprecated and removed in C++26, and is not supported well in Wine.
 	static const auto locale = std::locale("ja_JP.UTF8");
@@ -53,7 +142,7 @@ std::u32string utf8_to_utf32(const std::string& str) {
 	std::codecvt_base::result res;
 	do
 	{
-		res = facet_u32_u8.in(s, from_next, &str[str.size()], from_next, to_next, &out[out.size()], to_next);
+		res = facet_u32_u8.in(s, from_next, &str.data()[str.size()], from_next, to_next, &out[out.size()], to_next);
 
 		// skip unconvertiable chars (which is impossible though)
 		if (res == std::codecvt_base::error)
@@ -516,7 +605,8 @@ int RoundUp(double val) {
 
 CSTR AssignCRC32(CSTR str) {
 	CSTR tmp;
-	cstrSprintf(&tmp, "%x", str.CRC32());
+	unsigned cp_user_had_in_lr2 = 932; // avoid song.db rebuilding. if you've had korean locale sry not sry
+	cstrSprintf(&tmp, "%x", CSTR{utf2ansi(str.body, cp_user_had_in_lr2).c_str()}.CRC32());
 	return tmp;
 }
 

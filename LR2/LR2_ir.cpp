@@ -262,7 +262,6 @@ int CheckRivaldataNew(int rivalID) {
 
 int ParseRivalData(long ID) {
 
-	CSTR name;
 	CSTR path;
 	TiXmlDocument *hXml;
 	TiXmlElement *cur, *val;
@@ -282,12 +281,13 @@ int ParseRivalData(long ID) {
 		return 0;
 	}
 
+	std::string name;
 	cur = hXml->FirstChildElement("rivalname");
 	if(cur){
 		if (cur->ToElement()) {
-			cstrSprintf(&name, "%s", cur->ToElement()->GetText());
+			name = cur->ToElement()->GetText();
 		}
-		ErrorLogFmtAdd("ライバル名:%s\n", name.body);
+		ErrorLogFmtAdd("ライバル名:%s\n", name.c_str());
 	}
 
 	cur = hXml->FirstChildElement("scorelist");
@@ -306,7 +306,7 @@ int ParseRivalData(long ID) {
 			delete(hXml);
 		}
 		ErrorLogFmtAdd("ライバルデータの読み込みに失敗しました。スコアが存在しないかも\n");
-		printfDx("ID%06d:ライバルデータ[%s]の更新はありません。\n", ID, name.body);
+		printfDx("ID%06d:ライバルデータ[%s]の更新はありません。\n", ID, name.c_str());
 		return 0;
 	}
 
@@ -396,11 +396,13 @@ int ParseRivalData(long ID) {
 	SQL_Run("COMMIT", pRivalDB);
 	sqlite3_close(pRivalDB);
 
+	std::string name_as_cp932 = utf2ansi(name, 932);
 	CSTR cfolder;
-	cstrSprintf(&cfolder, "#COMMAND __RIVAL__\n#MAXTRACKS %d\n#CATEGORY ライバルフォルダ\n#TITLE %s\n#INFORMATION_A %sのプレイした曲を表示します\n#INFORMAION_B\n", ID, name.body, name.body);
+	cstrSprintf(&cfolder, "#COMMAND __RIVAL__\n#MAXTRACKS %d\n#CATEGORY ライバルフォルダ\n#TITLE %s\n#INFORMATION_A %sのプレイした曲を表示します\n#INFORMAION_B\n",
+			ID, name_as_cp932.c_str(), name_as_cp932.c_str());
 	cstrSprintf(&path, fs::make_preferred("LR2files/Rival/%d.lr2folder").data(), ID);
 	cfolder.toFile(path);
-	printfDx("ID%06d:ライバルデータ[%s]を更新しました。更新スコア数%d\n", ID, name.body, count);
+	printfDx("ID%06d:ライバルデータ[%s]を更新しました。更新スコア数%d\n", ID, name.c_str(), count);
 	return 1;
 }
 
@@ -450,17 +452,17 @@ int NETWORK::GetInsaneList() {
 	}
 
 	CSTR query;
-	CSTR hash;
+	std::string hash;
 	sqlite3_open(fs::make_preferred("LR2files/Database/song.db").data(), &pSongDB);
 	SQL_Run("BEGIN", pSongDB);
 	while (cur) {
 		if (TiXmlElement *val = cur->FirstChildElement("hash"); val && val->ToElement()) {
-			cstrSprintf(&hash, "%s", val->ToElement()->GetText());
+			hash = val->ToElement()->GetText();
 		}
 
 		if (TiXmlElement *val = cur->FirstChildElement("exlevel"); val) {
 			int exlevel = atol(val->ToElement()->GetText());
-			cstrSprintf(&query, "UPDATE song SET exlevel=%d WHERE hash=\'%s\'",exlevel,hash.body);
+			cstrSprintf(&query, "UPDATE song SET exlevel=%d WHERE hash=\'%s\'",exlevel,hash.c_str());
 			SQL_Run(query, pSongDB);
 		}
 
@@ -484,7 +486,7 @@ CSTR UrlEncode(CSTR in) {
 			*buf.atPos(1) = '\0';
 
 		}
-		else if ((*in.atPos(i) == ' ')) {
+		else if (*in.atPos(i) == ' ') {
 			*buf.atPos(0) = '+';
 			*buf.atPos(1) = '\0';
 		}
@@ -726,13 +728,29 @@ static void ThreadProc_IRsendScore(NETWORK *ir) {
 	CSTR scorehash;
 	cstrSprintf(&scorehash, "%s%s%d%d", ir->IR_passMD5.body, ir->myRanking.songMD5.body,ir->myRanking.exscore, ir->myRanking.clear);
 	scorehash = MD5str(scorehash);
-
-	cstrSprintf(&ir->param, "songmd5=%s&id=%d&passmd5=%s&title=%s&genre=%s&artist=%s&maxbpm=%d&minbpm=%d&&playlevel=%d&clear=%d&exscore=%d&pg=%d&gr=%d&gd=%d&bd=%d&pr=%d&maxcombo=%d&playcount=%d&clearcount=%d&rate=%d&minbp=%d&totalnotes=%d&opt_history=%d&opt_this=%d&line=%d&judge=%d&inputtype=%d&ghost=%s&rseed=%d&clear_db=%d&clear_ex=%d&clear_sd=%d&scorehash=%s"
-		, ir->myRanking.songMD5.body, ir->IR_ID, ir->IR_passMD5.body, UrlEncode(ir->myRanking.title).body, UrlEncode(ir->myRanking.genre).body, UrlEncode(ir->myRanking.artist).body,
-		ir->myRanking.maxbpm, ir->myRanking.minbpm, ir->myRanking.playlevel, ir->myRanking.clear, ir->myRanking.exscore, ir->myRanking.pg, ir->myRanking.gr, ir->myRanking.gd, ir->myRanking.bd, ir->myRanking.pr, ir->myRanking.maxcombo,
-		ir->myRanking.playcount, ir->myRanking.clearcount, ir->myRanking.rate, ir->myRanking.minbp, ir->myRanking.totalnotes, ir->myRanking.opt_history, ir->myRanking.opt_this, ir->myRanking.line, ir->myRanking.judge,
-		ir->myRanking.inputtype, ir->myRanking.ghost.body, ir->myRanking.rseed,	ir->myRanking.clear_db, ir->myRanking.clear_ex, ir->myRanking.clear_sd, UrlEncode(scorehash).body);
-
+	cstrSprintf(
+			&ir->param,
+			"songmd5=%s&id=%d&passmd5=%s&title=%s&genre=%s&artist=%s&maxbpm=%d&"
+			"minbpm=%d&&playlevel=%d&clear=%d&exscore=%d&pg=%d&gr=%d&gd=%d&bd=%"
+			"d&pr=%d&maxcombo=%d&playcount=%d&clearcount=%d&rate=%d&minbp=%d&"
+			"totalnotes=%d&opt_history=%d&opt_this=%d&line=%d&judge=%d&"
+			"inputtype=%d&ghost=%s&rseed=%d&clear_db=%d&clear_ex=%d&clear_sd=%"
+			"d&scorehash=%s",
+			ir->myRanking.songMD5.body, ir->IR_ID, ir->IR_passMD5.body,
+			UrlEncode(utf2ansi(ir->myRanking.title.body, 932).c_str()).body,
+			UrlEncode(utf2ansi(ir->myRanking.genre.body, 932).c_str()).body,
+			UrlEncode(utf2ansi(ir->myRanking.artist.body, 932).c_str()).body,
+			ir->myRanking.maxbpm,
+			ir->myRanking.minbpm, ir->myRanking.playlevel, ir->myRanking.clear,
+			ir->myRanking.exscore, ir->myRanking.pg, ir->myRanking.gr,
+			ir->myRanking.gd, ir->myRanking.bd, ir->myRanking.pr,
+			ir->myRanking.maxcombo, ir->myRanking.playcount,
+			ir->myRanking.clearcount, ir->myRanking.rate, ir->myRanking.minbp,
+			ir->myRanking.totalnotes, ir->myRanking.opt_history,
+			ir->myRanking.opt_this, ir->myRanking.line, ir->myRanking.judge,
+			ir->myRanking.inputtype, ir->myRanking.ghost.body,
+			ir->myRanking.rseed, ir->myRanking.clear_db, ir->myRanking.clear_ex,
+			ir->myRanking.clear_sd, scorehash.body);
 	ir->target_URL = "http://www.dream-pro.info/~lavalse/LR2IR/2/score.cgi";
 	int httpResponse;
 	if constexpr (true) { // DEBUG: do not send IR before test is done enough.
@@ -833,7 +851,10 @@ int NETWORK::Login(int isDirectPlay) {
 	}
 #endif // _WIN32
 
-	cstrSprintf(&this->param, "passmd5=%s&id=%d&name=%s&version=%d", this->IR_passMD5.body, this->IR_ID, this->IR_name.body, 100130); //version 100130
+	cstrSprintf(&this->param, "passmd5=%s&id=%d&name=%s&version=%d",
+			this->IR_passMD5.body, this->IR_ID,
+			UrlEncode(utf2ansi(this->IR_name.body, 932).c_str()).body,
+			100130);
 	this->target_URL = "http://www.dream-pro.info/~lavalse/LR2IR/2/login.cgi";
 	if (this->HTTPrequest() != 1) {
 		this->request_result = "サーバーとの接続に失敗しました。\n";
