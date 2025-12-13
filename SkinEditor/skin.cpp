@@ -4,13 +4,13 @@
 #include <cmath>
 
 int LR2SEInit(game* g) {
-
+	InitBmsList(&g->sSelect);
 	InitObjectString(&g->txtStruct);
 
 	return 0;
 }
 
-int LR2SEDrawLoop(game* g, int gHandle) {
+int LR2SEDrawLoop(game* g, int gHandle, int sizeX, int sizeY) {
 	SetDrawScreen(DX_SCREEN_BACK);
 
 	for (int i = 0; i < g->skstruct.image.srcSize; i++) {
@@ -407,7 +407,7 @@ int LR2SEDrawLoop(game* g, int gHandle) {
 		}
 
 		//capture here
-		GetDrawScreenSoftImage(0, 0, 640, 480, gHandle);
+		GetDrawScreenSoftImage(0, 0, sizeX, sizeY, gHandle);
 		SetDrawScreen(DX_SCREEN_BACK);
 		
 
@@ -430,6 +430,12 @@ int LR2SEDrawLoop(game* g, int gHandle) {
 }
 
 int LR2SESceneInit(game *g, int type) {
+	
+	g->skstruct.GrHandle[GrH_Stage] = LoadGraph("LR2files\\Config\\title.bmp", 0);
+
+	InitGameplay(&g->gameplay, &g->config.play);
+	PlayPreviewSample(g);
+
 	switch (type) {
 	case SKINTYPE_SELECT:
 		break;
@@ -509,7 +515,7 @@ int LR2SESceneProc(game* g, int type) {
 	case SKINTYPE_7KEYSBATTLE:
 	case SKINTYPE_5KEYSBATTLE:
 	case SKINTYPE_9KEYSBATTLE:
-		ProcI_Play(g);
+		//LR2SE_I_Play(g);
 		break;
 
 	case SKINTYPE_RESULT:
@@ -548,4 +554,56 @@ int LR2SESceneProc(game* g, int type) {
 	}
 
 	return 0;
+}
+
+int LR2SE_I_Play(game* g) {
+	int timeLimit;
+	double gameTime;
+
+	DrawHPgauge(g);
+	SoundGetCurrentTime(&g->audio, &g->gameplay.muon);
+	NONE_004b6770();
+
+	if (GetTimeLapse(41, &g->timer2) > 0.0 && g->config.play.m_lunaris == 0) {
+		DrawNotes(g, &g->skstruct, &g->timer2, &g->config.play);
+		DrawJudgeCombo(g, &g->skstruct, &g->timer2, &g->config.play);
+	}
+	else if (GetTimeLapse(41, &g->timer2) > 0.0 && g->config.play.m_lunaris) {
+		DrawLunaris(g);
+		DrawJudgeCombo(g, &g->skstruct, &g->timer2, &g->config.play);
+	}
+
+	if (g->skstruct.dst_JUDGELINE[0].dstCount > 0) {
+		AddDrawingBuffer_PlayArea(&g->skstruct.drBuf, &g->skstruct.src_JUDGELINE[0], &g->skstruct.dst_JUDGELINE[0], &g->timer2,
+			(float)g->skstruct.adjust.note_1p_x + g->gameplay.nabeatsu_x, (float)g->skstruct.adjust.note_1p_y + g->gameplay.nabeatsu_y, -1,
+			(float)g->skstruct.adjust.size_x, (float)g->skstruct.adjust.size_y, 0);
+	}
+	if (g->skstruct.dst_JUDGELINE[1].dstCount > 0) {
+		AddDrawingBuffer_PlayArea(&g->skstruct.drBuf, &g->skstruct.src_JUDGELINE[1], &g->skstruct.dst_JUDGELINE[1], &g->timer2,
+			(float)g->skstruct.adjust.note_2p_x + g->gameplay.nabeatsu_x, (float)g->skstruct.adjust.note_2p_y + g->gameplay.nabeatsu_y, -1,
+			(float)g->skstruct.adjust.size_x, (float)g->skstruct.adjust.size_y, 0);
+	}
+
+	if (((g->KeyInput.inputID[KEY_INPUT_ESCAPE] == 2 || (g->KeyInput.mouse_buttonR == 2 && g->config.play.disableleftclickexit == 0))
+		|| (g->KeyInput.p1_buttonInput[13] == 2 && g->KeyInput.p1_buttonInput[12] == 2)
+		|| (g->KeyInput.p2_buttonInput[13] == 2 && g->KeyInput.p2_buttonInput[12] == 2)
+		|| (g->gameplay.player[0].totalnotes <= g->gameplay.player[0].note_current && (g->KeyInput.p1_buttonInput[13] == 2 || g->KeyInput.p1_buttonInput[12] == 2 || g->KeyInput.p2_buttonInput[13] == 2 || g->KeyInput.p2_buttonInput[12] == 2)))
+		&& g->procPhase == 1) {
+		SetTimeLapse(2, &g->timer2);
+		g->procPhase = 2;
+		g->gameplay.flag_closingPhase = 1;
+		return 1;
+	}
+
+	if (g->procPhase == 2) {
+		timeLimit = g->skstruct.fadeout;
+		gameTime = GetTimeLapse(2, &g->timer2);
+		if (timeLimit < gameTime || timeLimit == 0) g->procSelecter = 5;
+	}
+	else if (g->procPhase == 3) {
+		timeLimit = g->skstruct.close;
+		gameTime = GetTimeLapse(3, &g->timer2);
+		if (timeLimit < gameTime || timeLimit == 0) g->procSelecter = 5;
+	}
+	return 1;
 }

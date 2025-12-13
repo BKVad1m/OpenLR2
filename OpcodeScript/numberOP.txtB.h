@@ -170,17 +170,17 @@ case 184: return "old_ratepoint";
 
 
 case 200: return "IR_TOTALPLAYER";
-case 201: return "IR_TOTALPLAYCOUNT";
+case 201: return "IR_TOTALPLAYCOUNT!LastHitOffset_P1";
 
-case 210: return "FAILED_PLAYER";
-case 211: return "FAILED_RATE";
-case 212: return "EASY_PLAYER";
-case 213: return "EASY_RATE";
-case 214: return "CLEAR_PLAYER";
+case 210: return "FAILED_PLAYER!LastHitFS_P1";
+case 211: return "FAILED_RATE!LastHitFS_P2";
+case 212: return "EASY_PLAYER!Fast_P1";
+case 213: return "EASY_RATE!LastHitOffset_P2";
+case 214: return "CLEAR_PLAYER!Slow_P1";
 case 215: return "CLEAR_RATE";
-case 216: return "HARD_PLAYER";
-case 217: return "HARD_RATE";
-case 218: return "FULLCOMBO_PLAYER";
+case 216: return "HARD_PLAYER!CB";
+case 217: return "HARD_RATE!NoteTotal";
+case 218: return "FULLCOMBO_PLAYER!NoteCurrent";
 case 219: return "FULLCOMBO_RATE";
 
 case 220: return "remainIRautoUpdateTime";

@@ -178,6 +178,9 @@
     <ClCompile Include="skin.cpp">
       <Filter>sources</Filter>
     </ClCompile>
+    <ClCompile Include="op.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
@@ -331,6 +334,9 @@
       <Filter>sources</Filter>
     </ClInclude>
     <ClInclude Include="skin.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="op.h">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>

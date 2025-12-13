@@ -223,6 +223,7 @@
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ImageLoader.cpp" />
+    <ClCompile Include="op.cpp" />
     <ClCompile Include="seWindowManager.cpp" />
     <ClCompile Include="skin.cpp" />
     <ClCompile Include="winWorkspace.cpp" />
@@ -275,6 +276,7 @@
     <ClInclude Include="imgui\imgui_impl_sdlrenderer3.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
     <ClInclude Include="ImageLoader.h" />
+    <ClInclude Include="op.h" />
     <ClInclude Include="seWindowManager.h" />
     <ClInclude Include="skin.h" />
     <ClInclude Include="stb_image.h" />

@@ -12,6 +12,7 @@
 #include "imgui/TextEditor.h"
 
 #include "skin.h"
+#include "op.h"
 
 const char* SKINTYPESTR[]= {
     "7KEYS",
@@ -155,6 +156,7 @@ int WORKSPACE::drawSkinList() {
         LoadSkin(mainpath);
         wSkinList = false;
         loaded = true;
+        
     }
 
     ImGui::SameLine(0, 3);
@@ -210,7 +212,7 @@ int WORKSPACE::ReadSkin(char* path) {
 
                     ReadSkin(read2.csv.str[1]);
                 }
-            }            
+            }
         }
         SKINFILELINEREAD& readE = ((SKINFILELINEREAD*)skinfileLines.data)[skinfileLines.count];
         readE.line.resize(1024);
@@ -227,36 +229,104 @@ int WORKSPACE::ReadSkin(char* path) {
 
 int WORKSPACE::ParseSkin() {
 
+    int IFcur = 0;
+    int IFdepth = 0;    
+    int cOrder = 0;
+
     for (int i = 0; i < skinfileLines.count; i++) {
         SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[i];
+        bool isif = false;
         
-        if (read.line.left(3).isSame("#IF")) {
+        if (i == 0) {
+            IFUNIT tif;
+            arr_ifunit.push_back(&tif);
+        }
 
+        if (read.line.left(3).isSame("#IF")) {
+            IFdepth++;
+
+            isif = true;
+            
+            IFUNIT tif;
+            for (int val = 0; val < 10; val++) {
+                tif.data[val] = read.csv.val[val];
+            }
+            tif.depth = IFdepth;
+            tif.order = cOrder = 0;
+            tif.parentID = IFcur;
+            tif.declare = i;
+
+            IFcur = arr_ifunit.count;
+            arr_ifunit.push_back(&tif);
+            read.ifgroup = IFcur;
         }
         else if (read.line.left(7).isSame("#ELSEIF")) {
+            isif = true;
 
+            IFUNIT tif;
+            for (int val = 0; val < 10; val++) {
+                tif.data[val] = read.csv.val[val];
+            }
+            tif.depth = IFdepth;
+            tif.order = ++cOrder;
+            tif.parentID = ((IFUNIT*)arr_ifunit.data)[IFcur].parentID;
+            tif.declare = i;
+
+            arr_ifunit.push_back(&tif);;
+            read.ifgroup = IFcur + cOrder;
         }
         else if (read.line.left(5).isSame("#ELSE")) {
+            isif = true;
 
-        }
-        else if (read.line.left(3).isSame("#ENDIF")) {
+            IFUNIT tif;
+            for (int val = 0; val < 10; val++) {
+                tif.data[val] = read.csv.val[val];
+            }
+            tif.depth = IFdepth;
+            tif.order = ++cOrder;
+            tif.parentID = ((IFUNIT*)arr_ifunit.data)[IFcur].parentID;
+            tif.declare = i;
 
+            arr_ifunit.push_back(&tif);
+            read.ifgroup = IFcur + cOrder;
         }
+        else if (read.line.left(6).isSame("#ENDIF")) {
+            isif = true;
+            
+            read.ifgroup = IFcur + cOrder;
+            IFcur = ((IFUNIT*)arr_ifunit.data)[IFcur].parentID;;
+            
+            IFdepth--;
+        }
+        else {
+            read.ifgroup = IFcur;
+        }
+        
+
+        if (isif) continue;
 
         else if (read.line.left(6).isSame("#IMAGE")) {
             CSTR& tmp = read.csv.str[1];
             arr_imgpath.push_back(&tmp);
         }
+
     }
 
 
 
     //images load
+    int gr = 0;
     for (int n = 0; n < arr_imgpath.count; n++) {
         CSTR& path = ((CSTR*)arr_imgpath.data)[n];
-        IMG& img = ((IMG*)arr_IMG.data)[n];
+        SRCGR& img = ((SRCGR*)arr_SRCGR.data)[n];
 
-        
+
+        if (path.isSame("CONTINUE")) {
+            gr++;
+            continue;
+        }
+
+        //TODO: deal *
 
         bool isLoaded = LoadTextureFromFile(path.outstr(), renderer, &(img.texture), &img.sizeX, &img.sizeY);
 
@@ -276,12 +346,12 @@ int WORKSPACE::ParseSkin() {
 
                 free(Buffer);
             }
-
         }
 
         if (isLoaded) {
+            img.gr = gr++;
             //img.path.assign(path.outstr());
-            arr_IMG.push_back(&img);
+            arr_SRCGR.push_back(&img);
         }
     }
     return 0;
@@ -304,15 +374,21 @@ int WORKSPACE::LoadSkin(char* path) {
 
     //    fclose(pFile);
     //}
+    skinSizeX = meta.targetX;
+    skinSizeY = meta.targetY;
 
     skinfileLines.Free();
     skinfileLines.Alloc(sizeof(SKINFILELINEREAD), 1000);
     arr_subpath.Free();
     arr_subpath.Alloc(sizeof(CSTR), 1);
+    arr_ifunit.Free();
+    arr_ifunit.Alloc(sizeof(IFUNIT), 50);
     arr_imgpath.Free();
     arr_imgpath.Alloc(sizeof(CSTR), 4);
-    arr_IMG.Free();
-    arr_IMG.Alloc(sizeof(IMG), 10);
+    arr_SRCGR.Free();
+    arr_SRCGR.Alloc(sizeof(SRCGR), 10);
+    arr_SRC.Free();
+    arr_SRC.Alloc(sizeof(SRC), 100);
 
     ReadSkin(path);
     ParseSkin();
@@ -344,7 +420,7 @@ int WORKSPACE::LoadSkin(char* path) {
     //previewScreen = MakeScreen(640, 480);
     //SetDrawScreen(previewScreen);
     //previewScreen = MakeSoftImage(640, 480);
-    previewScreen = MakeARGB8ColorSoftImage(640, 480);
+    previewScreen = MakeARGB8ColorSoftImage(skinSizeX, skinSizeY);
 
     return 0;
 }
@@ -400,16 +476,20 @@ int WORKSPACE::drawPreview() {
     char title[260];
     snprintf(title, sizeof(title), "Preview##%d", num);
 
-    LR2SEDrawLoop(&g, previewScreen);
+    static bool playing = false;
+
+    LR2SEDrawLoop(&g, previewScreen, skinSizeX, skinSizeY);
     
-    ImGui::Begin(title, &wPreview);
-    LoadTextureFromRawMemory(GetImageAddressSoftImage(previewScreen), renderer, &preview_tex, 640, 480, 4);
-    ImGui::Image(preview_tex, { 640, 480 }, { 0, 0 }, { 1, 1 });
+    ImGui::Begin(title, &wPreview, ImGuiWindowFlags_HorizontalScrollbar);
+    LoadTextureFromRawMemory(GetImageAddressSoftImage(previewScreen), renderer, &preview_tex, skinSizeX, skinSizeY, 4);
+    ImGui::Image(preview_tex, { (float)skinSizeX, (float)skinSizeY }, { 0, 0 }, { 1, 1 });
 
     if (ImGui::Button("Start")) {
         LR2SESceneInit(&g, meta.type);
+        playing = true;
     }
-    LR2SESceneProc(&g, meta.type);
+    if(playing)
+        LR2SESceneProc(&g, meta.type);
 
     //D_IDirect3DSurface9* d9 = (D_IDirect3DSurface9*)GetUseDirect3D9BackBufferSurface();
     //d9->GetDC()
@@ -452,21 +532,65 @@ int WORKSPACE::drawTextEdit() {
         if (hideBlank && *read.line.atPos(0) == '\0') continue;
         if (hideComment && read.isComment) continue;
 
-        ImGui::PushID(n);
-        ImGui::Button(" ");
-        ImGui::PopID();
+        //ImGui::PushID(n);
+        //ImGui::Button(" ");
+        ///*if (ImGui::BeginItemTooltip())
+        //{
+        //    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        //    ImGui::Text("%d", read.ifgroup);
+        //    ImGui::EndTooltip();
+        //}*/
 
+        //ImGui::PopID();
+
+        //ImGui::SameLine();
+
+        ImGui::Text("%d ", read.ifgroup);
         ImGui::SameLine();
 
-
         if (read.isComment) {
-            ImGui::TextDisabled("%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());
+            ImGui::TextDisabled("%04d:%04d: ", read.numTotal, read.num);
+
+            ImGui::SameLine();
+            ImGui::PushID(n);
+            ImGui::Button(" ");
+            /*if (ImGui::BeginItemTooltip())
+            {
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("%d", read.ifgroup);
+                ImGui::EndTooltip();
+            }*/
+
+            ImGui::PopID();
+
+            ImGui::SameLine();
+            ImGui::TextDisabled("%s", read.line.outstr());
             //ImGui::TextColored(color, "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());
+            
+            
         }
         else {
             //ImGui::TextColored(color, "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());
+            
+            for (int depth = 0; depth < ((IFUNIT*)(arr_ifunit.data))[read.ifgroup].depth; depth++) {
+                ImGui::TextColored(color, "_");
+                ImGui::SameLine();
+            }
             ImGui::TextColored(color, "%04d:%04d: ", read.numTotal, read.num);
             ImGui::SameLine();
+            ImGui::PushID(n);
+            ImGui::Button(" ");
+            /*if (ImGui::BeginItemTooltip())
+            {
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("%d", read.ifgroup);
+                ImGui::EndTooltip();
+            }*/
+
+            ImGui::PopID(); 
+            
+            ImGui::SameLine();
+
             char tablename[260];
             snprintf(tablename, sizeof(tablename), "##w%d_text", num);
             if (ImGui::BeginTable(tablename, 22, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_ContextMenuInBody))
@@ -475,17 +599,44 @@ int WORKSPACE::drawTextEdit() {
                 for (int column = 0; column < 22; column++)
                 {
                     ImGui::TableSetColumnIndex(column);
-                    if(read.csv.str[column].atPos(0) == nullptr)
+                    if (read.csv.str[column].atPos(0) == nullptr) {
                         ImGui::TextDisabled("%s", read.csv.str[column]);
-                    else
-                        ImGui::Text("%s", read.csv.str[column]);
+                    }
+                    else{
+                        //ImGui::Text("%s", read.csv.str[column]);
+                        char inputname[260];
+                        sprintf(inputname, "##%d_%d_cell", read.numTotal, column);
+                        ImGui::InputText(inputname, read.csv.str[column], 260);
+                    }
 
                     if (ImGui::BeginItemTooltip())
                     {
                         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                         ImGui::TextUnformatted(read.csv.str[column]);
+                        if (read.csv.str[0].isSame("#SRC_IMAGE")) {
+
+                            int handle = read.csv.val[2];
+                            
+                            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[handle];
+
+                            int iX = read.csv.val[3];
+                            int iY = read.csv.val[4];
+                            int iW = read.csv.val[5] == -1 ? img.sizeX - iX : read.csv.val[5];
+                            int iH = read.csv.val[6] == -1 ? img.sizeY - iH : read.csv.val[6];
+
+                            if (img.texture != NULL) {
+                                ImVec2 display_min = ImVec2(iX / (float)img.sizeX, iY / (float)img.sizeY);
+                                ImVec2 display_max = ImVec2((iX + iW) / (float)img.sizeX, (iY + iH) / (float)img.sizeY);
+                                ImVec2 display_size = ImVec2(iW, iH);
+
+                                ImGui::Image(img.texture, display_size, display_min, display_max);;
+                            }
+
+                        }
                         ImGui::PopTextWrapPos();
                         ImGui::EndTooltip();
+
+
                     }
                 }
                 ImGui::EndTable();
@@ -517,13 +668,13 @@ int WORKSPACE::loadSRC() {
 
     for (int n = 0; n < arr_imgpath.count; n++) {
         CSTR& path = ((CSTR*) arr_imgpath.data)[n];
-        IMG& img = ((IMG*)arr_IMG.data)[n];
+        SRCGR& img = ((SRCGR*)arr_SRCGR.data)[n];
 
         bool isLoaded = LoadTextureFromFile(path.outstr(), renderer, &(img.texture), &img.sizeX, &img.sizeY);
         
         if (isLoaded) {
             //img.path.assign(path.outstr());
-            arr_IMG.push_back(&img);
+            arr_SRCGR.push_back(&img);
         }
     }
     
@@ -541,13 +692,13 @@ int WORKSPACE::loadSRC() {
 int WORKSPACE::drawImgManager() {
     char title[260];
     snprintf(title, sizeof(title), "ImageManager##%d", num);
-    ImGui::Begin(title, &wImgManager);
+    ImGui::Begin(title, &wImgManager, ImGuiWindowFlags_HorizontalScrollbar);
     for (int i = 0; i < arr_imgpath.count; i++) {
         CSTR& path = ((CSTR*)arr_imgpath.data)[i];
         ImGui::Text("%03d : %s", i , path);
     }
-    for (int i = 0; i < arr_IMG.count; i++) {
-        IMG& img = ((IMG*)arr_IMG.data)[i];
+    for (int i = 0; i < arr_SRCGR.count; i++) {
+        SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
         ImGui::Text(" %d %d", img.sizeX, img.sizeY);
         ImGui::Image(img.texture, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { 1, 1 });
     }

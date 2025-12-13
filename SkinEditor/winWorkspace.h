@@ -19,38 +19,42 @@ typedef struct ARR {
 }ARR;
 
 typedef struct SKINFILELINEREAD {
+    int numTotal;
 
-    int pIF[100];
-    
     CSTR filename;
     int num;
-
-    int numTotal;
 
     CSTR line;
     bool isComment;
     CSVbuf csv;
 
+    int ifgroup;
+
 }SKINFILELINEREAD;
 
 typedef struct IFUNIT {
-    int data[10];
-    int depth; //max 100
-    int group;
-    int parentID; //
+    int data[10] = {};
+    int depth = 0; //max 100
+    int order = 0;
+    int parentID = 0; //
     int declare;
 }IFUNIT;
 
-typedef struct IMG {
+typedef struct SRCGR {
     CSTR path{};
     SDL_Texture* texture;
     CSTR name{};
-    int sizeX;
-    int sizeY;
-    //
-    int parent = -1;
-    int posX, posY;
-}IMG;
+    int sizeX, sizeY;
+
+    int gr;
+}SRCGR;
+
+typedef struct SRC {
+    int gr;
+    CSTR name{"noname"};
+    int x, y;
+    int sizeX, sizeY;
+}SRC;
 
 typedef struct WORKSPACE {
 
@@ -66,14 +70,15 @@ typedef struct WORKSPACE {
     byte* filedata = NULL;
     unsigned int filedatasize = 0;
 
-    int skinSizeX =640 , skinSizeY = 480;
+    int skinSizeX = 640 , skinSizeY = 480;
 
     ARR arr_subpath; //CSTR
     ARR skinfileLines; //SKINFILELINEREAD
+    ARR arr_ifunit; //IFUNIT
+
     ARR arr_imgpath; //CSTR
-    ARR arr_IMG; //IMG
-    ARR arr_bigimg;
-    ARR arr_srcimg;
+    ARR arr_SRCGR; //SRCGR
+    ARR arr_SRC; //SRC
 
     int previewScreen;
 

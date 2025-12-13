@@ -10,7 +10,7 @@ bool LoadTextureFromMemory(const void* data, size_t data_size, SDL_Renderer* ren
     int image_width = 0;
     int image_height = 0;
     int channels = 4;
-    unsigned char* image_data = stbi_load_from_memory((const unsigned char*)data, (int)data_size, &image_width, &image_height, NULL, 4);
+    unsigned char* image_data = stbi_load_from_memory((const unsigned char*)data, (int)data_size, &image_width, &image_height, NULL, 4); //TODO: fails on .DDS
     if (image_data == nullptr)
     {
         fprintf(stderr, "Failed to load image: %s\n", stbi_failure_reason());
