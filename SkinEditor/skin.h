@@ -2,6 +2,8 @@
 #include <iostream>
 #include "../LR2/structure.h"
 
+#define MAX_IFDEPTH 99
+
 
 
 

@@ -72,6 +72,7 @@ int WORKSPACE::draw() {
                 ImGui::MenuItem("ImgManager", NULL, &wImgManager);
                 //if (ImGui::MenuItem("ImgManager", NULL, &wImgManager)) { loadSRC(); };
                 ImGui::MenuItem("fileManager", NULL, &wFileManager);
+                ImGui::MenuItem("treeVeiw", NULL, &wTreeView);
                 ImGui::EndMenu();
             }
         }
@@ -83,7 +84,7 @@ int WORKSPACE::draw() {
     ImGui::End();
 
     //subwindows
-    //HOW TO ADD FEATURE - STEP 4 : call function
+    //HOW TO ADD FEATURE - STEP 4 : call function. end
     if (wSkinList) drawSkinList();
 
     if (wSaveMenu) drawSaveMenu();
@@ -93,6 +94,7 @@ int WORKSPACE::draw() {
     if (wCustomize) drawCustomize();
     if (wImgManager) drawImgManager();
     if (wFileManager) drawFileManager();
+    if (wTreeView) drawTreeView();
 
 
     return 0;
@@ -311,6 +313,7 @@ int WORKSPACE::ParseSkin() {
         }
 
     }
+    
 
 
 
@@ -545,23 +548,48 @@ int WORKSPACE::drawTextEdit() {
 
         //ImGui::SameLine();
 
+        IFUNIT& ifs = ((IFUNIT*)arr_ifunit.data)[read.ifgroup];
+        bool head = (read.numTotal == ifs.declare);
+        bool isHide = ifs.hide;
+        int parIFCursor = ifs.parentID;
+        for (int i = 0; i < ifs.depth; i++) {
+            isHide |= ((IFUNIT*)arr_ifunit.data)[parIFCursor].hide;
+            parIFCursor = ((IFUNIT*)arr_ifunit.data)[parIFCursor].parentID;
+        }
+        if (isHide  && !head) continue;
+
+        ImGui::PushID(n);
+        ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV( (head+isHide) / 3.0f, 0.6f, 0.6f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV( (head+isHide) / 3.0f, 0.7f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV( (head+isHide) / 3.0f, 0.8f, 0.8f));
+        if (ImGui::Button(" ")) {
+            
+            if (read.numTotal == ifs.declare) {
+                ifs.hide ^= 1;
+            }
+        }
+        ImGui::PopStyleColor(3);
+        ImGui::PopID();
+        ImGui::SameLine();
+
         ImGui::Text("%d ", read.ifgroup);
         ImGui::SameLine();
 
         if (read.isComment) {
             ImGui::TextDisabled("%04d:%04d: ", read.numTotal, read.num);
 
-            ImGui::SameLine();
-            ImGui::PushID(n);
-            ImGui::Button(" ");
-            /*if (ImGui::BeginItemTooltip())
-            {
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                ImGui::Text("%d", read.ifgroup);
-                ImGui::EndTooltip();
-            }*/
+            //ImGui::SameLine();
+            //ImGui::PushID(n);
+            //ImGui::Button(" ");
+            //
+            ///*if (ImGui::BeginItemTooltip())
+            //{
+            //    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            //    ImGui::Text("%d", read.ifgroup);
+            //    ImGui::EndTooltip();
+            //}*/
 
-            ImGui::PopID();
+            //ImGui::PopID();
 
             ImGui::SameLine();
             ImGui::TextDisabled("%s", read.line.outstr());
@@ -571,30 +599,20 @@ int WORKSPACE::drawTextEdit() {
         }
         else {
             //ImGui::TextColored(color, "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());
-            
+
             for (int depth = 0; depth < ((IFUNIT*)(arr_ifunit.data))[read.ifgroup].depth; depth++) {
                 ImGui::TextColored(color, "_");
                 ImGui::SameLine();
             }
             ImGui::TextColored(color, "%04d:%04d: ", read.numTotal, read.num);
-            ImGui::SameLine();
-            ImGui::PushID(n);
-            ImGui::Button(" ");
-            /*if (ImGui::BeginItemTooltip())
-            {
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                ImGui::Text("%d", read.ifgroup);
-                ImGui::EndTooltip();
-            }*/
 
-            ImGui::PopID(); 
-            
             ImGui::SameLine();
 
             char tablename[260];
             snprintf(tablename, sizeof(tablename), "##w%d_text", num);
             if (ImGui::BeginTable(tablename, 22, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_ContextMenuInBody))
             {
+                ImGui::PushItemWidth(-FLT_MIN);
                 ImGui::TableNextRow();
                 for (int column = 0; column < 22; column++)
                 {
@@ -914,7 +932,9 @@ int WORKSPACE::drawSaveMenu() {
     snprintf(title, sizeof(title), "SaveMenu##%d", num);
     snprintf(input, sizeof(input), "##savePathInput%d", num);
 
-    if(ImGui::Begin(title, &wSaveMenu, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse)) {
+    
+
+    if(ImGui::Begin(title, &wSaveMenu, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_Modal)) {
         static int split, nocomment, exist, success;
         static bool wSaveMenuResult;
 
@@ -937,36 +957,24 @@ int WORKSPACE::drawSaveMenu() {
         ImGui::RadioButton("split scripts", &split, 1);
         ImGui::SeparatorText("Comments");
         ImGui::RadioButton("maintain memo", &nocomment, 0);
-        ImGui::RadioButton("delete memo", &nocomment, 1);
+        ImGui::RadioButton("delete memo", &nocomment, 1); //TODO : add tooltip
         
         if (ImGui::Button("SAVE", { 0, 0 })) {
             success = (SaveSkinScript(newPath, split, nocomment) == 0);
+            if(success) snprintf(result, sizeof(result), "SaveResult##Save%d", num);
+            ImGui::OpenPopup(result);
         }
-
-        if (success) {
-            snprintf(result, sizeof(result), "SaveResult##Save%d", num);
-            if (ImGui::Begin(result, &wSaveMenuResult, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize)) {
-                ImGui::Text("save success");
-                if (ImGui::Button("OK")){
-                    wSaveMenuResult = 0;
-                    wSaveMenu = 0;
-                    success = 0;
-                }
-                ImGui::End();
+        
+        snprintf(result, sizeof(result), "SaveResult##Save%d", num);
+        if (ImGui::BeginPopupModal(result, NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("save success");
+            if (ImGui::Button("OK")) {
+                wSaveMenu = 0;
+                success = 0;
+                ImGui::CloseCurrentPopup();
             }
+            ImGui::EndPopup();
         }
-        /*if (success) { //why it doesn't work??
-            snprintf(result, sizeof(result), "SaveResult##Save%d", num);
-            if (ImGui::BeginPopupModal("Save?", &wSaveMenuResult, ImGuiWindowFlags_AlwaysAutoResize)){
-                ImGui::Text("save success");
-                if (ImGui::Button("OK")) {
-                    wSaveMenuResult = 0;
-                    wSaveMenu = 0;
-                    success = 0;
-                }
-                ImGui::EndPopup();
-            }
-        }*/
         ImGui::End();
     }
     return 0;
@@ -982,7 +990,7 @@ int WORKSPACE::drawFileManager() {
     snprintf(title, sizeof(title), "FileManager##%d", num);
 
     ImGui::Begin(title, &wFileManager);
-    ImGui::Text("below is related files %d scripts, %d images", arr_subpath.count, arr_imgpath.count);
+    ImGui::Text("they are related files. %d scripts, %d images", arr_subpath.count, arr_imgpath.count);
     ImGui::SeparatorText("Scripts");
     for (int i = 0; i < arr_subpath.count; i++) {
         CSTR& path = ((CSTR*)arr_subpath.data)[i];
@@ -992,6 +1000,79 @@ int WORKSPACE::drawFileManager() {
     for (int i = 0; i < arr_imgpath.count; i++) {
         CSTR& path = ((CSTR*)arr_imgpath.data)[i];
         ImGui::Text("%s", path);
+    }
+
+    ImGui::End();
+    return 0;
+}
+
+int WORKSPACE::drawTreeView() {
+    char title[260];
+    snprintf(title, sizeof(title), "TreeView##%d", num);
+    ImGui::Begin(title, &wTreeView);
+
+    snprintf(title, sizeof(title), "Tree##%d", num);
+    
+
+    if (ImGui::BeginTable(title, 24, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody))
+    {
+        // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
+        ImGui::TableSetupColumn("Command", ImGuiTableColumnFlags_NoHide);
+        for (int p = 0; p < 24 - 1; p++) {
+            ImGui::TableSetupColumn("Params", ImGuiTableColumnFlags_WidthFixed, 12.0f);
+        }
+        ImGui::TableHeadersRow();
+
+        static int hideGroups[MAX_IFDEPTH];
+        for (int i = 0; i < MAX_IFDEPTH; i++) {
+            hideGroups[i] = -1;
+        }
+        
+        for (int l = 0; l < skinfileLines.count; l++) {
+            int hide = 0;
+            SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[l];
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+
+            if (line.isComment) continue;
+            CSTR& command = line.csv.str[0];
+            CSTR *params = line.csv.str;
+            bool is_head = //!(strcmp(command, "#INCLUDE")) ||
+                            !(strcmp(command, "#IF")) ||
+                            !(strcmp(command, "#ELSEIF")) ||
+                            !(strcmp(command, "#ELSE"));
+            bool is_end = !(strcmp(command, "#ENDIF"));
+
+            static ImGuiTreeNodeFlags tree_node_flags_base = ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_DrawLinesFull;
+            ImGuiTreeNodeFlags node_flags = tree_node_flags_base;
+
+
+            int lineID = ((SKINFILELINEREAD*)skinfileLines.data)[l].numTotal;
+            sprintf(title, "%s##%d", command.outstr(), lineID);
+
+            if (is_head)
+            {   
+                bool open = ImGui::TreeNodeEx(title, node_flags);
+                
+                for (int p = 1; p < 24 - 1; p++) {
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%s", params[p]);
+                };
+            }
+            else if (is_end) {
+                ImGui::TreePop();
+            }
+            else if (!hide){
+                ImGui::TreeNodeEx(title, node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+
+                for (int p = 1; p < 24 - 1; p++) {
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%s", params[p]);
+                };
+            }
+
+        }        
+        ImGui::EndTable();
     }
 
     ImGui::End();

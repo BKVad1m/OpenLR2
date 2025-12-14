@@ -34,10 +34,12 @@ typedef struct SKINFILELINEREAD {
 
 typedef struct IFUNIT {
     int data[10] = {};
-    int depth = 0; //max 100
+    int depth = 0; //
     int order = 0;
     int parentID = 0; //
     int declare;
+
+    bool hide = 0;
 }IFUNIT;
 
 typedef struct SRCGR {
@@ -119,6 +121,9 @@ typedef struct WORKSPACE {
 
     bool wFileManager;
     int drawFileManager();
+
+    bool wTreeView;
+    int drawTreeView();
     
 
 }WORKSPACE;
