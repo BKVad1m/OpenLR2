@@ -4,6 +4,7 @@
 #include "../LR2/LR2_skindraw.h"
 #include "../LR2/En_fileutil.h"
 #include "../LR2/Scene07_Skinselect.h"
+#include "../LR2/En_timer.h"
 #include "DxLib//DxLib.h"
 #include "winWorkspace.h"
 
@@ -753,7 +754,7 @@ int WORKSPACE::drawImgManager() {
            
             char buf[260];
             sprintf(buf, "%02d:%s", img.gr, img.filename.outstr());
-            
+
             if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull | ((gr_selected == i) ? ImGuiTreeNodeFlags_Selected : NULL)))
             {
                 if (ImGui::BeginItemTooltip())
@@ -784,7 +785,30 @@ int WORKSPACE::drawImgManager() {
                                 ImVec2 display_max = ImVec2((src.x + sizeX) / (float)img.sizeX, (src.y + sizeY) / (float)img.sizeY);
                                 ImVec2 display_size = ImVec2(sizeX, sizeY);
 
-                                ImGui::Image(img.texture, display_size, display_min, display_max);;
+                                if (src.cycle && (src.div_x >= 1 || src.div_y >= 1)) {
+                                    if (src.div_x == 0) src.div_x = 1;
+                                    if (src.div_y == 0) src.div_y = 1;
+                                    ImVec2 chopsize = { src.sizeX / (float)src.div_x , src.sizeY / (float)src.div_y }; 
+                                    
+                                    int units = src.div_x * src.div_y;
+                                    int tick = src.cycle / units;
+                                    int ani = ((int)GetTimeLapse(0, &(g.timer1)) % src.cycle) / tick;
+
+                                    int ax = ani % src.div_x;
+                                    int ay = ani / src.div_x;
+
+                                    ImVec2 chopstart = { (src.x + chopsize.x * ax) / (float)img.sizeX ,
+                                                        (src.y + chopsize.y * ay) / (float)img.sizeY };
+
+                                    ImVec2 chopend = { (src.x -1 + chopsize.x * (ax+1) ) / (float)img.sizeX ,
+                                                        (src.y -1 + chopsize.y * (ay+1) ) / (float)img.sizeY };
+
+                                    ImGui::Image(img.texture, chopsize, chopstart, chopend);
+                                    
+                                }
+                                else {
+                                    ImGui::Image(img.texture, display_size, display_min, display_max);;
+                                }
                             }
                             ImGui::EndTooltip();
                         }
