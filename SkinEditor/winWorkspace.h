@@ -16,6 +16,8 @@ typedef struct ARR {
     int Free();
 
     int push_back(void* newdata);
+    bool Is_full();
+    void* Get_new();
 }ARR;
 
 typedef struct SKINFILELINEREAD {
@@ -44,7 +46,10 @@ typedef struct IFUNIT {
 
 typedef struct SRCGR {
     CSTR path{};
-    SDL_Texture* texture;
+    CSTR filename{};
+
+    bool loaded = false;
+    SDL_Texture* texture = NULL;
     CSTR name{};
     int sizeX, sizeY;
 
@@ -56,6 +61,10 @@ typedef struct SRC {
     CSTR name{"noname"};
     int x, y;
     int sizeX, sizeY;
+    int div_x, div_y, cycle;
+    int timer;
+
+    int declare;
 }SRC;
 
 typedef struct WORKSPACE {
@@ -78,7 +87,6 @@ typedef struct WORKSPACE {
     ARR skinfileLines; //SKINFILELINEREAD
     ARR arr_ifunit; //IFUNIT
 
-    ARR arr_imgpath; //CSTR
     ARR arr_SRCGR; //SRCGR
     ARR arr_SRC; //SRC
 

@@ -154,13 +154,15 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
             continue;
         }
 
+
         // Start the Dear ImGui frame
         ImGui_ImplSDLRenderer3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
 
+        ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
+        
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
@@ -197,6 +199,14 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
                 show_another_window = false;
             ImGui::End();
         }
+
+        ImGuiID dockspace_id = ImGui::GetID("big");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_NoResize );
+        float minWinSizeX = style.WindowMinSize.x;
+        style.WindowMinSize.x = 1280;
+        style.WindowMinSize.x = minWinSizeX;
+        
+        
 
         
         //MainFrame and menu

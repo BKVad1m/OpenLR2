@@ -131,8 +131,9 @@ int WORKSPACE::drawSkinList() {
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
+        ImGui::EndChild();
     }
-    ImGui::EndChild();
+    
 
     int& m = item_selected_idx;
     ImGui::SameLine(0, 0);
@@ -299,17 +300,62 @@ int WORKSPACE::ParseSkin() {
             IFcur = ((IFUNIT*)arr_ifunit.data)[IFcur].parentID;;
             
             IFdepth--;
+            cOrder = 0;
         }
         else {
-            read.ifgroup = IFcur;
+            read.ifgroup = IFcur + cOrder;
         }
         
 
         if (isif) continue;
 
         else if (read.line.left(6).isSame("#IMAGE")) {
-            CSTR& tmp = read.csv.str[1];
-            arr_imgpath.push_back(&tmp);
+            /*CSTR& tmp = read.csv.str[1];
+            arr_imgpath.push_back(&tmp);*/
+            
+            SRCGR *tmp = (SRCGR*)(arr_SRCGR.Get_new());
+            tmp->path.assign(read.csv.str[1]);
+            char* cur = strrchr(read.csv.str[1].outstr(), '/');
+            if(cur == NULL) cur = strrchr(read.csv.str[1].outstr(), '\\');
+            tmp->filename.assign(cur+1);
+        }
+
+
+        ////////////////
+
+        //if () {}
+        if (read.csv.str[0].isSame("#SRC_IMAGE")) {
+
+            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP || 
+                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview || 
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
+
+            SRC *src = (SRC*)(arr_SRC.Get_new());
+                        
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7];
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer) {
+                sprintf(tmp, "T%d : %d*%d ##%d", src->timer, src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "    : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
         }
 
     }
@@ -319,13 +365,16 @@ int WORKSPACE::ParseSkin() {
 
     //images load
     int gr = 0;
-    for (int n = 0; n < arr_imgpath.count; n++) {
-        CSTR& path = ((CSTR*)arr_imgpath.data)[n];
+    for (int n = 0; n < arr_SRCGR.count; n++) {
         SRCGR& img = ((SRCGR*)arr_SRCGR.data)[n];
+        CSTR& path = ((SRCGR*)arr_SRCGR.data)[n].path;
 
 
         if (path.isSame("CONTINUE")) {
             gr++;
+            
+            img.sizeX = 0;
+            img.sizeY = 0;
             continue;
         }
 
@@ -353,8 +402,7 @@ int WORKSPACE::ParseSkin() {
 
         if (isLoaded) {
             img.gr = gr++;
-            //img.path.assign(path.outstr());
-            arr_SRCGR.push_back(&img);
+            img.loaded = true;
         }
     }
     return 0;
@@ -386,8 +434,6 @@ int WORKSPACE::LoadSkin(char* path) {
     arr_subpath.Alloc(sizeof(CSTR), 1);
     arr_ifunit.Free();
     arr_ifunit.Alloc(sizeof(IFUNIT), 50);
-    arr_imgpath.Free();
-    arr_imgpath.Alloc(sizeof(CSTR), 4);
     arr_SRCGR.Free();
     arr_SRCGR.Alloc(sizeof(SRCGR), 10);
     arr_SRC.Free();
@@ -507,7 +553,7 @@ int WORKSPACE::drawTextEdit() {
     char title[260];
     snprintf(title, sizeof(title), "TextEdit##%d", num);
 
-    ImGui::Begin(title, &wTextEdit, ImGuiWindowFlags_MenuBar);
+    ImGui::Begin(title, &wTextEdit, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar);
 
     //TEMP
     static bool hideComment = false;
@@ -530,7 +576,7 @@ int WORKSPACE::drawTextEdit() {
         /*char itemname[260];
         snprintf(itemname, sizeof(itemname), "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());*/
         ImVec4 color;
-        color = {1.0f, 1.0f, 1.0f, 1.0f};
+        color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
         if (hideBlank && *read.line.atPos(0) == '\0') continue;
         if (hideComment && read.isComment) continue;
@@ -556,14 +602,14 @@ int WORKSPACE::drawTextEdit() {
             isHide |= ((IFUNIT*)arr_ifunit.data)[parIFCursor].hide;
             parIFCursor = ((IFUNIT*)arr_ifunit.data)[parIFCursor].parentID;
         }
-        if (isHide  && !head) continue;
+        if (isHide && !head) continue;
 
         ImGui::PushID(n);
-        ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV( (head+isHide) / 3.0f, 0.6f, 0.6f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV( (head+isHide) / 3.0f, 0.7f, 0.7f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV( (head+isHide) / 3.0f, 0.8f, 0.8f));
+        ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV((head + isHide) / 3.0f, 0.6f, 0.6f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV((head + isHide) / 3.0f, 0.7f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV((head + isHide) / 3.0f, 0.8f, 0.8f));
         if (ImGui::Button(" ")) {
-            
+
             if (read.numTotal == ifs.declare) {
                 ifs.hide ^= 1;
             }
@@ -594,8 +640,8 @@ int WORKSPACE::drawTextEdit() {
             ImGui::SameLine();
             ImGui::TextDisabled("%s", read.line.outstr());
             //ImGui::TextColored(color, "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());
-            
-            
+
+
         }
         else {
             //ImGui::TextColored(color, "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());
@@ -610,9 +656,9 @@ int WORKSPACE::drawTextEdit() {
 
             char tablename[260];
             snprintf(tablename, sizeof(tablename), "##w%d_text", num);
-            if (ImGui::BeginTable(tablename, 22, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_ContextMenuInBody))
+            if (ImGui::BeginTable(tablename, 22, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoPadInnerX, {4000,30},3999))
             {
-                ImGui::PushItemWidth(-FLT_MIN);
+                ImGui::PushItemWidth(FLT_MAX);
                 ImGui::TableNextRow();
                 for (int column = 0; column < 22; column++)
                 {
@@ -620,11 +666,13 @@ int WORKSPACE::drawTextEdit() {
                     if (read.csv.str[column].atPos(0) == nullptr) {
                         ImGui::TextDisabled("%s", read.csv.str[column]);
                     }
-                    else{
+                    else {
                         //ImGui::Text("%s", read.csv.str[column]);
                         char inputname[260];
                         sprintf(inputname, "##%d_%d_cell", read.numTotal, column);
-                        ImGui::InputText(inputname, read.csv.str[column], 260);
+                        ImGui::SetNextItemWidth(-FLT_MIN);
+                        ImGui::InputText(inputname, read.csv.str[column], 260, ImGuiInputTextFlags_AutoSelectAll);
+                        
                     }
 
                     if (ImGui::BeginItemTooltip())
@@ -634,13 +682,13 @@ int WORKSPACE::drawTextEdit() {
                         if (read.csv.str[0].isSame("#SRC_IMAGE")) {
 
                             int handle = read.csv.val[2];
-                            
+
                             SRCGR& img = ((SRCGR*)arr_SRCGR.data)[handle];
 
                             int iX = read.csv.val[3];
                             int iY = read.csv.val[4];
                             int iW = read.csv.val[5] == -1 ? img.sizeX - iX : read.csv.val[5];
-                            int iH = read.csv.val[6] == -1 ? img.sizeY - iH : read.csv.val[6];
+                            int iH = read.csv.val[6] == -1 ? img.sizeY - iY : read.csv.val[6];
 
                             if (img.texture != NULL) {
                                 ImVec2 display_min = ImVec2(iX / (float)img.sizeX, iY / (float)img.sizeY);
@@ -649,61 +697,43 @@ int WORKSPACE::drawTextEdit() {
 
                                 ImGui::Image(img.texture, display_size, display_min, display_max);;
                             }
-
                         }
                         ImGui::PopTextWrapPos();
                         ImGui::EndTooltip();
-
-
                     }
                 }
                 ImGui::EndTable();
             }
         }
-    }
 
-    /*if (ImGui::BeginChild(ImGuiChildFlags_FrameStyle))
-    {
-        for (int n = 0; n < skinfileLines.count; n++){
-            SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[n];
+        /*if (ImGui::BeginChild(ImGuiChildFlags_FrameStyle))
+        {
+            for (int n = 0; n < skinfileLines.count; n++){
+                SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[n];
 
-            const bool is_selected = 0;
-            char itemname[260];
-            snprintf(itemname, sizeof(itemname), "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());
-            ImGui::Selectable(itemname, is_selected);
+                const bool is_selected = 0;
+                char itemname[260];
+                snprintf(itemname, sizeof(itemname), "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());
+                ImGui::Selectable(itemname, is_selected);
+            }
         }
+        ImGui::EndChild();*/
+
+
     }
-    ImGui::EndChild();*/
-
-
-
-
     ImGui::End();
     return 0;
 }
 
+//deprecated
 int WORKSPACE::loadSRC() {
 
-    for (int n = 0; n < arr_imgpath.count; n++) {
-        CSTR& path = ((CSTR*) arr_imgpath.data)[n];
+    for (int n = 0; n < arr_SRCGR.count; n++) {
+        CSTR& path = ((SRCGR*)arr_SRCGR.data)[n].path;
         SRCGR& img = ((SRCGR*)arr_SRCGR.data)[n];
 
         bool isLoaded = LoadTextureFromFile(path.outstr(), renderer, &(img.texture), &img.sizeX, &img.sizeY);
-        
-        if (isLoaded) {
-            //img.path.assign(path.outstr());
-            arr_SRCGR.push_back(&img);
-        }
     }
-    
-
-    //for (int n = 0; n < skinfileLines.count; n++) {
-    //    SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[n];
-    //    if (read.line.left(10).isSame("#SRC_IMAGE")) {
-    //        
-    //    }
-    //}
-
     return 0;
 }
 
@@ -711,200 +741,107 @@ int WORKSPACE::drawImgManager() {
     char title[260];
     snprintf(title, sizeof(title), "ImageManager##%d", num);
     ImGui::Begin(title, &wImgManager, ImGuiWindowFlags_HorizontalScrollbar);
-    for (int i = 0; i < arr_imgpath.count; i++) {
-        CSTR& path = ((CSTR*)arr_imgpath.data)[i];
-        ImGui::Text("%03d : %s", i , path);
-    }
-    for (int i = 0; i < arr_SRCGR.count; i++) {
-        SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
-        ImGui::Text(" %d %d", img.sizeX, img.sizeY);
-        ImGui::Image(img.texture, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { 1, 1 });
-    }
-
     
-    if (ImGui::BeginChild("Assets", ImVec2(0.0f, -ImGui::GetTextLineHeightWithSpacing()), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove)){
-        ImDrawList* draw_list = ImGui::GetWindowDrawList();
-        const float avail_width = ImGui::GetContentRegionAvail().x;
+    //tree list
+    static int gr_selected = 0;
+    static int src_selected = 0;
+    snprintf(title, sizeof(title), "ImgTree##%d", num);
+    if (ImGui::BeginChild(title, { 250,-1 },ImGuiChildFlags_FrameStyle)) {
+        for (int i = 0; i < arr_SRCGR.count; i++) {
 
-        // Calculate and store start position.
-        ImVec2 start_pos = ImGui::GetCursorScreenPos();
-        start_pos = ImVec2(start_pos.x, start_pos.y);
-        ImGui::SetCursorScreenPos(start_pos);
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
+           
+            char buf[260];
+            sprintf(buf, "%02d:%s", img.gr, img.filename.outstr());
+            
+            if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull | ((gr_selected == i) ? ImGuiTreeNodeFlags_Selected : NULL)))
+            {
+                if (ImGui::BeginItemTooltip())
+                {
+                    ImGui::Text("%s", img.path.outstr());
+                    ImGui::EndTooltip();
+                }
 
-        // Multi-select
-        ImGuiMultiSelectFlags ms_flags = ImGuiMultiSelectFlags_ClearOnEscape | ImGuiMultiSelectFlags_ClearOnClickVoid;
-            ms_flags |= ImGuiMultiSelectFlags_BoxSelect2d;
-            ms_flags |= ImGuiMultiSelectFlags_SelectOnClickRelease;
+                for (int srcID = 0; srcID < arr_SRC.count; srcID++) {
+                    SRC& src = ((SRC*)arr_SRC.data)[srcID];
+                    if (src.gr == img.gr)
+                    {
+                        sprintf(buf, "%04d %s", src.declare, src.name.outstr());
+                        if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull | ImGuiTreeNodeFlags_Leaf)){
+                            if (ImGui::IsItemClicked()) {
+                                if (gr_selected != i) gr_selected = i;
+                                src_selected = srcID;
+                            }
+                            ImGui::TreePop();
+                        }
 
-        // - Enable keyboard wrapping on X axis
-        // (FIXME-MULTISELECT: We haven't designed/exposed a general nav wrapping api yet, so this flag is provided as a courtesy to avoid doing:
-        //    ImGui::NavMoveRequestTryWrapping(ImGui::GetCurrentWindow(), ImGuiNavMoveFlags_WrapX);
-        // When we finish implementing a more general API for this, we will obsolete this flag in favor of the new system)
-        ms_flags |= ImGuiMultiSelectFlags_NavWrapX;
+                        if (ImGui::BeginItemTooltip())
+                        {
+                            if (img.texture != NULL) {
+                                int sizeX = src.sizeX == -1 ? img.sizeX - src.x : src.sizeX;
+                                int sizeY = src.sizeY == -1 ? img.sizeY - src.y : src.sizeY;
+                                ImVec2 display_min = ImVec2(src.x / (float)img.sizeX, src.y / (float)img.sizeY);
+                                ImVec2 display_max = ImVec2((src.x + sizeX) / (float)img.sizeX, (src.y + sizeY) / (float)img.sizeY);
+                                ImVec2 display_size = ImVec2(sizeX, sizeY);
 
-        //ImGuiMultiSelectIO* ms_io = ImGui::BeginMultiSelect(ms_flags, Selection.Size, Items.Size);
+                                ImGui::Image(img.texture, display_size, display_min, display_max);;
+                            }
+                            ImGui::EndTooltip();
+                        }
 
-        //// Use custom selection adapter: store ID in selection (recommended)
-        //Selection.UserData = this;
-        //Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { ExampleAssetsBrowser* self = (ExampleAssetsBrowser*)self_->UserData; return self->Items[idx].ID; };
-        //Selection.ApplyRequests(ms_io);
-
-        //const bool want_delete = (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (Selection.Size > 0)) || RequestDelete;
-        //const int item_curr_idx_to_focus = want_delete ? Selection.ApplyDeletionPreLoop(ms_io, Items.Size) : -1;
-        //RequestDelete = false;
-
-        //// Push LayoutSelectableSpacing (which is LayoutItemSpacing minus hit-spacing, if we decide to have hit gaps between items)
-        //// Altering style ItemSpacing may seem unnecessary as we position every items using SetCursorScreenPos()...
-        //// But it is necessary for two reasons:
-        //// - Selectables uses it by default to visually fill the space between two items.
-        //// - The vertical spacing would be measured by Clipper to calculate line height if we didn't provide it explicitly (here we do).
-        //ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(LayoutSelectableSpacing, LayoutSelectableSpacing));
-
-        //// Rendering parameters
-        //const ImU32 icon_type_overlay_colors[3] = { 0, IM_COL32(200, 70, 70, 255), IM_COL32(70, 170, 70, 255) };
-        //const ImU32 icon_bg_color = ImGui::GetColorU32(IM_COL32(35, 35, 35, 220));
-        //const ImVec2 icon_type_overlay_size = ImVec2(4.0f, 4.0f);
-        //const bool display_label = (LayoutItemSize.x >= ImGui::CalcTextSize("999").x);
-
-        //const int column_count = LayoutColumnCount;
-        //ImGuiListClipper clipper;
-        //clipper.Begin(LayoutLineCount, LayoutItemStep.y);
-        //if (item_curr_idx_to_focus != -1)
-        //    clipper.IncludeItemByIndex(item_curr_idx_to_focus / column_count); // Ensure focused item line is not clipped.
-        //if (ms_io->RangeSrcItem != -1)
-        //    clipper.IncludeItemByIndex((int)ms_io->RangeSrcItem / column_count); // Ensure RangeSrc item line is not clipped.
-        //while (clipper.Step())
-        //{
-        //    for (int line_idx = clipper.DisplayStart; line_idx < clipper.DisplayEnd; line_idx++)
-        //    {
-        //        const int item_min_idx_for_current_line = line_idx * column_count;
-        //        const int item_max_idx_for_current_line = IM_MIN((line_idx + 1) * column_count, Items.Size);
-        //        for (int item_idx = item_min_idx_for_current_line; item_idx < item_max_idx_for_current_line; ++item_idx)
-        //        {
-        //            ExampleAsset* item_data = &Items[item_idx];
-        //            ImGui::PushID((int)item_data->ID);
-
-        //            // Position item
-        //            ImVec2 pos = ImVec2(start_pos.x + (item_idx % column_count) * LayoutItemStep.x, start_pos.y + line_idx * LayoutItemStep.y);
-        //            ImGui::SetCursorScreenPos(pos);
-
-        //            ImGui::SetNextItemSelectionUserData(item_idx);
-        //            bool item_is_selected = Selection.Contains((ImGuiID)item_data->ID);
-        //            bool item_is_visible = ImGui::IsRectVisible(LayoutItemSize);
-        //            ImGui::Selectable("", item_is_selected, ImGuiSelectableFlags_None, LayoutItemSize);
-
-        //            // Update our selection state immediately (without waiting for EndMultiSelect() requests)
-        //            // because we use this to alter the color of our text/icon.
-        //            if (ImGui::IsItemToggledSelection())
-        //                item_is_selected = !item_is_selected;
-
-        //            // Focus (for after deletion)
-        //            if (item_curr_idx_to_focus == item_idx)
-        //                ImGui::SetKeyboardFocusHere(-1);
-
-        //            // Drag and drop
-        //            if (ImGui::BeginDragDropSource())
-        //            {
-        //                // Create payload with full selection OR single unselected item.
-        //                // (the later is only possible when using ImGuiMultiSelectFlags_SelectOnClickRelease)
-        //                if (ImGui::GetDragDropPayload() == NULL)
-        //                {
-        //                    ImVector<ImGuiID> payload_items;
-        //                    void* it = NULL;
-        //                    ImGuiID id = 0;
-        //                    if (!item_is_selected)
-        //                        payload_items.push_back(item_data->ID);
-        //                    else
-        //                        while (Selection.GetNextSelectedItem(&it, &id))
-        //                            payload_items.push_back(id);
-        //                    ImGui::SetDragDropPayload("ASSETS_BROWSER_ITEMS", payload_items.Data, (size_t)payload_items.size_in_bytes());
-        //                }
-
-        //                // Display payload content in tooltip, by extracting it from the payload data
-        //                // (we could read from selection, but it is more correct and reusable to read from payload)
-        //                const ImGuiPayload* payload = ImGui::GetDragDropPayload();
-        //                const int payload_count = (int)payload->DataSize / (int)sizeof(ImGuiID);
-        //                ImGui::Text("%d assets", payload_count);
-
-        //                ImGui::EndDragDropSource();
-        //            }
-
-        //            // Render icon (a real app would likely display an image/thumbnail here)
-        //            // Because we use ImGuiMultiSelectFlags_BoxSelect2d, clipping vertical may occasionally be larger, so we coarse-clip our rendering as well.
-        //            if (item_is_visible)
-        //            {
-        //                ImVec2 box_min(pos.x - 1, pos.y - 1);
-        //                ImVec2 box_max(box_min.x + LayoutItemSize.x + 2, box_min.y + LayoutItemSize.y + 2); // Dubious
-        //                draw_list->AddRectFilled(box_min, box_max, icon_bg_color); // Background color
-        //                if (ShowTypeOverlay && item_data->Type != 0)
-        //                {
-        //                    ImU32 type_col = icon_type_overlay_colors[item_data->Type % IM_ARRAYSIZE(icon_type_overlay_colors)];
-        //                    draw_list->AddRectFilled(ImVec2(box_max.x - 2 - icon_type_overlay_size.x, box_min.y + 2), ImVec2(box_max.x - 2, box_min.y + 2 + icon_type_overlay_size.y), type_col);
-        //                }
-        //                if (display_label)
-        //                {
-        //                    ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
-        //                    char label[32];
-        //                    sprintf(label, "%d", item_data->ID);
-        //                    draw_list->AddText(ImVec2(box_min.x, box_max.y - ImGui::GetFontSize()), label_col, label);
-        //                }
-        //            }
-
-        //            ImGui::PopID();
-        //        }
-        //    }
-        //}
-        //clipper.End();
-        //ImGui::PopStyleVar(); // ImGuiStyleVar_ItemSpacing
-
-        //// Context menu
-        //if (ImGui::BeginPopupContextWindow())
-        //{
-        //    ImGui::Text("Selection: %d items", Selection.Size);
-        //    ImGui::Separator();
-        //    if (ImGui::MenuItem("Delete", "Del", false, Selection.Size > 0))
-        //        RequestDelete = true;
-        //    ImGui::EndPopup();
-        //}
-
-        //ms_io = ImGui::EndMultiSelect();
-        //Selection.ApplyRequests(ms_io);
-        //if (want_delete)
-        //    Selection.ApplyDeletionPostLoop(ms_io, Items, item_curr_idx_to_focus);
-
-        //// Zooming with CTRL+Wheel
-        //if (ImGui::IsWindowAppearing())
-        //    ZoomWheelAccum = 0.0f;
-        //if (ImGui::IsWindowHovered() && io.MouseWheel != 0.0f && ImGui::IsKeyDown(ImGuiMod_Ctrl) && ImGui::IsAnyItemActive() == false)
-        //{
-        //    ZoomWheelAccum += io.MouseWheel;
-        //    if (fabsf(ZoomWheelAccum) >= 1.0f)
-        //    {
-        //        // Calculate hovered item index from mouse location
-        //        // FIXME: Locking aiming on 'hovered_item_idx' (with a cool-down timer) would ensure zoom keeps on it.
-        //        const float hovered_item_nx = (io.MousePos.x - start_pos.x + LayoutItemSpacing * 0.5f) / LayoutItemStep.x;
-        //        const float hovered_item_ny = (io.MousePos.y - start_pos.y + LayoutItemSpacing * 0.5f) / LayoutItemStep.y;
-        //        const int hovered_item_idx = ((int)hovered_item_ny * LayoutColumnCount) + (int)hovered_item_nx;
-        //        //ImGui::SetTooltip("%f,%f -> item %d", hovered_item_nx, hovered_item_ny, hovered_item_idx); // Move those 4 lines in block above for easy debugging
-
-        //        // Zoom
-        //        IconSize *= powf(1.1f, (float)(int)ZoomWheelAccum);
-        //        IconSize = IM_CLAMP(IconSize, 16.0f, 128.0f);
-        //        ZoomWheelAccum -= (int)ZoomWheelAccum;
-        //        UpdateLayoutSizes(avail_width);
-
-        //        // Manipulate scroll to that we will land at the same Y location of currently hovered item.
-        //        // - Calculate next frame position of item under mouse
-        //        // - Set new scroll position to be used in next ImGui::BeginChild() call.
-        //        float hovered_item_rel_pos_y = ((float)(hovered_item_idx / LayoutColumnCount) + fmodf(hovered_item_ny, 1.0f)) * LayoutItemStep.y;
-        //        hovered_item_rel_pos_y += ImGui::GetStyle().WindowPadding.y;
-        //        float mouse_local_y = io.MousePos.y - ImGui::GetWindowPos().y;
-        //        ImGui::SetScrollY(hovered_item_rel_pos_y - mouse_local_y);
-        //    }
-        //}
+                    }
+                }
+                ImGui::TreePop();
+            }
+            else {
+                SRC& src = ((SRC*)arr_SRC.data)[src_selected];
+                if (ImGui::IsItemClicked()) {
+                    gr_selected = img.gr;
+                }
+                if (ImGui::BeginItemTooltip())
+                {
+                    ImGui::Text("%s", img.path.outstr());
+                    ImGui::EndTooltip();
+                }
+            }
+        }
     }
     ImGui::EndChild();
+    
+    //image
+    ImGui::SameLine(0, 0);
+    snprintf(title, sizeof(title), "ImgWorking##%d", num);
+    if (ImGui::BeginChild(title, { -1, -1 }, ImGuiChildFlags_Borders | ImGuiChildFlags_FrameStyle, ImGuiWindowFlags_HorizontalScrollbar)) {
+        SRCGR& img = ((SRCGR*)arr_SRCGR.data)[gr_selected];
+        ImGui::Text("%s %d %d", img.path.outstr(), img.sizeX, img.sizeY);
+        
+        
+        //ImGui::PushStyleVar(ImGuiStyleVar_ImageBorderSize, max(1.0f, ImGui::GetStyle().ImageBorderSize));
+        if(img.texture)
+            ImGui::ImageWithBg(img.texture, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { 1, 1 }, {1,0,1,1}); //TODO alpha that pattern
+        //ImGui::PopStyleVar();
 
+        if (img.texture != NULL) {
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+            const ImVec2 p = ImGui::GetCursorScreenPos();
+            ImVec2 grpos = { p.x, p.y - img.sizeY - 4 };
+            
+            
+            SRC& src = ((SRC*)arr_SRC.data)[src_selected];
+            int sizeX = src.sizeX == -1 ? img.sizeX - src.x : src.sizeX;
+            int sizeY = src.sizeY == -1 ? img.sizeY - src.y : src.sizeY;
+            
+            ImVec2 srcposLU = { grpos.x + src.x - 1, grpos.y + src.y - 1};
+            ImVec2 srcposRB = { grpos.x + src.x + sizeX + 1, grpos.y + src.y + sizeY + 1 };
+
+            draw_list->AddRect(srcposLU, srcposRB, ImColor(255, 255, 255), 0.0f, ImDrawFlags_Closed, 1.0f);
+
+            ImGui::SetScrollX(src.x);
+            ImGui::SetScrollY(src.y);
+        }
+    }
+    ImGui::EndChild();
+    
 
     ImGui::End();
     return 0;
@@ -990,15 +927,15 @@ int WORKSPACE::drawFileManager() {
     snprintf(title, sizeof(title), "FileManager##%d", num);
 
     ImGui::Begin(title, &wFileManager);
-    ImGui::Text("they are related files. %d scripts, %d images", arr_subpath.count, arr_imgpath.count);
+    //ImGui::Text("they are related files. %d scripts, %d images", arr_subpath.count, arr_imgpath.count);
     ImGui::SeparatorText("Scripts");
     for (int i = 0; i < arr_subpath.count; i++) {
         CSTR& path = ((CSTR*)arr_subpath.data)[i];
         ImGui::Text("%s", path);
     }
     ImGui::SeparatorText("Images");
-    for (int i = 0; i < arr_imgpath.count; i++) {
-        CSTR& path = ((CSTR*)arr_imgpath.data)[i];
+    for (int i = 0; i < arr_SRCGR.count; i++) {
+        CSTR& path = ((SRCGR*)arr_SRCGR.data)[i].path;
         ImGui::Text("%s", path);
     }
 
@@ -1014,7 +951,7 @@ int WORKSPACE::drawTreeView() {
     snprintf(title, sizeof(title), "Tree##%d", num);
     
 
-    if (ImGui::BeginTable(title, 24, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody))
+    if (ImGui::BeginTable(title, 24, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody)) //ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody))
     {
         // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
         ImGui::TableSetupColumn("Command", ImGuiTableColumnFlags_NoHide);
@@ -1127,4 +1064,15 @@ int ARR::push_back(void* newdata) {
     memcpy((void*)((int)data + unitSize * count), newdata, unitSize);
     count++;
     return 0;
+}
+
+bool ARR::Is_full() {
+    return (count >= bufSize);
+}
+
+void* ARR::Get_new() {
+    int oldcount = count;
+    if (oldcount >= bufSize) Realloc(bufSize * 2); //make buffer size double
+    count++;
+    return (void*)((int)data + unitSize * oldcount);
 }
