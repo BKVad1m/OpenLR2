@@ -332,7 +332,7 @@ int WORKSPACE::ParseSkin() {
             tmp->path.assign(read.csv.str[1]);
             char* cur = strrchr(read.csv.str[1].outstr(), '/');
             if(cur == NULL) cur = strrchr(read.csv.str[1].outstr(), '\\');
-            tmp->filename.assign(cur+1);
+            if(cur)         tmp->filename.assign(cur+1);
 
             tmp->gr = grCount;
             tmp->isIf = read.ifgroup;
@@ -841,6 +841,7 @@ int WORKSPACE::drawImgManager() {
     snprintf(title, sizeof(title), "ImageManager##%d", num);
     ImGui::Begin(title, &wImgManager, ImGuiWindowFlags_HorizontalScrollbar);
     
+    bool clicked = 0;
     //tree list
     static int gr_selected = 0;
     static int src_selected = 0;
@@ -870,6 +871,7 @@ int WORKSPACE::drawImgManager() {
                             if (ImGui::IsItemClicked()) {
                                 if (gr_selected != i) gr_selected = i;
                                 src_selected = srcID;
+                                clicked = 1;
                             }
                             ImGui::TreePop();
                         }
@@ -956,10 +958,14 @@ int WORKSPACE::drawImgManager() {
             ImVec2 srcposLU = { grpos.x + src.x - 1, grpos.y + src.y - 1};
             ImVec2 srcposRB = { grpos.x + src.x + sizeX + 1, grpos.y + src.y + sizeY + 1 };
             
-            draw_list->AddRect(srcposLU, srcposRB,  0xffffffff, 0.0f, ImDrawFlags_Closed, 1.0f);
+            bool flicking = ((int)GetTimeLapse(1,&g.timer1) % 200 > 100);
+            ImColor color = flicking ? 0xffffffff : 0x000000;
+            draw_list->AddRect(srcposLU, srcposRB, color, 0.0f, ImDrawFlags_Closed, 1.0f);
 
-            ImGui::SetScrollX(src.x);
-            ImGui::SetScrollY(src.y);
+            if (clicked) {
+                ImGui::SetScrollX(src.x);
+                ImGui::SetScrollY(src.y);
+            }
         }
     }
     ImGui::EndChild();
@@ -1059,6 +1065,7 @@ int WORKSPACE::drawFileManager() {
     for (int i = 0; i < arr_SRCGR.count; i++) {
         SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
         ImGui::Text("%02d(%03d) - %s", img.gr, img.isIf, img.path);
+        
     }
 
     ImGui::End();
@@ -1135,6 +1142,20 @@ int WORKSPACE::drawTreeView() {
     }
 
     ImGui::End();
+    return 0;
+}
+
+int WORKSPACE::wildcardTOAll(char* path) {
+    WIN32_FIND_DATA FindFileData;
+    LPWIN32_FIND_DATAA lpFindFileData;
+    HANDLE hFindFile = FindFirstFileA(path, (LPWIN32_FIND_DATAA)&FindFileData);
+    if (hFindFile == (HANDLE)-1) {
+        return -1;
+    }
+
+
+
+
     return 0;
 }
 
