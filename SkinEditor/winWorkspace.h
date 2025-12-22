@@ -42,6 +42,8 @@ typedef struct IFUNIT {
     int declare;
 
     bool hide = 0;
+
+    int grCount=0;
 }IFUNIT;
 
 typedef struct SRCGR {
@@ -54,6 +56,7 @@ typedef struct SRCGR {
     int sizeX, sizeY;
 
     int gr;
+    int isIf;
 }SRCGR;
 
 typedef struct SRC {
@@ -63,6 +66,9 @@ typedef struct SRC {
     int sizeX, sizeY;
     int div_x, div_y, cycle;
     int timer;
+
+    int num, align, keta; //for numSRC
+    int muki, range, type, disable;//for sliderSRC
 
     int declare;
 }SRC;

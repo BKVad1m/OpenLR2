@@ -237,6 +237,10 @@ int WORKSPACE::ParseSkin() {
     int IFdepth = 0;    
     int cOrder = 0;
 
+    int grCount = 0;
+    int grInIf = 0;
+    
+
     for (int i = 0; i < skinfileLines.count; i++) {
         SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[i];
         bool isif = false;
@@ -263,6 +267,7 @@ int WORKSPACE::ParseSkin() {
             IFcur = arr_ifunit.count;
             arr_ifunit.push_back(&tif);
             read.ifgroup = IFcur;
+
         }
         else if (read.line.left(7).isSame("#ELSEIF")) {
             isif = true;
@@ -278,6 +283,9 @@ int WORKSPACE::ParseSkin() {
 
             arr_ifunit.push_back(&tif);;
             read.ifgroup = IFcur + cOrder;
+
+            grCount -= ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount;
+            grInIf = 0;
         }
         else if (read.line.left(5).isSame("#ELSE")) {
             isif = true;
@@ -293,6 +301,9 @@ int WORKSPACE::ParseSkin() {
 
             arr_ifunit.push_back(&tif);
             read.ifgroup = IFcur + cOrder;
+
+            grCount -= ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount;
+            grInIf = 0;
         }
         else if (read.line.left(6).isSame("#ENDIF")) {
             isif = true;
@@ -302,6 +313,9 @@ int WORKSPACE::ParseSkin() {
             
             IFdepth--;
             cOrder = 0;
+
+            grCount -= ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount;
+            grInIf = 0;
         }
         else {
             read.ifgroup = IFcur + cOrder;
@@ -319,6 +333,12 @@ int WORKSPACE::ParseSkin() {
             char* cur = strrchr(read.csv.str[1].outstr(), '/');
             if(cur == NULL) cur = strrchr(read.csv.str[1].outstr(), '\\');
             tmp->filename.assign(cur+1);
+
+            tmp->gr = grCount;
+            tmp->isIf = read.ifgroup;
+
+            grCount++;
+            ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount++;
         }
 
 
@@ -351,10 +371,87 @@ int WORKSPACE::ParseSkin() {
 
             char tmp[260];
             if (src->timer) {
-                sprintf(tmp, "T%d : %d*%d ##%d", src->timer, src->sizeX, src->sizeY, read.numTotal);
+                sprintf(tmp, "T%d(%s) : %d*%d ##%d", src->timer, timerName(src->timer), src->sizeX, src->sizeY, read.numTotal);
             }
             else {
-                sprintf(tmp, "    : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+        }
+
+        else if (read.csv.str[0].isSame("#SRC_NUMBER")) { 
+
+            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
+                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
+
+            SRC* src = (SRC*)(arr_SRC.Get_new());
+
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7]; //have to be 10, 11, 24 set divs
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->num = read.csv.val[11];
+            src->align = read.csv.val[12];
+            src->keta = read.csv.val[13];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), numberName(src->num), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+        }
+
+        else if (read.csv.str[0].isSame("#SRCSLIDER")) {
+
+            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
+                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
+
+            SRC* src = (SRC*)(arr_SRC.Get_new());
+
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7]; //have to be 10, 11, 24 set divs
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->muki = read.csv.val[11];
+            src->range = read.csv.val[12];
+            src->type = read.csv.val[13];
+            src->disable = read.csv.val[14];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), sliderName(src->type), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
             }
             src->name.assign(tmp);
         }
@@ -678,6 +775,7 @@ int WORKSPACE::drawTextEdit() {
 
                     if (ImGui::BeginItemTooltip())
                     {
+                        ImGui::Text("%d",ifs.grCount);
                         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                         ImGui::TextUnformatted(read.csv.str[column]);
                         if (read.csv.str[0].isSame("#SRC_IMAGE")) {
@@ -747,7 +845,7 @@ int WORKSPACE::drawImgManager() {
     static int gr_selected = 0;
     static int src_selected = 0;
     snprintf(title, sizeof(title), "ImgTree##%d", num);
-    if (ImGui::BeginChild(title, { 250,-1 },ImGuiChildFlags_FrameStyle)) {
+    if (ImGui::BeginChild(title, { 250,-1 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
         for (int i = 0; i < arr_SRCGR.count; i++) {
 
             SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
@@ -857,8 +955,8 @@ int WORKSPACE::drawImgManager() {
             
             ImVec2 srcposLU = { grpos.x + src.x - 1, grpos.y + src.y - 1};
             ImVec2 srcposRB = { grpos.x + src.x + sizeX + 1, grpos.y + src.y + sizeY + 1 };
-
-            draw_list->AddRect(srcposLU, srcposRB, ImColor(255, 255, 255), 0.0f, ImDrawFlags_Closed, 1.0f);
+            
+            draw_list->AddRect(srcposLU, srcposRB,  0xffffffff, 0.0f, ImDrawFlags_Closed, 1.0f);
 
             ImGui::SetScrollX(src.x);
             ImGui::SetScrollY(src.y);
@@ -959,8 +1057,8 @@ int WORKSPACE::drawFileManager() {
     }
     ImGui::SeparatorText("Images");
     for (int i = 0; i < arr_SRCGR.count; i++) {
-        CSTR& path = ((SRCGR*)arr_SRCGR.data)[i].path;
-        ImGui::Text("%s", path);
+        SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
+        ImGui::Text("%02d(%03d) - %s", img.gr, img.isIf, img.path);
     }
 
     ImGui::End();

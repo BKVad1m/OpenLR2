@@ -1,0 +1,12 @@
+#INFORMATION, type, title, maker, thumbnail, p5, x, y,
+#CUSTOMOPTION, name, op, 
+#ENDOFHEADER
+
+
+#IMAGE. grPath
+
+
+#SRC_IMAGE,(NULL),gr,x,y,w,h,div_x,div_y,cycle,timer,op1,op2,op3,,,,,,,
+#SRC_NUMBER,(null),gr,x,y,w,h,div_x,div_y,cycle,timer,num,align(0right1left2middle),keta,,,,,,,
+#SRC_SLIDER,(null),gr,x,y,w,h,div_x,div_y,cycle,timer,muki,range,type,disable,,,,,,
+
