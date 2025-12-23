@@ -39,7 +39,7 @@ typedef struct IFUNIT {
     int depth = 0; //
     int order = 0;
     int parentID = 0; //
-    int declare;
+    int declare = 0;
 
     bool hide = 0;
 
@@ -57,6 +57,9 @@ typedef struct SRCGR {
 
     int gr;
     int isIf;
+
+    bool wildcard;
+    ARR arr_wildcard; //CSTR
 }SRCGR;
 
 typedef struct SRC {
@@ -95,6 +98,7 @@ typedef struct WORKSPACE {
 
     ARR arr_SRCGR; //SRCGR
     ARR arr_SRC; //SRC
+    ARR arr_CustomFile; //CSTR
 
     int previewScreen;
 
@@ -108,6 +112,8 @@ typedef struct WORKSPACE {
 
     //subwindows
     //HOW TO ADD FEATURE - STEP 1 : declare flag and function
+    int wildcardTOAll(char* path);
+
     int ScanSkins();
     bool wSkinList;
     int drawSkinList();

@@ -254,7 +254,7 @@ int WORKSPACE::ParseSkin() {
             IFdepth++;
 
             isif = true;
-            
+
             IFUNIT tif;
             for (int val = 0; val < 10; val++) {
                 tif.data[val] = read.csv.val[val];
@@ -307,10 +307,10 @@ int WORKSPACE::ParseSkin() {
         }
         else if (read.line.left(6).isSame("#ENDIF")) {
             isif = true;
-            
+
             read.ifgroup = IFcur + cOrder;
             IFcur = ((IFUNIT*)arr_ifunit.data)[IFcur].parentID;;
-            
+
             IFdepth--;
             cOrder = 0;
 
@@ -320,23 +320,62 @@ int WORKSPACE::ParseSkin() {
         else {
             read.ifgroup = IFcur + cOrder;
         }
-        
+
 
         if (isif) continue;
+
+
+        if (read.line.left(11).isSame("#CUSTOMFILE")) {
+            CSTR* tmpstr = (CSTR*)arr_CustomFile.Get_new();
+            tmpstr->assign(read.csv.str[2]);
+        }
+
 
         else if (read.line.left(6).isSame("#IMAGE")) {
             /*CSTR& tmp = read.csv.str[1];
             arr_imgpath.push_back(&tmp);*/
-            
-            SRCGR *tmp = (SRCGR*)(arr_SRCGR.Get_new());
+
+            SRCGR* tmp = (SRCGR*)(arr_SRCGR.Get_new());
             tmp->path.assign(read.csv.str[1]);
             char* cur = strrchr(read.csv.str[1].outstr(), '/');
-            if(cur == NULL) cur = strrchr(read.csv.str[1].outstr(), '\\');
-            if(cur)         tmp->filename.assign(cur+1);
+            if (cur == NULL) cur = strrchr(read.csv.str[1].outstr(), '\\');
+            if (cur)         tmp->filename.assign(cur + 1);
 
             tmp->gr = grCount;
             tmp->isIf = read.ifgroup;
+            
 
+            for (int wc = 0; wc < arr_CustomFile.count; wc++) {
+                if (tmp->path.isSame( ((CSTR*)arr_CustomFile.data)[wc].outstr()) ){
+                    WIN32_FIND_DATA FindFileData;
+                    LPWIN32_FIND_DATAA lpFindFileData;
+                    HANDLE hFindFile;
+                    
+                    CSTR str1(tmp->path.left(tmp->path.findStrPos("*")));
+                    CSTR str2(tmp->path.right(tmp->path.length() - str1.length() - 1));
+                    CSTR str3(str1);
+                    str3.add("*");
+                   
+                    hFindFile = FindFirstFileA(str3, (LPWIN32_FIND_DATAA)&FindFileData);
+                    if (hFindFile != (HANDLE)-1) {
+                        do {
+                            if (strcmp("..", (char*)FindFileData.cFileName) && strcmp(".", (char*)FindFileData.cFileName)) {
+                                    
+                                SRCGR* tmp2 = (SRCGR*)arr_SRCGR.Get_new();
+                                tmp2->path.assign(str1);
+                                tmp2->path.add(FindFileData.cFileName);
+                                tmp2->filename.assign(FindFileData.cFileName);
+                                    
+                                //tmp2->arr_wildcard
+                                tmp2->gr = grCount;
+                                tmp2->isIf = read.ifgroup;
+                            }
+                        } while (FindNextFileA(hFindFile, (LPWIN32_FIND_DATAA)&FindFileData));
+                        FindClose(hFindFile);
+                    }
+
+                }
+            }
             grCount++;
             ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount++;
         }
@@ -499,7 +538,6 @@ int WORKSPACE::ParseSkin() {
         }
 
         if (isLoaded) {
-            img.gr = gr++;
             img.loaded = true;
         }
     }
@@ -536,6 +574,8 @@ int WORKSPACE::LoadSkin(char* path) {
     arr_SRCGR.Alloc(sizeof(SRCGR), 10);
     arr_SRC.Free();
     arr_SRC.Alloc(sizeof(SRC), 100);
+    arr_CustomFile.Free();
+    arr_CustomFile.Alloc(sizeof(CSTR), 10);
 
     ReadSkin(path);
     ParseSkin();
@@ -1065,7 +1105,6 @@ int WORKSPACE::drawFileManager() {
     for (int i = 0; i < arr_SRCGR.count; i++) {
         SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
         ImGui::Text("%02d(%03d) - %s", img.gr, img.isIf, img.path);
-        
     }
 
     ImGui::End();
