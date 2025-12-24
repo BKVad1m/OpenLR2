@@ -46,6 +46,14 @@ typedef struct IFUNIT {
     int grCount=0;
 }IFUNIT;
 
+typedef struct IMG {
+    CSTR name;
+    void* data = NULL;
+    int sizeX;
+    int sizeY;
+    int parent;
+}IMG;
+
 typedef struct SRCGR {
     CSTR path{};
     CSTR filename{};
@@ -72,6 +80,7 @@ typedef struct SRC {
 
     int num, align, keta; //for numSRC
     int muki, range, type, disable;//for sliderSRC
+    int click, panel, plusonly; //for buttonSRC
 
     int declare;
 }SRC;
@@ -128,15 +137,24 @@ typedef struct WORKSPACE {
     bool wSaveMenu;
     int drawSaveMenu();
 
+    //TextEdit
     bool wTextEdit;
     int drawTextEdit();
+    bool hideComment = false;
+    bool hideBlank = false;
+
+
+
     bool wPreview;
     int drawPreview();
     bool wCustomize;
     int drawCustomize();
 
+    //ImgManager
     bool wImgManager;
     int drawImgManager();
+    int gr_selected = 0;
+    int src_selected = 0;
     int loadSRC();
 
     bool wFileManager;
@@ -144,6 +162,9 @@ typedef struct WORKSPACE {
 
     bool wTreeView;
     int drawTreeView();
+    int split, nocomment, exist, success;
+    bool wSaveMenuResult;
+    char newPath[260] = "";
     
 
 }WORKSPACE;
@@ -153,3 +174,5 @@ typedef struct WORKSPACE {
 
 
 extern ARR workspaceList;
+
+int makeTransBackground();

@@ -11,3 +11,6 @@ const char* numberName(unsigned n);
 const char* textName(unsigned n);
 
 const char* timerName(unsigned n);
+
+const char* bargraphName(unsigned n);
+

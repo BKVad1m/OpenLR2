@@ -39,6 +39,15 @@ const char* SKINTYPESTR[]= {
     "COURSEEDIT"
 }; 
 extern SDL_Renderer* renderer;
+///////////////////
+SDL_Texture* transBackground;
+byte TexTransparent[] =    "\x42\x4D\x76\x02\x00\x00\x00\x00\x00\x00\x76\x00\x00\x00\x28\x00\x00\x00\x20\x00\x00\x00\x20\x00\x00\x00\x01\x00\x04\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x80\x00\x00\x00\x80\x80\x00\x80\x00\x00\x00\x80\x00\x80\x00\x80\x80\x00\x00\x80\x80\x80\x00\xC0\xC0\xC0\x00\x00\x00\xFF\x00\x00\xFF\x00\x00\x00\xFF\xFF\x00\xFF\x00\x00\x00\xFF\x00\xFF\x00\xFF\xFF\x00\x00\xFF\xFF\xFF\x00\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
+int makeTransBackground(){
+    int x, y;
+    LoadTextureFromMemory(TexTransparent, sizeof(TexTransparent), renderer, &transBackground, &x, &y);
+    //LoadTextureFromRawMemory(TexTransparent, renderer, &transBackground, 64, 64, 1);
+    return 0;
+}
 
 
 ///////////////////
@@ -230,7 +239,6 @@ int WORKSPACE::ReadSkin(char* path) {
 
     return 0;
 }
-
 int WORKSPACE::ParseSkin() {
 
     int IFcur = 0;
@@ -344,7 +352,6 @@ int WORKSPACE::ParseSkin() {
             tmp->gr = grCount;
             tmp->isIf = read.ifgroup;
             
-
             for (int wc = 0; wc < arr_CustomFile.count; wc++) {
                 if (tmp->path.isSame( ((CSTR*)arr_CustomFile.data)[wc].outstr()) ){
                     WIN32_FIND_DATA FindFileData;
@@ -447,7 +454,7 @@ int WORKSPACE::ParseSkin() {
             src->declare = read.numTotal;
 
             char tmp[260];
-            if (src->timer) {
+            if (src->timer || src->type) {
                 sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), numberName(src->num), src->sizeX, src->sizeY, read.numTotal);
             }
             else {
@@ -456,7 +463,7 @@ int WORKSPACE::ParseSkin() {
             src->name.assign(tmp);
         }
 
-        else if (read.csv.str[0].isSame("#SRCSLIDER")) {
+        else if (read.csv.str[0].isSame("#SRC_SLIDER")) {
 
             if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
                 read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
@@ -486,7 +493,7 @@ int WORKSPACE::ParseSkin() {
             src->declare = read.numTotal;
 
             char tmp[260];
-            if (src->timer) {
+            if (src->timer || src->type) {
                 sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), sliderName(src->type), src->sizeX, src->sizeY, read.numTotal);
             }
             else {
@@ -494,6 +501,82 @@ int WORKSPACE::ParseSkin() {
             }
             src->name.assign(tmp);
         }
+
+        else if (read.csv.str[0].isSame("#SRC_BARGRAPH")) {
+
+            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
+                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
+
+            SRC* src = (SRC*)(arr_SRC.Get_new());
+
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7];
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->type = read.csv.val[11];
+            src->muki = read.csv.val[12];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer || src->type) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), bargraphName(src->type), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+         }
+
+        else if (read.csv.str[0].isSame("#SRC_BUTTON")) {
+
+            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
+                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
+
+            SRC* src = (SRC*)(arr_SRC.Get_new());
+
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+                
+            src->div_x = read.csv.val[7];
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->type = read.csv.val[11];
+            src->click = read.csv.val[12];
+            src->panel = read.csv.val[13];
+            src->plusonly = read.csv.val[14];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer || src->type) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), buttonName(src->type), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+            }
 
     }
     
@@ -693,10 +776,6 @@ int WORKSPACE::drawTextEdit() {
 
     ImGui::Begin(title, &wTextEdit, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar);
 
-    //TEMP
-    static bool hideComment = false;
-    static bool hideBlank = false;
-
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("Hide")) {
 
@@ -883,8 +962,6 @@ int WORKSPACE::drawImgManager() {
     
     bool clicked = 0;
     //tree list
-    static int gr_selected = 0;
-    static int src_selected = 0;
     snprintf(title, sizeof(title), "ImgTree##%d", num);
     if (ImGui::BeginChild(title, { 250,-1 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
         for (int i = 0; i < arr_SRCGR.count; i++) {
@@ -907,7 +984,14 @@ int WORKSPACE::drawImgManager() {
                     if (src.gr == img.gr)
                     {
                         sprintf(buf, "%04d %s", src.declare, src.name.outstr());
-                        if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull | ImGuiTreeNodeFlags_Leaf)){
+                        /*if (strchr(buf, '*')) {
+                            if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull)) {
+
+
+                                ImGui::TreePop();
+                            }
+                        }
+                        else */if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull | ImGuiTreeNodeFlags_Leaf)) {
                             if (ImGui::IsItemClicked()) {
                                 if (gr_selected != i) gr_selected = i;
                                 src_selected = srcID;
@@ -943,8 +1027,7 @@ int WORKSPACE::drawImgManager() {
                                     ImVec2 chopend = { (src.x -1 + chopsize.x * (ax+1) ) / (float)img.sizeX ,
                                                         (src.y -1 + chopsize.y * (ay+1) ) / (float)img.sizeY };
 
-                                    ImGui::Image(img.texture, chopsize, chopstart, chopend);
-                                    
+                                    ImGui::Image(img.texture, chopsize, chopstart, chopend);                                    
                                 }
                                 else {
                                     ImGui::Image(img.texture, display_size, display_min, display_max);;
@@ -979,14 +1062,15 @@ int WORKSPACE::drawImgManager() {
         SRCGR& img = ((SRCGR*)arr_SRCGR.data)[gr_selected];
         ImGui::Text("%s %d %d", img.path.outstr(), img.sizeX, img.sizeY);
         
-        
-        //ImGui::PushStyleVar(ImGuiStyleVar_ImageBorderSize, max(1.0f, ImGui::GetStyle().ImageBorderSize));
-        if(img.texture)
-            ImGui::ImageWithBg(img.texture, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { 1, 1 }, {1,0,1,1}); //TODO alpha that pattern
-        //ImGui::PopStyleVar();
 
+        const ImVec2 pb = ImGui::GetCursorScreenPos();
+        ImGui::Image(transBackground, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { img.sizeX / (float)32.0, img.sizeY / (float)32.0});
+        ImGui::SetCursorScreenPos(pb);
+        if(img.texture)
+            ImGui::Image(img.texture, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { 1, 1 });
+        
         if (img.texture != NULL) {
-            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+            //ImDrawList* draw_list = ImGui::GetWindowDrawList();
             const ImVec2 p = ImGui::GetCursorScreenPos();
             ImVec2 grpos = { p.x, p.y - img.sizeY - 4 };
             
@@ -998,14 +1082,18 @@ int WORKSPACE::drawImgManager() {
             ImVec2 srcposLU = { grpos.x + src.x - 1, grpos.y + src.y - 1};
             ImVec2 srcposRB = { grpos.x + src.x + sizeX + 1, grpos.y + src.y + sizeY + 1 };
             
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+            
             bool flicking = ((int)GetTimeLapse(1,&g.timer1) % 200 > 100);
-            ImColor color = flicking ? 0xffffffff : 0x000000;
+            ImColor color = flicking ? 0xff0080ff : 0x000000;
             draw_list->AddRect(srcposLU, srcposRB, color, 0.0f, ImDrawFlags_Closed, 1.0f);
 
             if (clicked) {
                 ImGui::SetScrollX(src.x);
                 ImGui::SetScrollY(src.y);
             }
+
+            
         }
     }
     ImGui::EndChild();
@@ -1037,14 +1125,10 @@ int WORKSPACE::drawSaveMenu() {
     snprintf(title, sizeof(title), "SaveMenu##%d", num);
     snprintf(input, sizeof(input), "##savePathInput%d", num);
 
-    
 
     if(ImGui::Begin(title, &wSaveMenu, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_Modal)) {
-        static int split, nocomment, exist, success;
-        static bool wSaveMenuResult;
 
         ImGui::Text("old path is %s ", mainpath);
-        static char newPath[260] = "";
         if (newPath[0] == '\0') { //very init
             strncpy(newPath, mainpath, sizeof(newPath));
         }

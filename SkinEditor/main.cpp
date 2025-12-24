@@ -107,6 +107,8 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
     bool show_simple_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    makeTransBackground();
+
     ChangeWindowMode(1);
     SetMultiThreadFlag(1);
     SetAlwaysRunFlag(1);
@@ -176,7 +178,6 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
 
             ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
 
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
             ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
@@ -190,35 +191,21 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
             ImGui::End();
         }
 
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
-        }
-
-        ImGuiID dockspace_id = ImGui::GetID("big");
-        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_NoResize );
-        float minWinSizeX = style.WindowMinSize.x;
-        style.WindowMinSize.x = 1280;
-        style.WindowMinSize.x = minWinSizeX;
-        
-        
-
         
         //MainFrame and menu
         if(ImGui::BeginMainMenuBar()){
             if (ImGui::BeginMenu("Workspaces")) {
                 if (ImGui::MenuItem("New Workspace", NULL, false, true)) {
-                    //if (workspaceList.count == workspaceList.bufSize) ReallocWorkspace(workspaceList.count + 1);
+                    WORKSPACE* work = (WORKSPACE*)(workspaceList.Get_new());
+                    work->alive = true;
+                    work->num = workspaceList.count - 1;
+                    snprintf(work->title, 260, "Workspace %d", workspaceList.count -1);
+                    /*//if (workspaceList.count == workspaceList.bufSize) ReallocWorkspace(workspaceList.count + 1);
                     if (workspaceList.count == workspaceList.bufSize) workspaceList.Realloc(workspaceList.count + 1);
                     ((WORKSPACE*)(workspaceList.data))[workspaceList.count].alive = true;
                     ((WORKSPACE*)(workspaceList.data))[workspaceList.count].num = workspaceList.count;
                     snprintf(((WORKSPACE*)(workspaceList.data))[workspaceList.count].title, 260, "Workspace %d", workspaceList.count);
-                    workspaceList.count++;
+                    workspaceList.count++;*/
                 }
                 ImGui::Separator();
                 for (int i = 0; i < workspaceList.count; i++) {
@@ -228,15 +215,21 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
                 ImGui::EndMenu();
             }
             
-            ImGui::MenuItem("Help", NULL, false, true);
-            ImGui::MenuItem("Info", NULL, &show_simple_window);
+            ImGui::MenuItem("Help", NULL, &show_simple_window);
+            //ImGui::MenuItem("Info", NULL, );
             
-
-
             ImGui::EndMainMenuBar();
         }
 
         for (int i = 0; i < workspaceList.count; i++) {
+            //char dock[64];
+            //snprintf(dock, sizeof(dock), "dock%d", i);
+            //ImGuiID dockspace_id = ImGui::GetID(dock);
+            //ImGui::DockSpace(dockspace_id, ImVec2(1.0f, 1.0f), ImGuiDockNodeFlags_NoResize);
+            //float minWinSizeX = style.WindowMinSize.x;
+            //style.WindowMinSize.x = 1280;
+            //style.WindowMinSize.x = minWinSizeX;
+
             WORKSPACE* arr = (WORKSPACE*)(workspaceList.data);
             if(arr[i].alive) arr[i].draw();
         }

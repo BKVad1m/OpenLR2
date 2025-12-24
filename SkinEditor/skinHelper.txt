@@ -1,6 +1,15 @@
 #INFORMATION, type, title, maker, thumbnail, p5, x, y,
-#CUSTOMOPTION, name, op, 
+#CUSTOMOPTION, title, dst_op, op_label, op_label, op_label, op_label,,,,
+#CUSTOMFILE, title, path, default
 #ENDOFHEADER
+
+#STARTINPUT, start, rank, update
+#SKIP, time
+#LOADSTART, time
+#LOADEND , time
+#PLAYSTART, time
+#CLOSE
+#FADEOUT, time
 
 
 #IMAGE. grPath
@@ -9,4 +18,7 @@
 #SRC_IMAGE,(NULL),gr,x,y,w,h,div_x,div_y,cycle,timer,op1,op2,op3,,,,,,,
 #SRC_NUMBER,(null),gr,x,y,w,h,div_x,div_y,cycle,timer,num,align(0right1left2middle),keta,,,,,,,
 #SRC_SLIDER,(null),gr,x,y,w,h,div_x,div_y,cycle,timer,muki,range,type,disable,,,,,,
-
+#SRC_BARGRAPH,(NULL),gr,x,y,w,h,div_x,div_y,cycle,timer,type,muki,op3,,,,,,,
+#SRC_BUTTON,index,gr,x,y,w,h,div_x,div_y,cycle,timer,type,click,panel,,,,,,,
+#SRC_ONMOUSE,(NULL),gr,x,y,w,h,div_x,div_y,cycle,timer,panel,x2,y2,w2,h2,,,,,
+#SRC_TEXT,(NULL),font,st,align,edit,,,,,,,,,,,,,,,
