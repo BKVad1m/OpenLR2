@@ -14,6 +14,8 @@
 
 #include "skin.h"
 #include "op.h"
+#include "arr.hpp"
+#include "seHelper.h"
 
 const char* SKINTYPESTR[]= {
     "7KEYS",
@@ -248,6 +250,7 @@ int WORKSPACE::ParseSkin() {
     int grCount = 0;
     int grInIf = 0;
     
+    LoadCommandHelp("skinHelper.txt");
 
     for (int i = 0; i < skinfileLines.count; i++) {
         SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[i];
@@ -576,7 +579,7 @@ int WORKSPACE::ParseSkin() {
                 sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
             }
             src->name.assign(tmp);
-            }
+        }
 
     }
     
@@ -894,7 +897,8 @@ int WORKSPACE::drawTextEdit() {
 
                     if (ImGui::BeginItemTooltip())
                     {
-                        ImGui::Text("%d",ifs.grCount);
+                        //ImGui::Text("%d",ifs.grCount);
+                        ImGui::Text("%s", GetCommandHelp(read.csv.str[0], column));
                         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                         ImGui::TextUnformatted(read.csv.str[column]);
                         if (read.csv.str[0].isSame("#SRC_IMAGE")) {
@@ -1061,30 +1065,34 @@ int WORKSPACE::drawImgManager() {
     if (ImGui::BeginChild(title, { -1, -1 }, ImGuiChildFlags_Borders | ImGuiChildFlags_FrameStyle, ImGuiWindowFlags_HorizontalScrollbar)) {
         SRCGR& img = ((SRCGR*)arr_SRCGR.data)[gr_selected];
         ImGui::Text("%s %d %d", img.path.outstr(), img.sizeX, img.sizeY);
-        
+        ImGui::SameLine(0, 0);
+        snprintf(title, sizeof(title), "grReload##%d", num);
+        ImGui::Button(title);
+        ImGui::SameLine(0, 0);
+        ImGui::ColorEdit4("MyColor##3", (float*)&bgColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_None);
 
         const ImVec2 pb = ImGui::GetCursorScreenPos();
         ImGui::Image(transBackground, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { img.sizeX / (float)32.0, img.sizeY / (float)32.0});
         ImGui::SetCursorScreenPos(pb);
         if(img.texture)
-            ImGui::Image(img.texture, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { 1, 1 });
+            ImGui::ImageWithBg(img.texture, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { 1, 1 }, bgColor);
+        
         
         if (img.texture != NULL) {
-            //ImDrawList* draw_list = ImGui::GetWindowDrawList();
             const ImVec2 p = ImGui::GetCursorScreenPos();
             ImVec2 grpos = { p.x, p.y - img.sizeY - 4 };
-            
-            
+
+
             SRC& src = ((SRC*)arr_SRC.data)[src_selected];
             int sizeX = src.sizeX == -1 ? img.sizeX - src.x : src.sizeX;
             int sizeY = src.sizeY == -1 ? img.sizeY - src.y : src.sizeY;
-            
-            ImVec2 srcposLU = { grpos.x + src.x - 1, grpos.y + src.y - 1};
+
+            ImVec2 srcposLU = { grpos.x + src.x - 1, grpos.y + src.y - 1 };
             ImVec2 srcposRB = { grpos.x + src.x + sizeX + 1, grpos.y + src.y + sizeY + 1 };
-            
+
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
-            
-            bool flicking = ((int)GetTimeLapse(1,&g.timer1) % 200 > 100);
+
+            bool flicking = ((int)GetTimeLapse(1, &g.timer1) % 200 > 100);
             ImColor color = flicking ? 0xff0080ff : 0x000000;
             draw_list->AddRect(srcposLU, srcposRB, color, 0.0f, ImDrawFlags_Closed, 1.0f);
 
@@ -1093,7 +1101,29 @@ int WORKSPACE::drawImgManager() {
                 ImGui::SetScrollY(src.y);
             }
 
-            
+
+            for (int i = 0; i < arr_SRC.count; i++){
+                SRC& hoversrc = ((SRC*)arr_SRC.data)[i];
+                if (hoversrc.gr != src.gr) continue;
+                srcposLU = { (float)grpos.x + hoversrc.x, (float)grpos.y + hoversrc.y };
+                srcposRB = { (float)grpos.x + hoversrc.x + hoversrc.sizeX, (float)grpos.y + hoversrc.y + hoversrc.sizeY };
+                if (ImGui::IsMouseHoveringRect(srcposLU, srcposRB)){
+                    flicking = ((int)GetTimeLapse(1, &g.timer1) % 200 < 100);
+                    ImColor color = flicking ? 0xffff0000 : 0x000000;
+                    draw_list->AddRect(srcposLU, srcposRB, color, 0.0f, ImDrawFlags_Closed, 1.0f);
+
+                    if (ImGui::IsItemClicked()) {
+                        gr_selected = hoversrc.gr;
+                    }
+                    if (ImGui::BeginItemTooltip())
+                    {
+                        ImGui::Text("line %d : %d %d ~ %d %d",hoversrc.declare , hoversrc.x, hoversrc.y, hoversrc.x + hoversrc.sizeX, hoversrc.y + hoversrc.sizeY);
+                        ImGui::EndTooltip();
+                    }
+                }
+            }
+
+
         }
     }
     ImGui::EndChild();
@@ -1294,51 +1324,3 @@ int WORKSPACE::wildcardTOAll(char* path) {
 
 ARR workspaceList;
 
-int ARR::Alloc(int structsize, int size) {
-    if (data) return -1; //already exist
-
-    unitSize = structsize;
-
-    data = malloc(unitSize * size);
-    if (!data) return -1; //malloc fail
-    bufSize = size;
-
-    memset(data, 0, unitSize * size);
-    return 0;
-}
-
-int ARR::Realloc(int size) { //set new max size
-    void* temp = realloc(data, unitSize * size);
-    if (!temp) return -1;
-
-    data = temp;
-    memset((void*)((int)data + unitSize * bufSize), 0, unitSize * (size - bufSize));
-    bufSize = size;
-    return 0;
-}
-
-int ARR::Free() {
-    if (data) free(data);
-    data = NULL;
-    bufSize = 0;
-    count = 0;
-    return 0;
-}
-
-int ARR::push_back(void* newdata) {
-    if (count >= bufSize) Realloc(bufSize*2); //make buffer size double
-    memcpy((void*)((int)data + unitSize * count), newdata, unitSize);
-    count++;
-    return 0;
-}
-
-bool ARR::Is_full() {
-    return (count >= bufSize);
-}
-
-void* ARR::Get_new() {
-    int oldcount = count;
-    if (oldcount >= bufSize) Realloc(bufSize * 2); //make buffer size double
-    count++;
-    return (void*)((int)data + unitSize * oldcount);
-}

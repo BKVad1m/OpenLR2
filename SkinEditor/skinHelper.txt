@@ -8,7 +8,7 @@
 #LOADSTART, time
 #LOADEND , time
 #PLAYSTART, time
-#CLOSE
+#CLOSE, time
 #FADEOUT, time
 
 

@@ -214,6 +214,7 @@
     <ClCompile Include="..\LR2\Scene11_Po4select.cpp" />
     <ClCompile Include="..\LR2\Scene13_Courseresult.cpp" />
     <ClCompile Include="..\LR2\strclass.cpp" />
+    <ClCompile Include="arr.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
@@ -224,6 +225,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ImageLoader.cpp" />
     <ClCompile Include="op.cpp" />
+    <ClCompile Include="seHelper.cpp" />
     <ClCompile Include="seWindowManager.cpp" />
     <ClCompile Include="skin.cpp" />
     <ClCompile Include="winWorkspace.cpp" />
@@ -270,6 +272,7 @@
     <ClInclude Include="..\LR2\Scenes.h" />
     <ClInclude Include="..\LR2\strclass.h" />
     <ClInclude Include="..\LR2\structure.h" />
+    <ClInclude Include="arr.hpp" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_sdl3.h" />
@@ -277,6 +280,7 @@
     <ClInclude Include="imgui\imgui_internal.h" />
     <ClInclude Include="ImageLoader.h" />
     <ClInclude Include="op.h" />
+    <ClInclude Include="seHelper.h" />
     <ClInclude Include="seWindowManager.h" />
     <ClInclude Include="skin.h" />
     <ClInclude Include="stb_image.h" />

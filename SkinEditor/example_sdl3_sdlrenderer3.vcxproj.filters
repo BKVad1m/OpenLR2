@@ -181,6 +181,12 @@
     <ClCompile Include="op.cpp">
       <Filter>sources</Filter>
     </ClCompile>
+    <ClCompile Include="seHelper.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="arr.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
@@ -337,6 +343,10 @@
       <Filter>sources</Filter>
     </ClInclude>
     <ClInclude Include="op.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="arr.hpp" />
+    <ClInclude Include="seHelper.h">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,23 +2,8 @@
 #include "seWindowManager.h"
 #include "../LR2/structure.h"
 #include <SDL3/SDL.h>
-
-
-typedef struct ARR {
-    void* data = NULL;
-    int count = 0;
-    int bufSize = 0;
-    //
-    int unitSize = 0;
-
-    int Alloc(int structsize, int size);
-    int Realloc(int size);
-    int Free();
-
-    int push_back(void* newdata);
-    bool Is_full();
-    void* Get_new();
-}ARR;
+#include "arr.hpp"
+#include <imgui.h>
 
 typedef struct SKINFILELINEREAD {
     int numTotal;
@@ -156,6 +141,7 @@ typedef struct WORKSPACE {
     int gr_selected = 0;
     int src_selected = 0;
     int loadSRC();
+    ImVec4 bgColor;
 
     bool wFileManager;
     int drawFileManager();
