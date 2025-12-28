@@ -151,6 +151,10 @@ typedef struct WORKSPACE {
     int split, nocomment, exist, success;
     bool wSaveMenuResult;
     char newPath[260] = "";
+
+    //newfile
+    bool wNewskin;
+    int drawNewskin();
     
 
 }WORKSPACE;

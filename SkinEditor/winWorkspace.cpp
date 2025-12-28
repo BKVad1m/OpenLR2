@@ -66,6 +66,9 @@ int WORKSPACE::draw() {
 
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("New", NULL, &wNewskin)) {
+                //
+            }
             if (ImGui::MenuItem("Open", NULL, &wSkinList)) {
                 ScanSkins();
             }
@@ -98,6 +101,7 @@ int WORKSPACE::draw() {
     //subwindows
     //HOW TO ADD FEATURE - STEP 4 : call function. end
     if (wSkinList) drawSkinList();
+    if (wNewskin) drawNewskin();
 
     if (wSaveMenu) drawSaveMenu();
 
@@ -1312,6 +1316,42 @@ int WORKSPACE::wildcardTOAll(char* path) {
     return 0;
 }
 
+int WORKSPACE::drawNewskin() {
+    char title[260];
+    snprintf(title, sizeof(title), "NewSkin##%d", num);
+    if(ImGui::Begin(title, &wNewskin)) {
+
+
+        static char buf1[32] = ""; ImGui::InputText("title", buf1, IM_ARRAYSIZE(buf1));
+        
+        static int item_selected_idx = 0;
+        const char* combo_preview_value = SKINTYPESTR[item_selected_idx];
+        snprintf(title, sizeof(title), "##NewSkin_Combo1##%d", num);
+        if (ImGui::BeginCombo(title, combo_preview_value))
+        {
+            for (int n = 0; n < sizeof(SKINTYPESTR)/sizeof(char*); n++)
+            {
+                const bool is_selected = (item_selected_idx == n);
+                if (ImGui::Selectable(SKINTYPESTR[n], is_selected))
+                    item_selected_idx = n;
+
+                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        static char buf2[32] = ""; ImGui::InputText("Resolution X", buf2, IM_ARRAYSIZE(buf2));
+        static char buf3[32] = ""; ImGui::InputText("Resolution Y", buf3, IM_ARRAYSIZE(buf3));
+        static char buf4[32] = ""; ImGui::InputText("path", buf4, IM_ARRAYSIZE(buf4));
+
+        ImGui::Button("make");
+        ImGui::End();
+    }
+    return 0;
+}
+
 //HOW TO ADD FEATURE - STEP 2 : write function
 
 
@@ -1323,4 +1363,3 @@ int WORKSPACE::wildcardTOAll(char* path) {
 
 
 ARR workspaceList;
-
