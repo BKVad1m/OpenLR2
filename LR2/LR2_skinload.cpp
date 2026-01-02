@@ -433,6 +433,7 @@ int ReadImageFont(CSTR filename, ImageFont *imgfont) {
 	if (strcmp(str1, imgfont->filepath)) {
 		imgfont->size = 0;
 		imgfont->kerning = 0;
+		imgfont->filepath[0] = '\0';
 		for (auto& [idx, chTex] : imgfont->chars) {
 			DeleteGraph(chTex.grHandle);
 			chTex.grHandle = -1;
