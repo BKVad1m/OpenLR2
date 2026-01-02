@@ -98,7 +98,7 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf");
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf");
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf");
-    ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf");
+    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf");
     //IM_ASSERT(font != nullptr);
 
     // Our state
@@ -118,7 +118,10 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
     DxLib_Init();
 
     workspaceList.Alloc(sizeof(WORKSPACE), 1);
-    //AllocWorkspace(1);
+    WORKSPACE* work = (WORKSPACE*)(workspaceList.Get_new());
+    work->alive = true;
+    work->num = workspaceList.count - 1;
+    snprintf(work->title, 260, "Workspace %d", workspaceList.count - 1);
 
 
 
@@ -220,8 +223,17 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
             
             ImGui::EndMainMenuBar();
         }
+        
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        if(ImGui::Begin("dockspace") ){
+            
+        }
+        ImGui::End();
 
         for (int i = 0; i < workspaceList.count; i++) {
+            
             //char dock[64];
             //snprintf(dock, sizeof(dock), "dock%d", i);
             //ImGuiID dockspace_id = ImGui::GetID(dock);
@@ -231,7 +243,10 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
             //style.WindowMinSize.x = minWinSizeX;
 
             WORKSPACE* arr = (WORKSPACE*)(workspaceList.data);
-            if(arr[i].alive) arr[i].draw();
+            if (arr[i].alive) {
+                
+                arr[i].draw();
+            }
         }
         
 

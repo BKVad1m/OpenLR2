@@ -13,6 +13,7 @@ typedef struct SKINFILELINEREAD {
 
     CSTR line;
     bool isComment;
+    bool isSEcomment;
     CSVbuf csv;
 
     int ifgroup;
@@ -70,6 +71,24 @@ typedef struct SRC {
     int declare;
 }SRC;
 
+typedef enum HISTORYOP {
+    overwriteLine,
+    addLine,
+    removeLine,
+    moveLine,
+    group,
+    ungroup,
+    openFile = 255,
+}HISTORYOP;
+
+typedef struct HISTORY {
+    HISTORYOP op;
+
+    int target;
+    SKINFILELINEREAD older;
+    SKINFILELINEREAD newer;
+}HISTORY;
+
 typedef struct WORKSPACE {
 
     
@@ -94,6 +113,8 @@ typedef struct WORKSPACE {
     ARR arr_SRC; //SRC
     ARR arr_CustomFile; //CSTR
 
+
+    ARR arr_history; //HISTORY
     int previewScreen;
 
     //mainwindow
@@ -105,6 +126,10 @@ typedef struct WORKSPACE {
     int draw();
 
     //subwindows
+    // 
+    //
+    int SeInit();
+    int SeLoadInit();
     //HOW TO ADD FEATURE - STEP 1 : declare flag and function
     int wildcardTOAll(char* path);
 

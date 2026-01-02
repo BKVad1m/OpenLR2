@@ -62,7 +62,7 @@ int WORKSPACE::init() {
     return 0;
 }
 int WORKSPACE::draw() {
-    ImGui::Begin(title, &alive, ImGuiWindowFlags_MenuBar);
+    ImGui::Begin(title, &alive, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings);
 
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("File")) {
@@ -200,6 +200,7 @@ int WORKSPACE::ReadSkin(char* path) {
         readS.line.resize(1024);
         sprintf(readS.line, "$FILE %s start", path);
         readS.isComment = true;
+        readS.isSEcomment = true;
         readS.numTotal = skinfileLines.count;
         readS.num = 0;
         skinfileLines.count++;
@@ -216,6 +217,7 @@ int WORKSPACE::ReadSkin(char* path) {
             read.filename.assign(path);
             read.num = c;
             read.isComment = (*read.line.atPos(0) != '#');
+            read.isSEcomment = (*read.line.atPos(0) != '$');
 
             if(!read.isComment) SplitCSV(read.line, &read.csv, ",");
             
@@ -237,6 +239,7 @@ int WORKSPACE::ReadSkin(char* path) {
         readE.line.resize(1024);
         sprintf(readE.line, "$FILE %s end", path);
         readE.isComment = true;
+        readE.isSEcomment = true;
         readE.numTotal = skinfileLines.count;
         readE.num = 0;
         skinfileLines.count++;
@@ -702,8 +705,16 @@ int WORKSPACE::LoadSkin(char* path) {
     return 0;
 }
 
+int WORKSPACE::SeInit() {
+
+}
+int WORKSPACE::SeLoadInit() {
+
+}
+
 
 int WORKSPACE::drawCustomize() {
+
     char title[260];
     snprintf(title, sizeof(title), "Customize##%d", num);
     ImGui::Begin(title, &wCustomize);
@@ -1065,6 +1076,7 @@ int WORKSPACE::drawImgManager() {
     
     //image
     ImGui::SameLine(0, 0);
+
     snprintf(title, sizeof(title), "ImgWorking##%d", num);
     if (ImGui::BeginChild(title, { -1, -1 }, ImGuiChildFlags_Borders | ImGuiChildFlags_FrameStyle, ImGuiWindowFlags_HorizontalScrollbar)) {
         SRCGR& img = ((SRCGR*)arr_SRCGR.data)[gr_selected];
@@ -1181,6 +1193,10 @@ int WORKSPACE::drawSaveMenu() {
         ImGui::SeparatorText("Comments");
         ImGui::RadioButton("maintain memo", &nocomment, 0);
         ImGui::RadioButton("delete memo", &nocomment, 1); //TODO : add tooltip
+        if(ImGui::BeginTooltip()){
+            ImGui::Text("this will remove all group, only for Scene start speed on LR2.\nAre your sure this?");
+            ImGui::EndTooltip();
+        }
         
         if (ImGui::Button("SAVE", { 0, 0 })) {
             success = (SaveSkinScript(newPath, split, nocomment) == 0);
@@ -1246,10 +1262,10 @@ int WORKSPACE::drawTreeView() {
         }
         ImGui::TableHeadersRow();
 
-        static int hideGroups[MAX_IFDEPTH];
+        /*static int hideGroups[MAX_IFDEPTH];
         for (int i = 0; i < MAX_IFDEPTH; i++) {
             hideGroups[i] = -1;
-        }
+        }*/
         
         for (int l = 0; l < skinfileLines.count; l++) {
             int hide = 0;
@@ -1264,7 +1280,9 @@ int WORKSPACE::drawTreeView() {
                             !(strcmp(command, "#IF")) ||
                             !(strcmp(command, "#ELSEIF")) ||
                             !(strcmp(command, "#ELSE"));
-            bool is_end = !(strcmp(command, "#ENDIF"));
+            bool is_end = !(strcmp(command, "#ELSEIF")) ||
+                            !(strcmp(command, "#ELSE")) ||
+                            !(strcmp(command, "#ENDIF"));
 
             static ImGuiTreeNodeFlags tree_node_flags_base = ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_DrawLinesFull;
             ImGuiTreeNodeFlags node_flags = tree_node_flags_base;
@@ -1273,6 +1291,9 @@ int WORKSPACE::drawTreeView() {
             int lineID = ((SKINFILELINEREAD*)skinfileLines.data)[l].numTotal;
             sprintf(title, "%s##%d", command.outstr(), lineID);
 
+            if (is_end) {
+                ImGui::TreePop();
+            }
             if (is_head)
             {   
                 bool open = ImGui::TreeNodeEx(title, node_flags);
@@ -1282,17 +1303,15 @@ int WORKSPACE::drawTreeView() {
                     ImGui::Text("%s", params[p]);
                 };
             }
-            else if (is_end) {
-                ImGui::TreePop();
-            }
-            else if (!hide){
+            
+            /*else if (!hide){
                 ImGui::TreeNodeEx(title, node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen);
 
                 for (int p = 1; p < 24 - 1; p++) {
                     ImGui::TableNextColumn();
                     ImGui::Text("%s", params[p]);
                 };
-            }
+            }*/
 
         }        
         ImGui::EndTable();
@@ -1323,10 +1342,11 @@ int WORKSPACE::drawNewskin() {
 
 
         static char buf1[32] = ""; ImGui::InputText("title", buf1, IM_ARRAYSIZE(buf1));
+        static char buf5[32] = ""; ImGui::InputText("maker", buf5, IM_ARRAYSIZE(buf5));
         
         static int item_selected_idx = 0;
         const char* combo_preview_value = SKINTYPESTR[item_selected_idx];
-        snprintf(title, sizeof(title), "##NewSkin_Combo1##%d", num);
+        snprintf(title, sizeof(title), "##NewSkin_Combo##%d", num);
         if (ImGui::BeginCombo(title, combo_preview_value))
         {
             for (int n = 0; n < sizeof(SKINTYPESTR)/sizeof(char*); n++)
@@ -1342,11 +1362,13 @@ int WORKSPACE::drawNewskin() {
             ImGui::EndCombo();
         }
 
-        static char buf2[32] = ""; ImGui::InputText("Resolution X", buf2, IM_ARRAYSIZE(buf2));
-        static char buf3[32] = ""; ImGui::InputText("Resolution Y", buf3, IM_ARRAYSIZE(buf3));
-        static char buf4[32] = ""; ImGui::InputText("path", buf4, IM_ARRAYSIZE(buf4));
+        static char buf2[32] = ""; ImGui::InputText("Resolution X", buf2, IM_ARRAYSIZE(buf2), ImGuiInputTextFlags_CharsDecimal);
+        static char buf3[32] = ""; ImGui::InputText("Resolution Y", buf3, IM_ARRAYSIZE(buf3), ImGuiInputTextFlags_CharsDecimal);
+        ImGui::Text("LR2files/Theme/"); ImGui::SameLine(); static char buf4[MAX_PATH] = "NewName/New.lr2skin"; ImGui::InputText("path", buf4, IM_ARRAYSIZE(buf4));
 
-        ImGui::Button("make");
+        if(ImGui::Button("make")) {
+
+        }
         ImGui::End();
     }
     return 0;
@@ -1355,9 +1377,9 @@ int WORKSPACE::drawNewskin() {
 //HOW TO ADD FEATURE - STEP 2 : write function
 
 
-
-
-
+//TODO - iftree, *wildcardtree, insert, grouping, dst thing
+//group should have both if / endif
+// new file to "skin wizard", which makes mockup and create texture template
 
 
 

@@ -49,3 +49,23 @@ void* ARR::Get_new() {
     count++;
     return (void*)((int)data + unitSize * oldcount);
 }
+
+int ARR::InsertAt(int at, void* newdata) {
+    if (count >= bufSize) Realloc(bufSize * 2); //make buffer size double
+    for (int i = count; i >= at; i--) {
+        memcpy((void*)((int)data + unitSize * (i+1)), (void*)((int)data + unitSize * i), unitSize);
+    }
+    memcpy((void*)((int)data + unitSize * at), newdata, unitSize);
+    count++;
+    return 0;
+}
+
+int ARR::DeleteAt(int at, void* newdata) {
+    if (at < 0 || at > count) return -1;
+    for (int i = count; i >= at; i--) {
+        memcpy((void*)((int)data + unitSize * i), (void*)((int)data + unitSize * (i+1)), unitSize);
+    }
+    memset((void*)((int)data + unitSize * count), 0x00, unitSize);
+    count--;
+    return 0;
+}
