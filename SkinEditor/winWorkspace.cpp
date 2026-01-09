@@ -88,6 +88,8 @@ int WORKSPACE::draw() {
                 //if (ImGui::MenuItem("ImgManager", NULL, &wImgManager)) { loadSRC(); };
                 ImGui::MenuItem("fileManager", NULL, &wFileManager);
                 ImGui::MenuItem("treeVeiw", NULL, &wTreeView);
+                ImGui::MenuItem("SimplePreview", NULL, &wSimplePreview);
+                ImGui::MenuItem("dstView", NULL, &wDstView);
                 ImGui::EndMenu();
             }
         }
@@ -111,6 +113,8 @@ int WORKSPACE::draw() {
     if (wImgManager) drawImgManager();
     if (wFileManager) drawFileManager();
     if (wTreeView) drawTreeView();
+    if (wSimplePreview) drawSimplePreview();
+    if (wDstView) drawDstView();
 
 
     return 0;
@@ -256,6 +260,9 @@ int WORKSPACE::ParseSkin() {
 
     int grCount = 0;
     int grInIf = 0;
+
+    int srcNow = -1;
+    int srcOld = -1;
     
     LoadCommandHelp("skinHelper.txt");
 
@@ -348,51 +355,62 @@ int WORKSPACE::ParseSkin() {
             tmpstr->assign(read.csv.str[2]);
         }
 
-
         else if (read.line.left(6).isSame("#IMAGE")) {
-            /*CSTR& tmp = read.csv.str[1];
-            arr_imgpath.push_back(&tmp);*/
-
-            SRCGR* tmp = (SRCGR*)(arr_SRCGR.Get_new());
-            tmp->path.assign(read.csv.str[1]);
-            char* cur = strrchr(read.csv.str[1].outstr(), '/');
-            if (cur == NULL) cur = strrchr(read.csv.str[1].outstr(), '\\');
-            if (cur)         tmp->filename.assign(cur + 1);
-
-            tmp->gr = grCount;
-            tmp->isIf = read.ifgroup;
             
-            for (int wc = 0; wc < arr_CustomFile.count; wc++) {
-                if (tmp->path.isSame( ((CSTR*)arr_CustomFile.data)[wc].outstr()) ){
-                    WIN32_FIND_DATA FindFileData;
-                    LPWIN32_FIND_DATAA lpFindFileData;
-                    HANDLE hFindFile;
-                    
-                    CSTR str1(tmp->path.left(tmp->path.findStrPos("*")));
-                    CSTR str2(tmp->path.right(tmp->path.length() - str1.length() - 1));
-                    CSTR str3(str1);
-                    str3.add("*");
-                   
-                    hFindFile = FindFirstFileA(str3, (LPWIN32_FIND_DATAA)&FindFileData);
-                    if (hFindFile != (HANDLE)-1) {
-                        do {
-                            if (strcmp("..", (char*)FindFileData.cFileName) && strcmp(".", (char*)FindFileData.cFileName)) {
-                                    
-                                SRCGR* tmp2 = (SRCGR*)arr_SRCGR.Get_new();
-                                tmp2->path.assign(str1);
-                                tmp2->path.add(FindFileData.cFileName);
-                                tmp2->filename.assign(FindFileData.cFileName);
-                                    
-                                //tmp2->arr_wildcard
-                                tmp2->gr = grCount;
-                                tmp2->isIf = read.ifgroup;
-                            }
-                        } while (FindNextFileA(hFindFile, (LPWIN32_FIND_DATAA)&FindFileData));
-                        FindClose(hFindFile);
-                    }
+            CSTR line(read.csv.str[1]);
 
+            bool isWild = false;
+
+            for (int wc = 0; wc < arr_CustomFile.count; wc++) {
+                if (line.isSame(((CSTR*)arr_CustomFile.data)[wc].outstr())) {
+                    isWild = true;
+                    break;
                 }
             }
+            if (strrchr(line.outstr(), '*')) isWild = true;
+
+            if (!isWild) {
+                SRCGR* tmp = (SRCGR*)(arr_SRCGR.Get_new());
+                tmp->path.assign(line);
+                
+                char* cur = strrchr(read.csv.str[1].outstr(), '/');
+                if (cur == NULL) cur = strrchr(read.csv.str[1].outstr(), '\\');
+                if (cur)         tmp->filename.assign(cur + 1);
+
+                tmp->grID = grCount;
+                tmp->isIf = read.ifgroup;
+                tmp->wildcard = false;
+            }
+            
+            else if (isWild) {
+                WIN32_FIND_DATA FindFileData;
+                LPWIN32_FIND_DATAA lpFindFileData;
+                HANDLE hFindFile;
+
+                CSTR str1(line.left(line.findStrPos("*")));
+                CSTR str2(line.right(line.length() - str1.length() - 1));
+                CSTR str3(str1);
+                str3.add("*");
+
+                hFindFile = FindFirstFileA(str3, (LPWIN32_FIND_DATAA)&FindFileData);
+                if (hFindFile != (HANDLE)-1) {
+                    do {
+                        if (strcmp("..", (char*)FindFileData.cFileName) && strcmp(".", (char*)FindFileData.cFileName)) {
+
+                            SRCGR* tmp2 = (SRCGR*)arr_SRCGR.Get_new();
+                            tmp2->path.assign(str1);
+                            tmp2->path.add(FindFileData.cFileName);
+                            tmp2->filename.assign(FindFileData.cFileName);
+
+                            tmp2->fromWildcard = true;
+                            tmp2->grID = grCount;
+                            tmp2->isIf = read.ifgroup;
+                        }
+                    } while (FindNextFileA(hFindFile, (LPWIN32_FIND_DATAA)&FindFileData));
+                    FindClose(hFindFile);
+                }
+            }
+
             grCount++;
             ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount++;
         }
@@ -433,6 +451,82 @@ int WORKSPACE::ParseSkin() {
                 sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
             }
             src->name.assign(tmp);
+
+            srcNow++;
+        }
+        //else if (read.csv.str[0].isSame("#DST_IMAGE")) {
+
+        //    DST* dst = (DST*)(arr_DST.Get_new());
+
+        //    dst->src = srcNow;
+
+        //    dst->time = read.csv.val[2];
+        //    dst->x = read.csv.val[3];
+        //    dst->y = read.csv.val[4];
+        //    dst->w = read.csv.val[5];
+        //    dst->h = read.csv.val[6];
+
+        //    dst->acc = read.csv.val[7];
+        //    dst->a = read.csv.val[8];
+        //    dst->r = read.csv.val[9];
+        //    dst->g = read.csv.val[10];
+        //    dst->b = read.csv.val[11];
+
+        //    dst->blend = read.csv.val[12];
+        //    dst->filter = read.csv.val[13];
+        //    dst->angle = read.csv.val[14];
+        //    dst->center = read.csv.val[15];
+        //    
+        //    //
+        //    dst->loop = read.csv.val[16];
+        //    dst->timer = read.csv.val[17];
+
+        //    dst->op1 = read.csv.val[18];
+        //    dst->op2 = read.csv.val[19];
+        //    dst->op3 = read.csv.val[20];
+        //    dst->op4 = read.csv.val[21];
+        //    //WIP
+        //}
+
+        else if (read.csv.str[0].left(5).isSame("#DST_")) {
+
+            DST* dst = (DST*)(arr_DST.Get_new());
+
+            if (srcNow > srcOld) {
+                dst->animation = -1;
+                currentLeadDST = arr_DST.count;
+            }
+            dst->src = srcNow;
+
+            dst->time = read.csv.val[2];
+            dst->x = read.csv.val[3];
+            dst->y = read.csv.val[4];
+            dst->w = read.csv.val[5];
+            dst->h = read.csv.val[6];
+
+            dst->acc = read.csv.val[7];
+            dst->a = read.csv.val[8];
+            dst->r = read.csv.val[9];
+            dst->g = read.csv.val[10];
+            dst->b = read.csv.val[11];
+
+            dst->blend = read.csv.val[12];
+            dst->filter = read.csv.val[13];
+            dst->angle = read.csv.val[14];
+            dst->center = read.csv.val[15];
+
+            //
+            dst->loop = read.csv.val[16];
+            dst->timer = read.csv.val[17];
+
+            dst->op1 = read.csv.val[18];
+            dst->op2 = read.csv.val[19];
+            dst->op3 = read.csv.val[20];
+            dst->op4 = read.csv.val[21];
+            //op5 is on 22??
+            
+            dst->animation++;
+            dst->leadDST = currentLeadDST;
         }
 
         else if (read.csv.str[0].isSame("#SRC_NUMBER")) { 
@@ -586,7 +680,41 @@ int WORKSPACE::ParseSkin() {
                 sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
             }
             src->name.assign(tmp);
+
+            srcNow++;
         }
+        //else if (read.csv.str[0].isSame("#DST_BUTTON")) {
+
+        //    DST* dst = (DST*)(arr_DST.Get_new());
+
+        //    dst->src = srcNow;
+
+        //    dst->time = read.csv.val[2];
+        //    dst->x = read.csv.val[3];
+        //    dst->y = read.csv.val[4];
+        //    dst->w = read.csv.val[5];
+        //    dst->h = read.csv.val[6];
+
+        //    dst->acc = read.csv.val[7];
+        //    dst->a = read.csv.val[8];
+        //    dst->r = read.csv.val[9];
+        //    dst->g = read.csv.val[10];
+        //    dst->b = read.csv.val[11];
+
+        //    dst->blend = read.csv.val[12];
+        //    dst->filter = read.csv.val[13];
+        //    dst->angle = read.csv.val[14];
+        //    dst->center = read.csv.val[15];
+
+        //    dst->loop = read.csv.val[16];
+        //    dst->timer = read.csv.val[17];
+
+        //    dst->op1 = read.csv.val[18];
+        //    dst->op2 = read.csv.val[19];
+        //    dst->op3 = read.csv.val[20];
+        //    dst->op4 = read.csv.val[21];
+        //    //WIP
+        //}
 
     }
     
@@ -669,6 +797,8 @@ int WORKSPACE::LoadSkin(char* path) {
     arr_SRC.Alloc(sizeof(SRC), 100);
     arr_CustomFile.Free();
     arr_CustomFile.Alloc(sizeof(CSTR), 10);
+    arr_DST.Free();
+    arr_DST.Alloc(sizeof(DST), 100);
 
     ReadSkin(path);
     ParseSkin();
@@ -988,8 +1118,8 @@ int WORKSPACE::drawImgManager() {
             SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
            
             char buf[260];
-            sprintf(buf, "%02d:%s", img.gr, img.filename.outstr());
-
+            sprintf(buf, "%02d:%s", img.grID, img.filename.outstr());
+            ImGui::PushID(i);
             if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull | ((gr_selected == i) ? ImGuiTreeNodeFlags_Selected : NULL)))
             {
                 if (ImGui::BeginItemTooltip())
@@ -997,20 +1127,21 @@ int WORKSPACE::drawImgManager() {
                     ImGui::Text("%s", img.path.outstr());
                     ImGui::EndTooltip();
                 }
+                if (strchr(buf, '*')) {
+                    if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull)) {
+
+
+                        ImGui::TreePop();
+                    }
+                }
 
                 for (int srcID = 0; srcID < arr_SRC.count; srcID++) {
                     SRC& src = ((SRC*)arr_SRC.data)[srcID];
-                    if (src.gr == img.gr)
+                    if (src.gr == img.grID)
                     {
-                        sprintf(buf, "%04d %s", src.declare, src.name.outstr());
-                        /*if (strchr(buf, '*')) {
-                            if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull)) {
-
-
-                                ImGui::TreePop();
-                            }
-                        }
-                        else */if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull | ImGuiTreeNodeFlags_Leaf)) {
+                        sprintf(buf, "L%04d %s", src.declare, src.name.outstr());
+                        
+                        if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull | ImGuiTreeNodeFlags_Leaf)) {
                             if (ImGui::IsItemClicked()) {
                                 if (gr_selected != i) gr_selected = i;
                                 src_selected = srcID;
@@ -1062,7 +1193,7 @@ int WORKSPACE::drawImgManager() {
             else {
                 SRC& src = ((SRC*)arr_SRC.data)[src_selected];
                 if (ImGui::IsItemClicked()) {
-                    gr_selected = img.gr;
+                    gr_selected = img.grID;
                 }
                 if (ImGui::BeginItemTooltip())
                 {
@@ -1070,6 +1201,7 @@ int WORKSPACE::drawImgManager() {
                     ImGui::EndTooltip();
                 }
             }
+            ImGui::PopID();
         }
     }
     ImGui::EndChild();
@@ -1147,6 +1279,60 @@ int WORKSPACE::drawImgManager() {
 
     ImGui::End();
     return 0;
+}
+
+int WORKSPACE::drawSrc(int iSRCGR, int iSRCID, int posX, int posY) {
+    SRCGR& img = ((SRCGR*)arr_SRCGR.data)[iSRCGR];
+
+    if (img.texture != NULL) {
+        SRC& src = ((SRC*)arr_SRC.data)[iSRCID];
+
+        int sizeX = src.sizeX == -1 ? img.sizeX - src.x : src.sizeX;
+        int sizeY = src.sizeY == -1 ? img.sizeY - src.y : src.sizeY;
+        ImVec2 display_min = ImVec2(src.x / (float)img.sizeX, src.y / (float)img.sizeY);
+        ImVec2 display_max = ImVec2((src.x + sizeX) / (float)img.sizeX, (src.y + sizeY) / (float)img.sizeY);
+        ImVec2 display_size = ImVec2(sizeX, sizeY);
+
+        if (src.cycle && (src.div_x >= 1 || src.div_y >= 1)) {
+            if (src.div_x == 0) src.div_x = 1;
+            if (src.div_y == 0) src.div_y = 1;
+            ImVec2 chopsize = { src.sizeX / (float)src.div_x , src.sizeY / (float)src.div_y };
+
+            int units = src.div_x * src.div_y;
+            int tick = src.cycle / units;
+            int ani = ((int)GetTimeLapse(0, &(g.timer1)) % src.cycle) / tick;
+
+            int ax = ani % src.div_x;
+            int ay = ani / src.div_x;
+
+            ImVec2 chopstart = { (src.x + chopsize.x * ax) / (float)img.sizeX ,
+                                (src.y + chopsize.y * ay) / (float)img.sizeY };
+
+            ImVec2 chopend = { (src.x - 1 + chopsize.x * (ax + 1)) / (float)img.sizeX ,
+                                (src.y - 1 + chopsize.y * (ay + 1)) / (float)img.sizeY };
+
+            
+            const ImVec2 pb = ImGui::GetCursorScreenPos();
+            ImVec2 pos = {(float)pb.x + posX, pb.y + (float)posY};
+            ImGui::SetCursorPos(pos);
+            ImGui::Image(img.texture, chopsize, chopstart, chopend);
+            ImGui::SetCursorPos(pb);
+        }
+        else {
+            const ImVec2 pb = ImGui::GetCursorScreenPos();
+            ImVec2 pos = { (float)pb.x + posX, pb.y + (float)posY };
+            ImGui::SetCursorPos(pos);
+
+            ImGui::Image(img.texture, display_size, display_min, display_max);;
+
+            ImGui::SetCursorPos(pb);
+        }
+    }
+    return 0;
+}
+
+int WORKSPACE::drawSrc(int iSRCGR, int iSRCID) {
+    return drawSrc(iSRCGR, iSRCID, 0, 0);
 }
 
 
@@ -1238,7 +1424,7 @@ int WORKSPACE::drawFileManager() {
     ImGui::SeparatorText("Images");
     for (int i = 0; i < arr_SRCGR.count; i++) {
         SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
-        ImGui::Text("%02d(%03d) - %s", img.gr, img.isIf, img.path);
+        ImGui::Text("%02d(%03d) - %s %s", img.grID, img.isIf, img.path, img.fromWildcard? "from *":"");
     }
 
     ImGui::End();
@@ -1374,10 +1560,117 @@ int WORKSPACE::drawNewskin() {
     return 0;
 }
 
+int WORKSPACE::drawSimplePreview() {
+    char title[260];
+    snprintf(title, sizeof(title), "SimplePreview##%d", num);
+    if (ImGui::Begin(title, &wSimplePreview, ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+        
+        ImVec2 pb = ImGui::GetCursorScreenPos();
+        pb.x += 400;
+        pb.y += 400;
+        //ImVec2 bgSize = { skinSizeX,skinSizeY };
+        ImGui::Dummy(pb);
+        draw_list->AddRectFilled(pb, { skinSizeX+pb.x,skinSizeY+pb.y }, 0xFF000000, 0, ImDrawFlags_None);
+        
+        ImGui::SetCursorScreenPos(pb);
+
+        DST *dst = ((DST*)arr_DST.data);
+
+        for (int i = 0; i < arr_DST.count; i++) {
+            ImGui::SetCursorScreenPos(pb);
+            
+            ImVec2 PointTopLeft = { pb.x + (float)dst[i].x, pb.y + (float)dst[i].y };
+            ImVec2 PointBottomRight = { pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h };
+            //ImVec4 xywh = {PointTopLeft , PointBottomRight };
+            draw_list->AddRectFilled(PointTopLeft, PointBottomRight, (0xFF000000 | (0xFF0000 >> i)), 0, ImDrawFlags_None);
+
+            //drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src, dst[i].x, dst[i].y);
+        }
+
+        skinSizeX;
+        skinSizeY;
+        //zoom in zoom out
+        
+        
+
+
+        ImGui::End();
+    }
+
+
+    return 0;
+}
+
+int WORKSPACE::drawDstView() {
+
+    char title[260];
+    snprintf(title, sizeof(title), "dstView##%d", num);
+    if (ImGui::Begin(title, &wDstView)) {
+
+        snprintf(title, sizeof(title), "dstList##%d", num);
+        if (ImGui::BeginChild(title, { 250,-1 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
+            for (int i = 0; i < arr_DST.count; i++) {
+                ImGui::PushID(i);
+                DST& dst = ((DST*)arr_DST.data)[i];
+
+                if (dst.animation == 0) {
+                    char buf[260];
+                    sprintf(buf, "%03d:%03d(%s)", dst.src, dst.op1, dstName(dst.op1));
+                    if (ImGui::Selectable(buf, selected_dst == i)) {
+                        selected_dst = i;
+                        DstViewTime = 0;
+                    }
+                    
+                }
+                ImGui::PopID();
+            }
+        }
+        ImGui::EndChild();
+        ImGui::SameLine();
+
+        snprintf(title, sizeof(title), "dstAnimationView##%d", num);
+        if (ImGui::BeginChild(title, { -1,0 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+            ImGui::Text("dst animation");
+            const ImVec2 pb = ImGui::GetCursorScreenPos();
+            //ImVec2 bgSize = { skinSizeX,skinSizeY };
+            //draw_list->AddRectFilled(pb, { skinSizeX + pb.x,skinSizeY + pb.y }, 0xFF000000, 0, ImDrawFlags_None);
+            ImGui::Image(transBackground, { (float)skinSizeX, (float)skinSizeY }, { 0,0 }, { skinSizeX / (float)32.0, skinSizeY / (float)32.0 });
+            ImGui::SetCursorScreenPos(pb);
+
+            DST* dst = ((DST*)arr_DST.data);
+
+            //draw_list->AddRectFilled({ pb.x + (float)dst[i].x, pb.y + (float)dst[i].y }, { pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h }, (0xFF000000 | (0xFF0000 >> i)), 0, ImDrawFlags_None);
+
+            for (int i = 0; i < arr_DST.count; i++) {
+                ImGui::SetCursorScreenPos(pb);
+                /*draw_list->AddRectFilled({pb.x + (float)dst[i].x, pb.y + (float)dst[i].y}, {pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h}, (0xFF000000 | (0xFF0000 >> i)), 0, ImDrawFlags_None); */
+                if (i == selected_dst){
+                    //draw_list->AddRectFilled({ pb.x + (float)dst[i].x, pb.y + (float)dst[i].y }, { pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h }, (0xFF000000 | (0xFF0000)), 0, ImDrawFlags_None);
+                    if (dst[i].src != -1) {
+                        drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src, dst[i].x, dst[i].y);
+                    }
+                }
+                //DSTDbyTime()
+                //drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src, dst[i].x, dst[i].y);
+            }
+
+            //skinSizeX;
+            //skinSizeY;
+            //zoom in zoom out
+        }
+        ImGui::EndChild();
+    }
+    ImGui::End();
+    return 0;
+}
+
 //HOW TO ADD FEATURE - STEP 2 : write function
 
 
-//TODO - iftree, *wildcardtree, insert, grouping, dst thing
+//TODO - iftree, *wildcardtree, insert, delete, group, dst thing
 //group should have both if / endif
 // new file to "skin wizard", which makes mockup and create texture template
 

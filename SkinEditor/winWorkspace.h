@@ -49,10 +49,11 @@ typedef struct SRCGR {
     CSTR name{};
     int sizeX, sizeY;
 
-    int gr;
+    int grID;
     int isIf;
 
-    bool wildcard;
+    bool wildcard = false;
+    bool fromWildcard = false;
     ARR arr_wildcard; //CSTR
 }SRCGR;
 
@@ -69,7 +70,27 @@ typedef struct SRC {
     int click, panel, plusonly; //for buttonSRC
 
     int declare;
+    int srcID;
 }SRC;
+
+typedef struct DST {
+    int leadDST = -1;
+    CSTR name{"noname"};
+    int src;
+    int animation = 0;
+
+    int time;
+    int x, y, w, h;
+    int acc;
+    int a, r, g, b;
+    int blend; //
+    int filter; //Anti-aliasing
+    int angle, center; //angle axis, numpad
+
+    int loop, timer;
+    int op1, op2, op3;
+    int op4;//for turntable
+}DST;
 
 typedef enum HISTORYOP {
     overwriteLine,
@@ -109,9 +130,11 @@ typedef struct WORKSPACE {
     ARR skinfileLines; //SKINFILELINEREAD
     ARR arr_ifunit; //IFUNIT
 
+    ARR arr_CustomFile; //CSTR
     ARR arr_SRCGR; //SRCGR
     ARR arr_SRC; //SRC
-    ARR arr_CustomFile; //CSTR
+    ARR arr_DST; //DST
+    
 
 
     ARR arr_history; //HISTORY
@@ -140,6 +163,7 @@ typedef struct WORKSPACE {
     int LoadSkin(char* path);
     int ReadSkin(char* path);
     int ParseSkin();
+    int currentLeadDST = -1;
 
     int SaveSkinScript(char* path, bool split, bool nocomment);
 
@@ -181,6 +205,18 @@ typedef struct WORKSPACE {
     bool wNewskin;
     int drawNewskin();
     
+    //simpleview (mockup)
+    bool wSimplePreview;
+    int drawSimplePreview();
+
+    int drawSrc(int iSRCGR, int iSRCID);
+    int drawSrc(int iSRCGR, int iSRCID, int posX, int posY);
+
+    //dstview
+    bool wDstView;
+    int drawDstView();
+    int selected_dst;
+    double DstViewTime;
 
 }WORKSPACE;
 

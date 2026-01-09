@@ -932,7 +932,7 @@ int ExpandSkinObjectMax(SkinObject *so, int add) {
 }
 
 //4a11c0 ReadSkin // maybe unsatble
-int ReadSkin(skstruct *sk,CSTR FilePath, int unused, int skin_num, SkinUser* sku, char flag_skipFont) {
+int ReadSkin(skstruct *sk,CSTR FilePath, int unused, int skin_num, SkinUser* sku, char flag_skipFont) { //TODO: renmae skin_num. that is currentSRC ID
 	FILE *pFile;
 	CSTR fBuf(1024);
 	char* pFbuf;
