@@ -92,6 +92,14 @@ typedef struct DST {
     int op4;//for turntable
 }DST;
 
+typedef struct SKINUNIT {
+    int ID;
+    CSTR name{ "noname" };
+
+    SRC src;
+    DST dst;
+}SKINUNIT;
+
 typedef enum HISTORYOP {
     overwriteLine,
     addLine,

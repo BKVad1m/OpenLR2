@@ -1312,19 +1312,17 @@ int WORKSPACE::drawSrc(int iSRCGR, int iSRCID, int posX, int posY) {
                                 (src.y - 1 + chopsize.y * (ay + 1)) / (float)img.sizeY };
 
             
-            const ImVec2 pb = ImGui::GetCursorScreenPos();
-            ImVec2 pos = {(float)pb.x + posX, pb.y + (float)posY};
+            ImVec2 pb = ImGui::GetCursorScreenPos();
+            ImVec2 pos = { (float)posX, (float)posY};
             ImGui::SetCursorPos(pos);
             ImGui::Image(img.texture, chopsize, chopstart, chopend);
             ImGui::SetCursorPos(pb);
         }
         else {
-            const ImVec2 pb = ImGui::GetCursorScreenPos();
-            ImVec2 pos = { (float)pb.x + posX, pb.y + (float)posY };
+            ImVec2 pb = ImGui::GetCursorScreenPos();
+            ImVec2 pos = { (float)posX + pb.x/4.0f, (float)posY + pb.y/4.0f};
             ImGui::SetCursorPos(pos);
-
             ImGui::Image(img.texture, display_size, display_min, display_max);;
-
             ImGui::SetCursorPos(pb);
         }
     }
@@ -1634,18 +1632,18 @@ int WORKSPACE::drawDstView() {
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
             ImGui::Text("dst animation");
-            const ImVec2 pb = ImGui::GetCursorScreenPos();
+            //const ImVec2 pb = ImGui::GetCursorScreenPos();
             //ImVec2 bgSize = { skinSizeX,skinSizeY };
             //draw_list->AddRectFilled(pb, { skinSizeX + pb.x,skinSizeY + pb.y }, 0xFF000000, 0, ImDrawFlags_None);
             ImGui::Image(transBackground, { (float)skinSizeX, (float)skinSizeY }, { 0,0 }, { skinSizeX / (float)32.0, skinSizeY / (float)32.0 });
-            ImGui::SetCursorScreenPos(pb);
+            //ImGui::SetCursorScreenPos(pb);
 
             DST* dst = ((DST*)arr_DST.data);
 
             //draw_list->AddRectFilled({ pb.x + (float)dst[i].x, pb.y + (float)dst[i].y }, { pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h }, (0xFF000000 | (0xFF0000 >> i)), 0, ImDrawFlags_None);
 
             for (int i = 0; i < arr_DST.count; i++) {
-                ImGui::SetCursorScreenPos(pb);
+               //ImGui::SetCursorScreenPos(pb);
                 /*draw_list->AddRectFilled({pb.x + (float)dst[i].x, pb.y + (float)dst[i].y}, {pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h}, (0xFF000000 | (0xFF0000 >> i)), 0, ImDrawFlags_None); */
                 if (i == selected_dst){
                     //draw_list->AddRectFilled({ pb.x + (float)dst[i].x, pb.y + (float)dst[i].y }, { pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h }, (0xFF000000 | (0xFF0000)), 0, ImDrawFlags_None);
