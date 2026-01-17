@@ -70,6 +70,7 @@ typedef struct SRC {
     int click, panel, plusonly; //for buttonSRC
 
     int declare;
+    int ifGroup;
     int srcID;
 }SRC;
 
@@ -79,18 +80,23 @@ typedef struct DST {
     int src;
     int animation = 0;
 
-    int time;
-    int x, y, w, h;
-    int acc;
-    int a, r, g, b;
-    int blend; //
-    int filter; //Anti-aliasing
-    int angle, center; //angle axis, numpad
+    ARR arr_animation;//DST_ANIMATION
 
     int loop, timer;
     int op1, op2, op3;
     int op4;//for turntable
 }DST;
+
+typedef struct DST_ANIMATION{
+    int time;
+    float x, y, w, h;
+    int acc;
+    int a, r, g, b;
+    int blend; //
+    int filter; //Anti-aliasing
+    float angle;
+    int center; //angle axis, numpad
+}DST_ANIMATION;
 
 typedef struct SKINUNIT {
     int ID;
@@ -153,6 +159,7 @@ typedef struct WORKSPACE {
     char title[260];
     int proc();
     int init();
+    bool needInit = true;
     bool alive;
     int draw();
 
@@ -199,6 +206,7 @@ typedef struct WORKSPACE {
     int src_selected = 0;
     int loadSRC();
     ImVec4 bgColor;
+    int oldIf = -1;
 
     bool wFileManager;
     int drawFileManager();
@@ -224,7 +232,7 @@ typedef struct WORKSPACE {
     bool wDstView;
     int drawDstView();
     int selected_dst;
-    double DstViewTime;
+    float DstViewTime;
 
 }WORKSPACE;
 

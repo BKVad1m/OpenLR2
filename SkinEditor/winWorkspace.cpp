@@ -5,6 +5,7 @@
 #include "../LR2/En_fileutil.h"
 #include "../LR2/Scene07_Skinselect.h"
 #include "../LR2/En_timer.h"
+#include "../LR2/En_value.h" //for ByTime
 #include "DxLib//DxLib.h"
 #include "winWorkspace.h"
 
@@ -58,10 +59,15 @@ int WORKSPACE::proc() {
     return 0;
 }
 int WORKSPACE::init() {
-
+    
     return 0;
 }
 int WORKSPACE::draw() {
+    
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+
     ImGui::Begin(title, &alive, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings);
 
     if (ImGui::BeginMenuBar()) {
@@ -275,14 +281,15 @@ int WORKSPACE::ParseSkin() {
             arr_ifunit.push_back(&tif);
         }
 
-        if (read.line.left(3).isSame("#IF")) {
+        if (read.line.left(strlen("#IF")).isSame("#IF")) {
+            
             IFdepth++;
 
             isif = true;
 
             IFUNIT tif;
             for (int val = 0; val < 10; val++) {
-                tif.data[val] = read.csv.val[val];
+                tif.data[val] = read.csv.val[val+1];
             }
             tif.depth = IFdepth;
             tif.order = cOrder = 0;
@@ -294,12 +301,12 @@ int WORKSPACE::ParseSkin() {
             read.ifgroup = IFcur;
 
         }
-        else if (read.line.left(7).isSame("#ELSEIF")) {
+        else if (read.line.left(strlen("#ELSEIF")).isSame("#ELSEIF")) {
             isif = true;
 
             IFUNIT tif;
             for (int val = 0; val < 10; val++) {
-                tif.data[val] = read.csv.val[val];
+                tif.data[val] = read.csv.val[val+1];
             }
             tif.depth = IFdepth;
             tif.order = ++cOrder;
@@ -312,12 +319,12 @@ int WORKSPACE::ParseSkin() {
             grCount -= ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount;
             grInIf = 0;
         }
-        else if (read.line.left(5).isSame("#ELSE")) {
+        else if (read.csv.str[0].isSame("#ELSE")) {
             isif = true;
 
             IFUNIT tif;
             for (int val = 0; val < 10; val++) {
-                tif.data[val] = read.csv.val[val];
+                tif.data[val] = 0;
             }
             tif.depth = IFdepth;
             tif.order = ++cOrder;
@@ -330,7 +337,7 @@ int WORKSPACE::ParseSkin() {
             grCount -= ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount;
             grInIf = 0;
         }
-        else if (read.line.left(6).isSame("#ENDIF")) {
+        else if (read.csv.str[0].isSame("#ENDIF")) {
             isif = true;
 
             read.ifgroup = IFcur + cOrder;
@@ -350,12 +357,12 @@ int WORKSPACE::ParseSkin() {
         if (isif) continue;
 
 
-        if (read.line.left(11).isSame("#CUSTOMFILE")) {
+        if (read.csv.str[0].isSame("#CUSTOMFILE")) {
             CSTR* tmpstr = (CSTR*)arr_CustomFile.Get_new();
             tmpstr->assign(read.csv.str[2]);
         }
 
-        else if (read.line.left(6).isSame("#IMAGE")) {
+        else if (read.csv.str[0].isSame("#IMAGE")) {
             
             CSTR line(read.csv.str[1]);
 
@@ -488,43 +495,54 @@ int WORKSPACE::ParseSkin() {
         //    //WIP
         //}
 
-        else if (read.csv.str[0].left(5).isSame("#DST_")) {
+        else if (read.csv.str[0].isSame("#DST_IMAGE")) {
 
-            DST* dst = (DST*)(arr_DST.Get_new());
-
-            if (srcNow > srcOld) {
-                dst->animation = -1;
-                currentLeadDST = arr_DST.count;
-            }
-            dst->src = srcNow;
-
-            dst->time = read.csv.val[2];
-            dst->x = read.csv.val[3];
-            dst->y = read.csv.val[4];
-            dst->w = read.csv.val[5];
-            dst->h = read.csv.val[6];
-
-            dst->acc = read.csv.val[7];
-            dst->a = read.csv.val[8];
-            dst->r = read.csv.val[9];
-            dst->g = read.csv.val[10];
-            dst->b = read.csv.val[11];
-
-            dst->blend = read.csv.val[12];
-            dst->filter = read.csv.val[13];
-            dst->angle = read.csv.val[14];
-            dst->center = read.csv.val[15];
-
-            //
-            dst->loop = read.csv.val[16];
-            dst->timer = read.csv.val[17];
-
-            dst->op1 = read.csv.val[18];
-            dst->op2 = read.csv.val[19];
-            dst->op3 = read.csv.val[20];
-            dst->op4 = read.csv.val[21];
-            //op5 is on 22??
             
+            DST* dst;
+            if (srcNow > srcOld) {
+                dst = (DST*)(arr_DST.Get_new());
+
+                dst->name.assign(dstName(dst->op1));
+                dst->animation = 0;
+                currentLeadDST = arr_DST.count-1;
+                dst->src = srcNow;
+
+                dst->arr_animation.Alloc(sizeof(DST_ANIMATION), 1);
+                srcOld = srcNow;
+            }
+            else {
+                dst = &(((DST*)arr_DST.data)[currentLeadDST]);
+            }
+            
+            DST_ANIMATION* dstd = (DST_ANIMATION*)(dst->arr_animation.Get_new());
+
+            dstd->time = read.csv.val[2];
+            dstd->x = read.csv.val[3];
+            dstd->y = read.csv.val[4];
+            dstd->w = read.csv.val[5];
+            dstd->h = read.csv.val[6];
+
+            dstd->acc = read.csv.val[7];
+            dstd->a = read.csv.val[8];
+            dstd->r = read.csv.val[9];
+            dstd->g = read.csv.val[10];
+            dstd->b = read.csv.val[11];
+
+            dstd->blend = read.csv.val[12];
+            dstd->filter = read.csv.val[13];
+            dstd->angle = read.csv.val[14];
+            dstd->center = read.csv.val[15];
+
+            if (dst->animation == 0) {
+                dst->loop = read.csv.val[16];
+                dst->timer = read.csv.val[17];
+
+                dst->op1 = read.csv.val[18];
+                dst->op2 = read.csv.val[19];
+                dst->op3 = read.csv.val[20];
+                dst->op4 = read.csv.val[21];
+                //op5 is on 22??
+            }
             dst->animation++;
             dst->leadDST = currentLeadDST;
         }
@@ -797,8 +815,13 @@ int WORKSPACE::LoadSkin(char* path) {
     arr_SRC.Alloc(sizeof(SRC), 100);
     arr_CustomFile.Free();
     arr_CustomFile.Alloc(sizeof(CSTR), 10);
+
+    for (int i = 0; i < arr_DST.count; i++)
+        ((DST*)arr_DST.data)[i].arr_animation.Free();
     arr_DST.Free();
     arr_DST.Alloc(sizeof(DST), 100);
+    for (int i = 0; i < arr_DST.count; i++)
+        ((DST*)arr_DST.data)[i].arr_animation.Alloc(sizeof(DST_ANIMATION), 1);
 
     ReadSkin(path);
     ParseSkin();
@@ -1113,10 +1136,25 @@ int WORKSPACE::drawImgManager() {
     //tree list
     snprintf(title, sizeof(title), "ImgTree##%d", num);
     if (ImGui::BeginChild(title, { 250,-1 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
+
+        oldIf = -1;
+        //ImGui::TreeNodeEx("IF", ImGuiTreeNodeFlags_DrawLinesFull);
         for (int i = 0; i < arr_SRCGR.count; i++) {
 
             SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
            
+            if (img.isIf && img.isIf != oldIf) {
+                
+                char buf[260];
+                sprintf(buf, "#IF %03d - %s", img.isIf, dstName(((IFUNIT*)arr_ifunit.data)[img.isIf].data[0]));
+                //ImGui::PushID(img.isIf);
+                ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull);
+                oldIf = img.isIf;
+            }
+
+            if (img.isIf == oldIf) {
+
+            }
             char buf[260];
             sprintf(buf, "%02d:%s", img.grID, img.filename.outstr());
             ImGui::PushID(i);
@@ -1129,8 +1167,6 @@ int WORKSPACE::drawImgManager() {
                 }
                 if (strchr(buf, '*')) {
                     if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull)) {
-
-
                         ImGui::TreePop();
                     }
                 }
@@ -1203,6 +1239,7 @@ int WORKSPACE::drawImgManager() {
             }
             ImGui::PopID();
         }
+        //ImGui::TreePop();
     }
     ImGui::EndChild();
     
@@ -1312,18 +1349,20 @@ int WORKSPACE::drawSrc(int iSRCGR, int iSRCID, int posX, int posY) {
                                 (src.y - 1 + chopsize.y * (ay + 1)) / (float)img.sizeY };
 
             
-            ImVec2 pb = ImGui::GetCursorScreenPos();
-            ImVec2 pos = { (float)posX, (float)posY};
-            ImGui::SetCursorPos(pos);
+            //ImVec2 pb = ImGui::GetCursorScreenPos();
+            //ImVec2 pos = { (float)posX, (float)posY};
+            //ImGui::SetCursorPos(pb);
             ImGui::Image(img.texture, chopsize, chopstart, chopend);
-            ImGui::SetCursorPos(pb);
+            /*ImGui::SetCursorPos(pb);*/
+            /*ImGui::Dummy(pb);*/
         }
         else {
-            ImVec2 pb = ImGui::GetCursorScreenPos();
-            ImVec2 pos = { (float)posX + pb.x/4.0f, (float)posY + pb.y/4.0f};
-            ImGui::SetCursorPos(pos);
+            /*ImVec2 pb = ImGui::GetCursorScreenPos();
+            ImVec2 pos = { (float)posX, (float)posY};
+            ImGui::SetCursorPos(pb);*/
             ImGui::Image(img.texture, display_size, display_min, display_max);;
-            ImGui::SetCursorPos(pb);
+            /*ImGui::SetCursorPos(pb);*/
+            /*ImGui::Dummy(pb);*/
         }
     }
     return 0;
@@ -1376,7 +1415,7 @@ int WORKSPACE::drawSaveMenu() {
         ImGui::RadioButton("split scripts", &split, 1);
         ImGui::SeparatorText("Comments");
         ImGui::RadioButton("maintain memo", &nocomment, 0);
-        ImGui::RadioButton("delete memo", &nocomment, 1); //TODO : add tooltip
+        ImGui::RadioButton("delete memo", &nocomment, 1);
         if(ImGui::BeginTooltip()){
             ImGui::Text("this will remove all group, only for Scene start speed on LR2.\nAre your sure this?");
             ImGui::EndTooltip();
@@ -1575,16 +1614,16 @@ int WORKSPACE::drawSimplePreview() {
 
         DST *dst = ((DST*)arr_DST.data);
 
-        for (int i = 0; i < arr_DST.count; i++) {
-            ImGui::SetCursorScreenPos(pb);
-            
-            ImVec2 PointTopLeft = { pb.x + (float)dst[i].x, pb.y + (float)dst[i].y };
-            ImVec2 PointBottomRight = { pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h };
-            //ImVec4 xywh = {PointTopLeft , PointBottomRight };
-            draw_list->AddRectFilled(PointTopLeft, PointBottomRight, (0xFF000000 | (0xFF0000 >> i)), 0, ImDrawFlags_None);
+        //for (int i = 0; i < arr_DST.count; i++) {
+        //    ImGui::SetCursorScreenPos(pb);
+        //    ImVec2 PointTopLeft = { (float)dst[i].x, (float)dst[i].y };
+        //    ImVec2 PointBottomRight = { (float)dst[i].x + dst[i].w, (float)dst[i].y + dst[i].h };
+        //    //ImVec4 xywh = {PointTopLeft , PointBottomRight };
+        //    draw_list->AddRectFilled(PointTopLeft, PointBottomRight, (0xFF000000 | (0xFF0000 >> i)), 0, ImDrawFlags_None);
 
-            //drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src, dst[i].x, dst[i].y);
-        }
+        //    //drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src, dst[i].x, dst[i].y);
+        //    ImGui::Dummy({ (float)dst[i].w, (float)dst[i].h });
+        //}
 
         skinSizeX;
         skinSizeY;
@@ -1612,15 +1651,16 @@ int WORKSPACE::drawDstView() {
                 ImGui::PushID(i);
                 DST& dst = ((DST*)arr_DST.data)[i];
 
-                if (dst.animation == 0) {
-                    char buf[260];
-                    sprintf(buf, "%03d:%03d(%s)", dst.src, dst.op1, dstName(dst.op1));
-                    if (ImGui::Selectable(buf, selected_dst == i)) {
-                        selected_dst = i;
-                        DstViewTime = 0;
-                    }
-                    
+                char buf[260];
+                sprintf(buf, "%03d:%03d(%s)%03d(%s)", dst.src, dst.timer, timerName(dst.timer), dst.op1, dstName(dst.op1));
+                if (ImGui::Selectable(buf, selected_dst == i)) {
+                    selected_dst = i;
+                    DstViewTime = 0;
                 }
+                /*if (ImGui::BeginTooltip()) {
+                    ImGui::Text("%03d(%s)\n%03d(%s)", dst.op2, dstName(dst.op2), dst.op3, dstName(dst.op3));
+                    ImGui::EndTooltip();
+                }*/
                 ImGui::PopID();
             }
         }
@@ -1632,10 +1672,11 @@ int WORKSPACE::drawDstView() {
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
             ImGui::Text("dst animation");
-            //const ImVec2 pb = ImGui::GetCursorScreenPos();
+            const ImVec2 pb = ImGui::GetCursorPos();
             //ImVec2 bgSize = { skinSizeX,skinSizeY };
             //draw_list->AddRectFilled(pb, { skinSizeX + pb.x,skinSizeY + pb.y }, 0xFF000000, 0, ImDrawFlags_None);
             ImGui::Image(transBackground, { (float)skinSizeX, (float)skinSizeY }, { 0,0 }, { skinSizeX / (float)32.0, skinSizeY / (float)32.0 });
+            const ImVec2 belowImage = ImGui::GetCursorPos();
             //ImGui::SetCursorScreenPos(pb);
 
             DST* dst = ((DST*)arr_DST.data);
@@ -1643,21 +1684,64 @@ int WORKSPACE::drawDstView() {
             //draw_list->AddRectFilled({ pb.x + (float)dst[i].x, pb.y + (float)dst[i].y }, { pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h }, (0xFF000000 | (0xFF0000 >> i)), 0, ImDrawFlags_None);
 
             for (int i = 0; i < arr_DST.count; i++) {
-               //ImGui::SetCursorScreenPos(pb);
+                //ImVec2 pos = { pb.x + dst[i].x, pb.y + dst[i].y };
+                
                 /*draw_list->AddRectFilled({pb.x + (float)dst[i].x, pb.y + (float)dst[i].y}, {pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h}, (0xFF000000 | (0xFF0000 >> i)), 0, ImDrawFlags_None); */
-                if (i == selected_dst){
+                if (i == selected_dst) {
                     //draw_list->AddRectFilled({ pb.x + (float)dst[i].x, pb.y + (float)dst[i].y }, { pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h }, (0xFF000000 | (0xFF0000)), 0, ImDrawFlags_None);
                     if (dst[i].src != -1) {
-                        drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src, dst[i].x, dst[i].y);
+
+                        float dx, dy;
+                        for (int ani = 0; ani < dst->arr_animation.count - 1; ani++)
+                        {
+                            DST_ANIMATION dstdNow = ((DST_ANIMATION*)dst->arr_animation.data)[ani];
+                            DST_ANIMATION dstdNext = ((DST_ANIMATION*)dst->arr_animation.data)[ani + 1];
+                            if (ani == 0 && DstViewTime < dstdNow.time) {
+                                dx = dstdNow.x;
+                                dy = dstdNow.y;
+                                break;
+                            }
+                            else if (dstdNow.time <= DstViewTime && DstViewTime < dstdNext.time) {
+                                dx = ChangeValueByTime(dstdNow.x, dstdNext.x, dstdNow.time, dstdNext.time, DstViewTime, dstdNow.acc);
+                                dy = ChangeValueByTime(dstdNow.y, dstdNext.y, dstdNow.time, dstdNext.time, DstViewTime, dstdNow.acc);
+                                break;
+                            }
+                            else if (ani == (dst->arr_animation.count - 2)) {
+                                dx = dstdNext.x;
+                                dy = dstdNext.y;
+                                break;
+                            }
+                        }
+
+                        ImVec2 pos = { pb.x + dx, pb.y + dy };
+                        ImGui::SetCursorPos(pos);
+
+                        drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src);
                     }
+                     
                 }
                 //DSTDbyTime()
+
                 //drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src, dst[i].x, dst[i].y);
             }
 
             //skinSizeX;
             //skinSizeY;
             //zoom in zoom out
+
+            
+            ImGui::SetCursorPos(belowImage);
+            snprintf(title, sizeof(title), "dstAnimationViewTimer##%d", num);
+            ImGui::SliderFloat(title, &DstViewTime, 0, 12000, "%.0f", 0);// ImGuiSliderFlags_)
+            
+            dst = &((DST*)arr_DST.data)[selected_dst];
+            ImGui::Text("%s %dlines", dst->name, dst->animation);
+            for (int i = 0; i < dst->arr_animation.count; i++)
+            {
+                DST_ANIMATION dstd = ((DST_ANIMATION*)dst->arr_animation.data)[i];
+                ImGui::Text("%d %.0f %.0f %.0f %.0f", dstd.time, dstd.x, dstd.y, dstd.w, dstd.h);
+            }
+            
         }
         ImGui::EndChild();
     }

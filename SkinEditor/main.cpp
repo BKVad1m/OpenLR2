@@ -203,6 +203,7 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
                     work->alive = true;
                     work->num = workspaceList.count - 1;
                     snprintf(work->title, 260, "Workspace %d", workspaceList.count -1);
+                    work->init();
                     /*//if (workspaceList.count == workspaceList.bufSize) ReallocWorkspace(workspaceList.count + 1);
                     if (workspaceList.count == workspaceList.bufSize) workspaceList.Realloc(workspaceList.count + 1);
                     ((WORKSPACE*)(workspaceList.data))[workspaceList.count].alive = true;
@@ -223,17 +224,9 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
             
             ImGui::EndMainMenuBar();
         }
-        
-        const ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->WorkPos);
-        ImGui::SetNextWindowSize(viewport->WorkSize);
-        if(ImGui::Begin("dockspace") ){
-            
-        }
-        ImGui::End();
 
         for (int i = 0; i < workspaceList.count; i++) {
-            
+
             //char dock[64];
             //snprintf(dock, sizeof(dock), "dock%d", i);
             //ImGuiID dockspace_id = ImGui::GetID(dock);
@@ -244,7 +237,7 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
 
             WORKSPACE* arr = (WORKSPACE*)(workspaceList.data);
             if (arr[i].alive) {
-                
+
                 arr[i].draw();
             }
         }
