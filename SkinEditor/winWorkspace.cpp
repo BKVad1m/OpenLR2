@@ -65,8 +65,8 @@ int WORKSPACE::init() {
 int WORKSPACE::draw() {
     
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(viewport->WorkPos);
-    ImGui::SetNextWindowSize(viewport->WorkSize);
+    //ImGui::SetNextWindowPos(viewport->WorkPos);
+    //ImGui::SetNextWindowSize(viewport->WorkSize);
 
     ImGui::Begin(title, &alive, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings);
 
@@ -546,6 +546,57 @@ int WORKSPACE::ParseSkin() {
             dst->animation++;
             dst->leadDST = currentLeadDST;
         }
+        else if (read.csv.str[0].isSame("#DST_BUTTON")) {
+
+
+            DST* dst;
+            if (srcNow > srcOld) {
+                dst = (DST*)(arr_DST.Get_new());
+
+                dst->name.assign(dstName(dst->op1));
+                dst->animation = 0;
+                currentLeadDST = arr_DST.count - 1;
+                dst->src = srcNow;
+
+                dst->arr_animation.Alloc(sizeof(DST_ANIMATION), 1);
+                srcOld = srcNow;
+            }
+            else {
+                dst = &(((DST*)arr_DST.data)[currentLeadDST]);
+            }
+
+            DST_ANIMATION* dstd = (DST_ANIMATION*)(dst->arr_animation.Get_new());
+
+            dstd->time = read.csv.val[2];
+            dstd->x = read.csv.val[3];
+            dstd->y = read.csv.val[4];
+            dstd->w = read.csv.val[5];
+            dstd->h = read.csv.val[6];
+
+            dstd->acc = read.csv.val[7];
+            dstd->a = read.csv.val[8];
+            dstd->r = read.csv.val[9];
+            dstd->g = read.csv.val[10];
+            dstd->b = read.csv.val[11];
+
+            dstd->blend = read.csv.val[12];
+            dstd->filter = read.csv.val[13];
+            dstd->angle = read.csv.val[14];
+            dstd->center = read.csv.val[15];
+
+            if (dst->animation == 0) {
+                dst->loop = read.csv.val[16];
+                dst->timer = read.csv.val[17];
+
+                dst->op1 = read.csv.val[18];
+                dst->op2 = read.csv.val[19];
+                dst->op3 = read.csv.val[20];
+                dst->op4 = read.csv.val[21];
+                //op5 is on 22??
+            }
+            dst->animation++;
+            dst->leadDST = currentLeadDST;
+            }
 
         else if (read.csv.str[0].isSame("#SRC_NUMBER")) { 
 
@@ -1672,30 +1723,31 @@ int WORKSPACE::drawDstView() {
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
             ImGui::Text("dst animation");
+            ImGui::SameLine(0, 0);
+            ImGui::ColorEdit4("MyColor##3", (float*)&bgColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_None);
+            const ImVec2 pbs = ImGui::GetCursorScreenPos();
+
             const ImVec2 pb = ImGui::GetCursorPos();
-            //ImVec2 bgSize = { skinSizeX,skinSizeY };
-            //draw_list->AddRectFilled(pb, { skinSizeX + pb.x,skinSizeY + pb.y }, 0xFF000000, 0, ImDrawFlags_None);
+            ImGui::SetCursorPos(pb);
             ImGui::Image(transBackground, { (float)skinSizeX, (float)skinSizeY }, { 0,0 }, { skinSizeX / (float)32.0, skinSizeY / (float)32.0 });
             const ImVec2 belowImage = ImGui::GetCursorPos();
-            //ImGui::SetCursorScreenPos(pb);
+
+            draw_list->AddRectFilled(pbs, { skinSizeX + pbs.x,skinSizeY + pbs.y }, ImGui::GetColorU32(bgColor), 0, ImDrawFlags_None);
 
             DST* dst = ((DST*)arr_DST.data);
-
-            //draw_list->AddRectFilled({ pb.x + (float)dst[i].x, pb.y + (float)dst[i].y }, { pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h }, (0xFF000000 | (0xFF0000 >> i)), 0, ImDrawFlags_None);
 
             for (int i = 0; i < arr_DST.count; i++) {
                 //ImVec2 pos = { pb.x + dst[i].x, pb.y + dst[i].y };
                 
-                /*draw_list->AddRectFilled({pb.x + (float)dst[i].x, pb.y + (float)dst[i].y}, {pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h}, (0xFF000000 | (0xFF0000 >> i)), 0, ImDrawFlags_None); */
                 if (i == selected_dst) {
-                    //draw_list->AddRectFilled({ pb.x + (float)dst[i].x, pb.y + (float)dst[i].y }, { pb.x + (float)dst[i].x + dst[i].w, pb.y + (float)dst[i].y + dst[i].h }, (0xFF000000 | (0xFF0000)), 0, ImDrawFlags_None);
+                    
                     if (dst[i].src != -1) {
 
                         float dx, dy;
-                        for (int ani = 0; ani < dst->arr_animation.count - 1; ani++)
+                        for (int ani = 0; ani < dst[i].arr_animation.count - 1; ani++)
                         {
-                            DST_ANIMATION dstdNow = ((DST_ANIMATION*)dst->arr_animation.data)[ani];
-                            DST_ANIMATION dstdNext = ((DST_ANIMATION*)dst->arr_animation.data)[ani + 1];
+                            DST_ANIMATION dstdNow = ((DST_ANIMATION*)dst[i].arr_animation.data)[ani];
+                            DST_ANIMATION dstdNext = ((DST_ANIMATION*)dst[i].arr_animation.data)[ani + 1];
                             if (ani == 0 && DstViewTime < dstdNow.time) {
                                 dx = dstdNow.x;
                                 dy = dstdNow.y;
@@ -1720,7 +1772,7 @@ int WORKSPACE::drawDstView() {
                     }
                      
                 }
-                //DSTDbyTime()
+                
 
                 //drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src, dst[i].x, dst[i].y);
             }
@@ -1732,7 +1784,15 @@ int WORKSPACE::drawDstView() {
             
             ImGui::SetCursorPos(belowImage);
             snprintf(title, sizeof(title), "dstAnimationViewTimer##%d", num);
-            ImGui::SliderFloat(title, &DstViewTime, 0, 12000, "%.0f", 0);// ImGuiSliderFlags_)
+            DstViewTime = GetTimeLapse(1, &g.timer1);
+            ImGui::SliderFloat(title, &DstViewTime, 0, 240000, "%.0f", 0);// ImGuiSliderFlags_)
+            if(ImGui::Button("PLAY")) {
+                SetTimeLapse(1,&g.timer1);
+            }
+            ImGui::SameLine(0, 0);
+            if (ImGui::Button("RESET")) {
+                ResetTimeLapse(1,&g.timer1);
+            }
             
             dst = &((DST*)arr_DST.data)[selected_dst];
             ImGui::Text("%s %dlines", dst->name, dst->animation);
