@@ -8,6 +8,9 @@
         "value": "Win32",
         "strategy": "set"
       },
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS_INIT": "/arch:IA32"
+      },
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -18,7 +21,7 @@
       "name": "windows-vs-asan",
       "inherits": "windows-vs",
       "cacheVariables": {
-        "CMAKE_CXX_FLAGS_INIT": "/fsanitize=address"
+        "CMAKE_CXX_FLAGS_INIT": "/arch:IA32 /fsanitize=address"
       }
     }
   ],
