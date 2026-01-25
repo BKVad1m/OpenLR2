@@ -25,7 +25,7 @@ int LoadCommandHelp(const char* file) { //temp function, later hardcoded... with
 		if (*fBuf.atPos(0) == '#') {
 			fBuf.trimWhiteSpace();
 			
-			CSVbuf* nCsv = (CSVbuf*)arr_CommandHelp.Get_new(); //.push_back(&csv);
+			CSVbuf* nCsv = (CSVbuf*)(arr_CommandHelp.Get_new()); //.push_back(&csv);
 			SplitCSV(fBuf, nCsv, ",");
 		}
 	}

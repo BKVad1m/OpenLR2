@@ -100,6 +100,7 @@ typedef struct DST_ANIMATION{
 
 typedef struct SKINUNIT {
     int ID;
+    int type; //0:text 1:buttoon 2:slider 3:onmouse 4:BGA 5:bargraph 6:number 7:mask //10:img
     CSTR name{ "noname" };
 
     SRC src;
@@ -108,7 +109,7 @@ typedef struct SKINUNIT {
 
 typedef enum HISTORYOP {
     overwriteLine,
-    addLine,
+    insertLine,
     removeLine,
     moveLine,
     group,
@@ -148,7 +149,6 @@ typedef struct WORKSPACE {
     ARR arr_SRCGR; //SRCGR
     ARR arr_SRC; //SRC
     ARR arr_DST; //DST
-    
 
 
     ARR arr_history; //HISTORY
@@ -226,13 +226,14 @@ typedef struct WORKSPACE {
     int drawSimplePreview();
 
     int drawSrc(int iSRCGR, int iSRCID);
-    int drawSrc(int iSRCGR, int iSRCID, int posX, int posY);
-
+    //int drawSrc(int iSRCGR, int iSRCID, int posX, int posY);
+    int drawSrc(int iSRCGR, int iSRCID, int posX, int posY, int w = -1, int h = -1, bool stretch = 0);
     //dstview
     bool wDstView;
     int drawDstView();
     int selected_dst;
     float DstViewTime;
+    bool isDstViewTimeStop;
 
 }WORKSPACE;
 

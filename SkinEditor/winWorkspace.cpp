@@ -269,19 +269,20 @@ int WORKSPACE::ParseSkin() {
 
     int srcNow = -1;
     int srcOld = -1;
-    
-    LoadCommandHelp("skinHelper.txt");
 
     for (int i = 0; i < skinfileLines.count; i++) {
         SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[i];
         bool isif = false;
-        
+
         if (i == 0) {
             IFUNIT tif;
             arr_ifunit.push_back(&tif);
         }
 
-        if (read.line.left(strlen("#IF")).isSame("#IF")) {
+        if (read.isComment) continue;
+
+        //if (read.line.left(strlen("#IF")).isSame("#IF")) {
+        if (read.csv.str[0].isSame("#IF")) {
             
             IFdepth++;
 
@@ -301,7 +302,7 @@ int WORKSPACE::ParseSkin() {
             read.ifgroup = IFcur;
 
         }
-        else if (read.line.left(strlen("#ELSEIF")).isSame("#ELSEIF")) {
+        else if (read.csv.str[0].isSame("#ELSEIF")) {
             isif = true;
 
             IFUNIT tif;
@@ -353,12 +354,11 @@ int WORKSPACE::ParseSkin() {
             read.ifgroup = IFcur + cOrder;
         }
 
-
         if (isif) continue;
 
 
         if (read.csv.str[0].isSame("#CUSTOMFILE")) {
-            CSTR* tmpstr = (CSTR*)arr_CustomFile.Get_new();
+            CSTR* tmpstr = (CSTR*)(arr_CustomFile.Get_new());
             tmpstr->assign(read.csv.str[2]);
         }
 
@@ -404,7 +404,7 @@ int WORKSPACE::ParseSkin() {
                     do {
                         if (strcmp("..", (char*)FindFileData.cFileName) && strcmp(".", (char*)FindFileData.cFileName)) {
 
-                            SRCGR* tmp2 = (SRCGR*)arr_SRCGR.Get_new();
+                            SRCGR* tmp2 = (SRCGR*)(arr_SRCGR.Get_new());
                             tmp2->path.assign(str1);
                             tmp2->path.add(FindFileData.cFileName);
                             tmp2->filename.assign(FindFileData.cFileName);
@@ -425,7 +425,6 @@ int WORKSPACE::ParseSkin() {
 
         ////////////////
 
-        //if () {}
         if (read.csv.str[0].isSame("#SRC_IMAGE")) {
 
             if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP || 
@@ -461,59 +460,28 @@ int WORKSPACE::ParseSkin() {
 
             srcNow++;
         }
-        //else if (read.csv.str[0].isSame("#DST_IMAGE")) {
 
-        //    DST* dst = (DST*)(arr_DST.Get_new());
-
-        //    dst->src = srcNow;
-
-        //    dst->time = read.csv.val[2];
-        //    dst->x = read.csv.val[3];
-        //    dst->y = read.csv.val[4];
-        //    dst->w = read.csv.val[5];
-        //    dst->h = read.csv.val[6];
-
-        //    dst->acc = read.csv.val[7];
-        //    dst->a = read.csv.val[8];
-        //    dst->r = read.csv.val[9];
-        //    dst->g = read.csv.val[10];
-        //    dst->b = read.csv.val[11];
-
-        //    dst->blend = read.csv.val[12];
-        //    dst->filter = read.csv.val[13];
-        //    dst->angle = read.csv.val[14];
-        //    dst->center = read.csv.val[15];
-        //    
-        //    //
-        //    dst->loop = read.csv.val[16];
-        //    dst->timer = read.csv.val[17];
-
-        //    dst->op1 = read.csv.val[18];
-        //    dst->op2 = read.csv.val[19];
-        //    dst->op3 = read.csv.val[20];
-        //    dst->op4 = read.csv.val[21];
-        //    //WIP
-        //}
-
-        else if (read.csv.str[0].isSame("#DST_IMAGE")) {
-
+        else if (read.csv.str[0].isSame("#DST_IMAGE") || read.csv.str[0].isSame("#DST_SLIDER") || read.csv.str[0].isSame("#DST_BUTTON") 
+            || read.csv.str[0].isSame("#DST_BARGRAPH") || read.csv.str[0].isSame("#DST_NUMBER") || read.csv.str[0].isSame("#DST_TEXT") || read.csv.str[0].isSame("#DST_ONMOUSE")) {
             
-            DST* dst;
+            DST* dst = NULL;
             if (srcNow > srcOld) {
                 dst = (DST*)(arr_DST.Get_new());
 
                 dst->name.assign(dstName(dst->op1));
                 dst->animation = 0;
-                currentLeadDST = arr_DST.count-1;
+                currentLeadDST = arr_DST.count - 1;
                 dst->src = srcNow;
 
+                dst->arr_animation.Free();
                 dst->arr_animation.Alloc(sizeof(DST_ANIMATION), 1);
                 srcOld = srcNow;
             }
-            else {
+            else {// if(srcNow == srcOld){
                 dst = &(((DST*)arr_DST.data)[currentLeadDST]);
             }
             
+            if (!dst) continue;
             DST_ANIMATION* dstd = (DST_ANIMATION*)(dst->arr_animation.Get_new());
 
             dstd->time = read.csv.val[2];
@@ -546,57 +514,9 @@ int WORKSPACE::ParseSkin() {
             dst->animation++;
             dst->leadDST = currentLeadDST;
         }
-        else if (read.csv.str[0].isSame("#DST_BUTTON")) {
+        else if (read.csv.str[0].isSame("#DST_BGA")) {
 
-
-            DST* dst;
-            if (srcNow > srcOld) {
-                dst = (DST*)(arr_DST.Get_new());
-
-                dst->name.assign(dstName(dst->op1));
-                dst->animation = 0;
-                currentLeadDST = arr_DST.count - 1;
-                dst->src = srcNow;
-
-                dst->arr_animation.Alloc(sizeof(DST_ANIMATION), 1);
-                srcOld = srcNow;
-            }
-            else {
-                dst = &(((DST*)arr_DST.data)[currentLeadDST]);
-            }
-
-            DST_ANIMATION* dstd = (DST_ANIMATION*)(dst->arr_animation.Get_new());
-
-            dstd->time = read.csv.val[2];
-            dstd->x = read.csv.val[3];
-            dstd->y = read.csv.val[4];
-            dstd->w = read.csv.val[5];
-            dstd->h = read.csv.val[6];
-
-            dstd->acc = read.csv.val[7];
-            dstd->a = read.csv.val[8];
-            dstd->r = read.csv.val[9];
-            dstd->g = read.csv.val[10];
-            dstd->b = read.csv.val[11];
-
-            dstd->blend = read.csv.val[12];
-            dstd->filter = read.csv.val[13];
-            dstd->angle = read.csv.val[14];
-            dstd->center = read.csv.val[15];
-
-            if (dst->animation == 0) {
-                dst->loop = read.csv.val[16];
-                dst->timer = read.csv.val[17];
-
-                dst->op1 = read.csv.val[18];
-                dst->op2 = read.csv.val[19];
-                dst->op3 = read.csv.val[20];
-                dst->op4 = read.csv.val[21];
-                //op5 is on 22??
-            }
-            dst->animation++;
-            dst->leadDST = currentLeadDST;
-            }
+        }
 
         else if (read.csv.str[0].isSame("#SRC_NUMBER")) { 
 
@@ -634,8 +554,10 @@ int WORKSPACE::ParseSkin() {
                 sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
             }
             src->name.assign(tmp);
-        }
 
+            srcNow++;
+        }
+        
         else if (read.csv.str[0].isSame("#SRC_SLIDER")) {
 
             if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
@@ -673,8 +595,51 @@ int WORKSPACE::ParseSkin() {
                 sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
             }
             src->name.assign(tmp);
-        }
 
+            srcNow++;
+        }
+        else if (read.csv.str[0].isSame("#SRC_BUTTON")) {
+
+            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
+                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) {
+                srcNow++; continue;
+            }
+
+            SRC* src = (SRC*)(arr_SRC.Get_new());
+
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7];
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->type = read.csv.val[11];
+            src->click = read.csv.val[12];
+            src->panel = read.csv.val[13];
+            src->plusonly = read.csv.val[14];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer || src->type) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), buttonName(src->type), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+
+            srcNow++;
+        }
         else if (read.csv.str[0].isSame("#SRC_BARGRAPH")) {
 
             if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
@@ -710,9 +675,10 @@ int WORKSPACE::ParseSkin() {
                 sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
             }
             src->name.assign(tmp);
-         }
 
-        else if (read.csv.str[0].isSame("#SRC_BUTTON")) {
+            srcNow++;
+         }
+        else if (read.csv.str[0].isSame("#SRC_TEXT")) {
 
             if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
                 read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
@@ -728,63 +694,105 @@ int WORKSPACE::ParseSkin() {
 
             src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
             src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
-                
-            src->div_x = read.csv.val[7];
+
+            src->div_x = read.csv.val[7]; //have to be 10, 11, 24 set divs
             src->div_y = read.csv.val[8];
             src->cycle = read.csv.val[9];
             src->timer = read.csv.val[10];
 
-            src->type = read.csv.val[11];
-            src->click = read.csv.val[12];
-            src->panel = read.csv.val[13];
-            src->plusonly = read.csv.val[14];
+            src->num = read.csv.val[11];
+            src->align = read.csv.val[12];
+            src->keta = read.csv.val[13];
 
             src->declare = read.numTotal;
 
             char tmp[260];
             if (src->timer || src->type) {
-                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), buttonName(src->type), src->sizeX, src->sizeY, read.numTotal);
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), numberName(src->num), src->sizeX, src->sizeY, read.numTotal);
             }
             else {
                 sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
             }
             src->name.assign(tmp);
-
             srcNow++;
         }
-        //else if (read.csv.str[0].isSame("#DST_BUTTON")) {
+        else if (read.csv.str[0].isSame("#SRC_ONMOUSE")) {
 
-        //    DST* dst = (DST*)(arr_DST.Get_new());
+            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
+                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
 
-        //    dst->src = srcNow;
+            SRC* src = (SRC*)(arr_SRC.Get_new());
 
-        //    dst->time = read.csv.val[2];
-        //    dst->x = read.csv.val[3];
-        //    dst->y = read.csv.val[4];
-        //    dst->w = read.csv.val[5];
-        //    dst->h = read.csv.val[6];
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
 
-        //    dst->acc = read.csv.val[7];
-        //    dst->a = read.csv.val[8];
-        //    dst->r = read.csv.val[9];
-        //    dst->g = read.csv.val[10];
-        //    dst->b = read.csv.val[11];
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
 
-        //    dst->blend = read.csv.val[12];
-        //    dst->filter = read.csv.val[13];
-        //    dst->angle = read.csv.val[14];
-        //    dst->center = read.csv.val[15];
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
 
-        //    dst->loop = read.csv.val[16];
-        //    dst->timer = read.csv.val[17];
+            src->div_x = read.csv.val[7]; //have to be 10, 11, 24 set divs
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
 
-        //    dst->op1 = read.csv.val[18];
-        //    dst->op2 = read.csv.val[19];
-        //    dst->op3 = read.csv.val[20];
-        //    dst->op4 = read.csv.val[21];
-        //    //WIP
-        //}
+            src->num = read.csv.val[11];
+            src->align = read.csv.val[12];
+            src->keta = read.csv.val[13];
 
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer || src->type) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), numberName(src->num), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+            }
+        else if (read.csv.str[0].isSame("#SRC_BGA")) {
+
+            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
+                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
+
+            SRC* src = (SRC*)(arr_SRC.Get_new());
+
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7]; //have to be 10, 11, 24 set divs
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->num = read.csv.val[11];
+            src->align = read.csv.val[12];
+            src->keta = read.csv.val[13];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer || src->type) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), numberName(src->num), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+            srcNow++;
+        }
+
+        
     }
     
 
@@ -926,7 +934,7 @@ int WORKSPACE::drawCustomize() {
     for (int i = 0; i < meta.custom_count; i++) {
         SkinCustom& cu = meta.customs[i];
 
-        ImGui::Text("%s", cu.title);
+        ImGui::Text("%s", cu.title.outstr());
         ImGui::SameLine();
         
         char item[64];
@@ -1103,7 +1111,7 @@ int WORKSPACE::drawTextEdit() {
                 {
                     ImGui::TableSetColumnIndex(column);
                     if (read.csv.str[column].atPos(0) == nullptr) {
-                        ImGui::TextDisabled("%s", read.csv.str[column]);
+                        ImGui::TextDisabled("%s", read.csv.str[column].outstr());
                     }
                     else {
                         //ImGui::Text("%s", read.csv.str[column]);
@@ -1117,7 +1125,7 @@ int WORKSPACE::drawTextEdit() {
                     if (ImGui::BeginItemTooltip())
                     {
                         //ImGui::Text("%d",ifs.grCount);
-                        ImGui::Text("%s", GetCommandHelp(read.csv.str[0], column));
+                        ImGui::Text("%s", GetCommandHelp(read.csv.str[0].outstr(), column).outstr());
                         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                         ImGui::TextUnformatted(read.csv.str[column]);
                         if (read.csv.str[0].isSame("#SRC_IMAGE")) {
@@ -1369,7 +1377,7 @@ int WORKSPACE::drawImgManager() {
     return 0;
 }
 
-int WORKSPACE::drawSrc(int iSRCGR, int iSRCID, int posX, int posY) {
+int WORKSPACE::drawSrc(int iSRCGR, int iSRCID, int posX, int posY, int w, int h, bool stretch) {
     SRCGR& img = ((SRCGR*)arr_SRCGR.data)[iSRCGR];
 
     if (img.texture != NULL) {
@@ -1377,9 +1385,17 @@ int WORKSPACE::drawSrc(int iSRCGR, int iSRCID, int posX, int posY) {
 
         int sizeX = src.sizeX == -1 ? img.sizeX - src.x : src.sizeX;
         int sizeY = src.sizeY == -1 ? img.sizeY - src.y : src.sizeY;
-        ImVec2 display_min = ImVec2(src.x / (float)img.sizeX, src.y / (float)img.sizeY);
-        ImVec2 display_max = ImVec2((src.x + sizeX) / (float)img.sizeX, (src.y + sizeY) / (float)img.sizeY);
-        ImVec2 display_size = ImVec2(sizeX, sizeY);
+        ImVec2 display_min, display_max, display_size;
+        if (stretch) {
+            display_min = ImVec2(src.x / (float)img.sizeX, src.y / (float)img.sizeY);
+            display_max = ImVec2((src.x + sizeX) / (float)img.sizeX, (src.y + sizeY) / (float)img.sizeY);
+            display_size = ImVec2((float)w, (float)h);
+        }
+        else {
+            display_min = ImVec2(src.x / (float)img.sizeX, src.y / (float)img.sizeY);
+            display_max = ImVec2((src.x + sizeX) / (float)img.sizeX, (src.y + sizeY) / (float)img.sizeY);
+            display_size = ImVec2(sizeX, sizeY);
+        }
 
         if (src.cycle && (src.div_x >= 1 || src.div_y >= 1)) {
             if (src.div_x == 0) src.div_x = 1;
@@ -1507,12 +1523,12 @@ int WORKSPACE::drawFileManager() {
     ImGui::SeparatorText("Scripts");
     for (int i = 0; i < arr_subpath.count; i++) {
         CSTR& path = ((CSTR*)arr_subpath.data)[i];
-        ImGui::Text("%s", path);
+        ImGui::Text("%s", path.outstr());
     }
     ImGui::SeparatorText("Images");
     for (int i = 0; i < arr_SRCGR.count; i++) {
         SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
-        ImGui::Text("%02d(%03d) - %s %s", img.grID, img.isIf, img.path, img.fromWildcard? "from *":"");
+        ImGui::Text("%02d(%03d) - %s %s", img.grID, img.isIf, img.path.outstr(), img.fromWildcard? "from *":"");
     }
 
     ImGui::End();
@@ -1574,7 +1590,7 @@ int WORKSPACE::drawTreeView() {
                 
                 for (int p = 1; p < 24 - 1; p++) {
                     ImGui::TableNextColumn();
-                    ImGui::Text("%s", params[p]);
+                    ImGui::Text("%s", params[p].outstr());
                 };
             }
             
@@ -1703,15 +1719,19 @@ int WORKSPACE::drawDstView() {
                 DST& dst = ((DST*)arr_DST.data)[i];
 
                 char buf[260];
-                sprintf(buf, "%03d:%03d(%s)%03d(%s)", dst.src, dst.timer, timerName(dst.timer), dst.op1, dstName(dst.op1));
+                sprintf(buf, "%03d:%03d(%s)", dst.src, dst.timer, timerName(dst.timer));
                 if (ImGui::Selectable(buf, selected_dst == i)) {
                     selected_dst = i;
-                    DstViewTime = 0;
+                    SetTimeLapse(1, &g.timer1);
                 }
-                /*if (ImGui::BeginTooltip()) {
-                    ImGui::Text("%03d(%s)\n%03d(%s)", dst.op2, dstName(dst.op2), dst.op3, dstName(dst.op3));
-                    ImGui::EndTooltip();
-                }*/
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone)) {
+                    if(ImGui::BeginTooltip()) {
+                        if (dst.op1) ImGui::Text("%03d(%s)\n", dst.op1, dstName(dst.op1));
+                        if (dst.op2) ImGui::Text("%03d(%s)\n", dst.op2, dstName(dst.op2));
+                        if (dst.op3) ImGui::Text("%03d(%s)", dst.op3, dstName(dst.op3));
+                        ImGui::EndTooltip();
+                    }
+                }
                 ImGui::PopID();
             }
         }
@@ -1743,32 +1763,71 @@ int WORKSPACE::drawDstView() {
                     
                     if (dst[i].src != -1) {
 
-                        float dx, dy;
-                        for (int ani = 0; ani < dst[i].arr_animation.count - 1; ani++)
-                        {
-                            DST_ANIMATION dstdNow = ((DST_ANIMATION*)dst[i].arr_animation.data)[ani];
-                            DST_ANIMATION dstdNext = ((DST_ANIMATION*)dst[i].arr_animation.data)[ani + 1];
-                            if (ani == 0 && DstViewTime < dstdNow.time) {
-                                dx = dstdNow.x;
-                                dy = dstdNow.y;
-                                break;
+                        float dx, dy, dw, dh;
+                        float da, dr, dg, db;
+
+                        DST_ANIMATION dstdFirst = ((DST_ANIMATION*)dst[i].arr_animation.data)[0];
+                        DST_ANIMATION dstdLast = ((DST_ANIMATION*)dst[i].arr_animation.data)[dst->arr_animation.count-1];
+
+                        int tStart = dstdFirst.time;
+                        int tEnd = dstdLast.time;
+                        DstViewTime;
+                        dst->loop;
+                        int t = tEnd;
+                        int ani;
+
+                        if (tStart <= tEnd && tStart <= DstViewTime && (0 <= dst->loop || DstViewTime <= tEnd)) {
+                            if (tStart == tEnd || dst->loop == tEnd) {
+                                if (DstViewTime < t) {
+                                    t = DstViewTime;
+                                }
                             }
-                            else if (dstdNow.time <= DstViewTime && DstViewTime < dstdNext.time) {
-                                dx = ChangeValueByTime(dstdNow.x, dstdNext.x, dstdNow.time, dstdNext.time, DstViewTime, dstdNow.acc);
-                                dy = ChangeValueByTime(dstdNow.y, dstdNext.y, dstdNow.time, dstdNext.time, DstViewTime, dstdNow.acc);
-                                break;
+                            else if (dst->loop < tEnd) {
+                                t = DstViewTime;
+                                if (tEnd < t) {
+                                    t = (int)(DstViewTime - dst->loop) % (tEnd - dst->loop) + dst->loop;
+                                }
                             }
-                            else if (ani == (dst->arr_animation.count - 2)) {
-                                dx = dstdNext.x;
-                                dy = dstdNext.y;
-                                break;
+                            else {
+                                t = 0;
                             }
+
+                            ani = 0;
+                            for (int j = 0; j < dst->arr_animation.count; j++) {
+                                if (((DST_ANIMATION*)dst[i].arr_animation.data)[j].time <= t) {
+                                    ani = j;
+                                }
+                            }
+                            DST_ANIMATION dstd1 = ((DST_ANIMATION*)dst[i].arr_animation.data)[ani];
+                            if (t != dstd1.time && ani != dst->arr_animation.count-1) {
+                                DST_ANIMATION dstd2 = ((DST_ANIMATION*)dst[i].arr_animation.data)[ani+1];
+                                dx = ChangeValueByTime(dstd1.x, dstd2.x, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                                dy = ChangeValueByTime(dstd1.y, dstd2.y, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                                dw = ChangeValueByTime(dstd1.w, dstd2.w, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                                dh = ChangeValueByTime(dstd1.h, dstd2.h, dstd1.time, dstd2.time, t, dstdFirst.acc);
+
+                                da = ChangeValueByTime(dstd1.a, dstd2.a, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                                dr = ChangeValueByTime(dstd1.r, dstd2.r, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                                dg = ChangeValueByTime(dstd1.g, dstd2.g, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                                db = ChangeValueByTime(dstd1.b, dstd2.b, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                            }
+                            else {
+                                dx = dstd1.x;
+                                dy = dstd1.y;
+                                dw = dstd1.w;
+                                dh = dstd1.h;
+
+                                da = dstd1.a;
+                                dr = dstd1.r;
+                                dg = dstd1.g;
+                                db = dstd1.b;
+                            }
+                            ImVec2 pos = { pb.x + dx, pb.y + dy };
+                            ImGui::SetCursorPos(pos);
+
+                            drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src, 0, 0, dw, dh, 1);
+                            
                         }
-
-                        ImVec2 pos = { pb.x + dx, pb.y + dy };
-                        ImGui::SetCursorPos(pos);
-
-                        drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src);
                     }
                      
                 }
@@ -1784,18 +1843,25 @@ int WORKSPACE::drawDstView() {
             
             ImGui::SetCursorPos(belowImage);
             snprintf(title, sizeof(title), "dstAnimationViewTimer##%d", num);
-            DstViewTime = GetTimeLapse(1, &g.timer1);
+            if (!isDstViewTimeStop) {
+                DstViewTime = GetTimeLapse(1, &g.timer1);
+            }
             ImGui::SliderFloat(title, &DstViewTime, 0, 240000, "%.0f", 0);// ImGuiSliderFlags_)
             if(ImGui::Button("PLAY")) {
                 SetTimeLapse(1,&g.timer1);
+                isDstViewTimeStop = 0;
             }
             ImGui::SameLine(0, 0);
-            if (ImGui::Button("RESET")) {
+            if (ImGui::Button("STOP")) {
                 ResetTimeLapse(1,&g.timer1);
+                isDstViewTimeStop = 1;
             }
             
             dst = &((DST*)arr_DST.data)[selected_dst];
-            ImGui::Text("%s %dlines", dst->name, dst->animation);
+            if (dst->op1) ImGui::Text("%03d(%s)\n", dst->op1, dstName(dst->op1));
+            if (dst->op2) ImGui::Text("%03d(%s)\n", dst->op2, dstName(dst->op2));
+            if (dst->op3) ImGui::Text("%03d(%s)", dst->op3, dstName(dst->op3));
+            ImGui::Text("%s %dlines", dst->name.outstr(), dst->animation);
             for (int i = 0; i < dst->arr_animation.count; i++)
             {
                 DST_ANIMATION dstd = ((DST_ANIMATION*)dst->arr_animation.data)[i];

@@ -23,6 +23,7 @@
 
 
 #include "winWorkspace.h"
+#include "seHelper.h"
 
 #ifdef __EMSCRIPTEN__
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
@@ -107,6 +108,7 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
     bool show_simple_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    LoadCommandHelp("skinHelper.txt");
     makeTransBackground();
 
     ChangeWindowMode(1);
