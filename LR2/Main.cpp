@@ -159,11 +159,11 @@ int main(int argc, char** argv) {
 		tStr1.assign(argv[i]);
 		CSTR tStr2(tStr1);
 		tStr2.lower();
-		if (IsBmsFile(tStr2)) {
+		if (IsBmsFile(tStr1)) {
 			gs.cmd_directplay = true;
 			gs.directoryPath.assign(&tStr1);
 		}
-		else if (IsMediaFile(tStr2)) {
+		else if (IsMediaFile(tStr1)) {
 			gs.directoryFilename.assign(&tStr1);
 			gs.config.system.vsync = 1;
 			gs.config.system.screenmode = 1;
