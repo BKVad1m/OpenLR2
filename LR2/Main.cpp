@@ -1,6 +1,4 @@
-﻿// /source-charset:shift-JIS /execution-charset:shift-JIS not supported in cl.exe on vs08. open your vs08 with locale emulation(cp932)
-
-#include "structure.h"
+﻿#include "structure.h"
 #include "Engine.h"
 #include "LR2.h"
 #include "Scenes.h"
