@@ -617,7 +617,7 @@ const char* dstName(unsigned n) {
 		case 997: return "CUSTOM997";
 		case 998: return "CUSTOM998";
 
-		case 999: return "Alwaysfals";
+		case 999: return "Alwaysfalse";
 
 
 		default: return "";

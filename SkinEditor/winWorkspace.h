@@ -85,6 +85,8 @@ typedef struct DST {
     int loop, timer;
     int op1, op2, op3;
     int op4;//for turntable
+
+    int declare;
 }DST;
 
 typedef struct DST_ANIMATION{
@@ -103,9 +105,9 @@ typedef struct SKINUNIT {
     int type; //0:text 1:buttoon 2:slider 3:onmouse 4:BGA 5:bargraph 6:number 7:mask //10:img
     CSTR name{ "noname" };
 
-    SRC src;
-    DST dst;
-}SKINUNIT;
+    int src;
+    int dst;
+}SKINUNIT, SEOBJ;
 
 typedef enum HISTORYOP {
     overwriteLine,
@@ -150,6 +152,7 @@ typedef struct WORKSPACE {
     ARR arr_SRC; //SRC
     ARR arr_DST; //DST
 
+    ARR arr_seobj; //SKINUNIT, SEOBJ
 
     ARR arr_history; //HISTORY
     int previewScreen;
@@ -234,6 +237,12 @@ typedef struct WORKSPACE {
     int selected_dst;
     float DstViewTime;
     bool isDstViewTimeStop;
+
+    int MakeObjects();
+    bool wObjectManager;
+    int drawObjectManager();
+    int selected_obj;
+    
 
 }WORKSPACE;
 

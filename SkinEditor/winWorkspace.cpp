@@ -96,6 +96,7 @@ int WORKSPACE::draw() {
                 ImGui::MenuItem("treeVeiw", NULL, &wTreeView);
                 ImGui::MenuItem("SimplePreview", NULL, &wSimplePreview);
                 ImGui::MenuItem("dstView", NULL, &wDstView);
+                ImGui::MenuItem("objectManager", NULL, &wObjectManager);
                 ImGui::EndMenu();
             }
         }
@@ -121,6 +122,7 @@ int WORKSPACE::draw() {
     if (wTreeView) drawTreeView();
     if (wSimplePreview) drawSimplePreview();
     if (wDstView) drawDstView();
+    if (wObjectManager) drawObjectManager();
 
 
     return 0;
@@ -208,7 +210,7 @@ int WORKSPACE::ReadSkin(char* path) {
         
         SKINFILELINEREAD& readS = ((SKINFILELINEREAD*)skinfileLines.data)[skinfileLines.count];
         readS.line.resize(1024);
-        sprintf(readS.line, "$FILE %s start", path);
+        sprintf(readS.line, "$FILE \'%s\' start", path);
         readS.isComment = true;
         readS.isSEcomment = true;
         readS.numTotal = skinfileLines.count;
@@ -247,7 +249,7 @@ int WORKSPACE::ReadSkin(char* path) {
         }
         SKINFILELINEREAD& readE = ((SKINFILELINEREAD*)skinfileLines.data)[skinfileLines.count];
         readE.line.resize(1024);
-        sprintf(readE.line, "$FILE %s end", path);
+        sprintf(readE.line, "$FILE \'%s\' end", path);
         readE.isComment = true;
         readE.isSEcomment = true;
         readE.numTotal = skinfileLines.count;
@@ -427,9 +429,9 @@ int WORKSPACE::ParseSkin() {
 
         if (read.csv.str[0].isSame("#SRC_IMAGE")) {
 
-            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP || 
-                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview || 
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
+            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
+                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
 
             SRC *src = (SRC*)(arr_SRC.Get_new());
                         
@@ -472,6 +474,7 @@ int WORKSPACE::ParseSkin() {
                 dst->animation = 0;
                 currentLeadDST = arr_DST.count - 1;
                 dst->src = srcNow;
+                dst->declare = i;
 
                 dst->arr_animation.Free();
                 dst->arr_animation.Alloc(sizeof(DST_ANIMATION), 1);
@@ -522,7 +525,7 @@ int WORKSPACE::ParseSkin() {
 
             if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
                 read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -562,7 +565,7 @@ int WORKSPACE::ParseSkin() {
 
             if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
                 read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -602,9 +605,7 @@ int WORKSPACE::ParseSkin() {
 
             if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
                 read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) {
-                srcNow++; continue;
-            }
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -644,7 +645,7 @@ int WORKSPACE::ParseSkin() {
 
             if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
                 read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -682,7 +683,7 @@ int WORKSPACE::ParseSkin() {
 
             if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
                 read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -720,7 +721,7 @@ int WORKSPACE::ParseSkin() {
 
             if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
                 read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -757,7 +758,7 @@ int WORKSPACE::ParseSkin() {
 
             if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
                 read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) continue;
+                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -882,8 +883,12 @@ int WORKSPACE::LoadSkin(char* path) {
     for (int i = 0; i < arr_DST.count; i++)
         ((DST*)arr_DST.data)[i].arr_animation.Alloc(sizeof(DST_ANIMATION), 1);
 
+    arr_seobj.Free();
+    arr_seobj.Alloc(sizeof(SEOBJ),400);
+
     ReadSkin(path);
     ParseSkin();
+    MakeObjects();
 
     LR2SEInit(&g);
 
@@ -913,6 +918,21 @@ int WORKSPACE::LoadSkin(char* path) {
     //SetDrawScreen(previewScreen);
     //previewScreen = MakeSoftImage(640, 480);
     previewScreen = MakeARGB8ColorSoftImage(skinSizeX, skinSizeY);
+
+    return 0;
+}
+
+int WORKSPACE::MakeObjects() {
+
+    for (int i = 0; i < arr_DST.count; i++) {
+        SEOBJ* seobj = (SEOBJ*)arr_seobj.Get_new();
+        seobj->ID = i;
+        seobj->dst = i;
+        seobj->name.assign(((DST*)arr_DST.data)[i].name);
+        seobj->src = ((DST*)arr_DST.data)[i].src;
+    }
+    
+    
 
     return 0;
 }
@@ -1118,7 +1138,31 @@ int WORKSPACE::drawTextEdit() {
                         char inputname[260];
                         sprintf(inputname, "##%d_%d_cell", read.numTotal, column);
                         ImGui::SetNextItemWidth(-FLT_MIN);
-                        ImGui::InputText(inputname, read.csv.str[column], 260, ImGuiInputTextFlags_AutoSelectAll);
+
+                        
+                        if (GetCommandHelp(read.csv.str[0].outstr(), column).left(2).isSame("op")) {
+                            if (ImGui::BeginCombo(inputname, dstName(read.csv.val[column]), ImGuiComboFlags_None)) {
+                                ;
+                                for (int op = 0; op < 1000; op++) {
+                                    ImGui::PushID(op);
+                                    const bool is_selected = (read.csv.val[column] == op);
+                                    char opname[64];
+                                    sprintf(opname, "%03d:%s", op, dstName(op));
+
+                                    if (ImGui::Selectable(opname, is_selected))
+                                        read.csv.val[column] = op;
+
+                                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                    if (is_selected)
+                                        ImGui::SetItemDefaultFocus();
+
+                                    ImGui::PopID();
+                                }
+                                ImGui::EndCombo();
+                            }
+                        }
+                        else
+                            ImGui::InputText(inputname, read.csv.str[column], 260, ImGuiInputTextFlags_AutoSelectAll);
                         
                     }
 
@@ -1831,9 +1875,6 @@ int WORKSPACE::drawDstView() {
                     }
                      
                 }
-                
-
-                //drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src, dst[i].x, dst[i].y);
             }
 
             //skinSizeX;
@@ -1882,7 +1923,60 @@ int WORKSPACE::drawDstView() {
 //group should have both if / endif
 // new file to "skin wizard", which makes mockup and create texture template
 
+int WORKSPACE::drawObjectManager() {
 
+    char title[260];
+    snprintf(title, sizeof(title), "objectManager##%d", num);
+    if (ImGui::Begin(title, &wObjectManager)) {
+
+        snprintf(title, sizeof(title), "objList##%d", num);
+        if (ImGui::BeginChild(title, { 250,-1 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
+            for (int i = 0; i < arr_seobj.count; i++) {
+                ImGui::PushID(i);
+                SEOBJ& seobj = ((SEOBJ*)arr_seobj.data)[i];
+
+                char buf[260];
+                sprintf(buf, "%03d:%03d(%s)", seobj.src, seobj.dst, seobj.name.outstr());
+                if (ImGui::Selectable(buf, selected_obj == i)) {
+                    selected_obj = i;
+                }
+
+                ImGui::PopID();
+            }
+        }
+        ImGui::EndChild();
+        ImGui::SameLine();
+
+        SRC& src = ((SRC*)arr_SRC.data)[((SEOBJ*)arr_seobj.data)[selected_obj].src];
+        DST& dst = ((DST*)arr_DST.data)[((SEOBJ*)arr_seobj.data)[selected_obj].dst];
+
+        SKINFILELINEREAD* srcline = &((SKINFILELINEREAD*)skinfileLines.data)[src.declare];
+        SKINFILELINEREAD* dstline = &((SKINFILELINEREAD*)skinfileLines.data)[dst.declare];
+            
+        snprintf(title, sizeof(title), "objProperty##%d", num);
+        if (ImGui::BeginChild(title, { 400,-1 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
+            ImGui::PushID(selected_obj);
+            ImGui::Text(dst.name.outstr());
+            
+            ImGui::Text("%s", srcline->line);
+            for (int d = 0; d < dst.arr_animation.count; d++) {
+                ImGui::Text("%s", (dstline+d)->line);
+            }
+
+
+            ImGui::PopID();
+        }
+        ImGui::EndChild();
+
+
+
+
+
+    }
+    ImGui::End();
+
+    return 0;
+}
 
 
 ARR workspaceList;
