@@ -87,6 +87,8 @@ typedef struct DST {
     int op4;//for turntable
 
     int declare;
+    int ifGroup;
+    int dstID;
 }DST;
 
 typedef struct DST_ANIMATION{

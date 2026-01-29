@@ -1587,69 +1587,69 @@ int WORKSPACE::drawTreeView() {
     snprintf(title, sizeof(title), "Tree##%d", num);
     
 
-    if (ImGui::BeginTable(title, 24, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody)) //ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody))
-    {
-        // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
-        ImGui::TableSetupColumn("Command", ImGuiTableColumnFlags_NoHide);
-        for (int p = 0; p < 24 - 1; p++) {
-            ImGui::TableSetupColumn("Params", ImGuiTableColumnFlags_WidthFixed, 12.0f);
-        }
-        ImGui::TableHeadersRow();
+    //if (ImGui::BeginTable(title, 24, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody)) //ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody))
+    //{
+    //    // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
+    //    ImGui::TableSetupColumn("Command", ImGuiTableColumnFlags_NoHide);
+    //    for (int p = 0; p < 24 - 1; p++) {
+    //        ImGui::TableSetupColumn("Params", ImGuiTableColumnFlags_WidthFixed, 12.0f);
+    //    }
+    //    ImGui::TableHeadersRow();
 
-        /*static int hideGroups[MAX_IFDEPTH];
-        for (int i = 0; i < MAX_IFDEPTH; i++) {
-            hideGroups[i] = -1;
-        }*/
-        
-        for (int l = 0; l < skinfileLines.count; l++) {
-            int hide = 0;
-            SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[l];
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn();
+    //    /*static int hideGroups[MAX_IFDEPTH];
+    //    for (int i = 0; i < MAX_IFDEPTH; i++) {
+    //        hideGroups[i] = -1;
+    //    }*/
+    //    
+    //    for (int l = 0; l < skinfileLines.count; l++) {
+    //        int hide = 0;
+    //        SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[l];
+    //        ImGui::TableNextRow();
+    //        ImGui::TableNextColumn();
 
-            if (line.isComment) continue;
-            CSTR& command = line.csv.str[0];
-            CSTR *params = line.csv.str;
-            bool is_head = //!(strcmp(command, "#INCLUDE")) ||
-                            !(strcmp(command, "#IF")) ||
-                            !(strcmp(command, "#ELSEIF")) ||
-                            !(strcmp(command, "#ELSE"));
-            bool is_end = !(strcmp(command, "#ELSEIF")) ||
-                            !(strcmp(command, "#ELSE")) ||
-                            !(strcmp(command, "#ENDIF"));
+    //        if (line.isComment) continue;
+    //        CSTR& command = line.csv.str[0];
+    //        CSTR *params = line.csv.str;
+    //        bool is_head = //!(strcmp(command, "#INCLUDE")) ||
+    //                        !(strcmp(command, "#IF")) ||
+    //                        !(strcmp(command, "#ELSEIF")) ||
+    //                        !(strcmp(command, "#ELSE"));
+    //        bool is_end = !(strcmp(command, "#ELSEIF")) ||
+    //                        !(strcmp(command, "#ELSE")) ||
+    //                        !(strcmp(command, "#ENDIF"));
 
-            static ImGuiTreeNodeFlags tree_node_flags_base = ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_DrawLinesFull;
-            ImGuiTreeNodeFlags node_flags = tree_node_flags_base;
+    //        static ImGuiTreeNodeFlags tree_node_flags_base = ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_DrawLinesFull;
+    //        ImGuiTreeNodeFlags node_flags = tree_node_flags_base;
 
 
-            int lineID = ((SKINFILELINEREAD*)skinfileLines.data)[l].numTotal;
-            sprintf(title, "%s##%d", command.outstr(), lineID);
+    //        int lineID = ((SKINFILELINEREAD*)skinfileLines.data)[l].numTotal;
+    //        sprintf(title, "%s##%d", command.outstr(), lineID);
 
-            if (is_end) {
-                ImGui::TreePop();
-            }
-            if (is_head)
-            {   
-                bool open = ImGui::TreeNodeEx(title, node_flags);
-                
-                for (int p = 1; p < 24 - 1; p++) {
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%s", params[p].outstr());
-                };
-            }
-            
-            /*else if (!hide){
-                ImGui::TreeNodeEx(title, node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+    //        if (is_end) {
+    //            ImGui::TreePop();
+    //        }
+    //        if (is_head)
+    //        {   
+    //            bool open = ImGui::TreeNodeEx(title, node_flags);
+    //            
+    //            for (int p = 1; p < 24 - 1; p++) {
+    //                ImGui::TableNextColumn();
+    //                ImGui::Text("%s", params[p].outstr());
+    //            };
+    //        }
+    //        
+    //        /*else if (!hide){
+    //            ImGui::TreeNodeEx(title, node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen);
 
-                for (int p = 1; p < 24 - 1; p++) {
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%s", params[p]);
-                };
-            }*/
+    //            for (int p = 1; p < 24 - 1; p++) {
+    //                ImGui::TableNextColumn();
+    //                ImGui::Text("%s", params[p]);
+    //            };
+    //        }*/
 
-        }        
-        ImGui::EndTable();
-    }
+    //    }        
+    //    ImGui::EndTable();
+    //}
 
     ImGui::End();
     return 0;
