@@ -86,26 +86,11 @@ int ReadXml_Str(const char *level1, const char *level2, const char *level3, cons
 }
 
 int ReadXml_Int_Multi(const char *level1, const char *level2, const char *level3, int *oBuf, TiXmlDocument *xmlData){
-	TiXmlElement *cur;
-
-	oBuf[0] = 0;
-	oBuf[1] = 0;
-	oBuf[2] = 0;
-	oBuf[3] = 0;
-	oBuf[4] = 0;
-	oBuf[5] = 0;
-	oBuf[6] = 0;
-	oBuf[7] = 0;
-	oBuf[8] = 0;
-	oBuf[9] = 0;
-	oBuf[10] = 0;
-	oBuf[0xb] = 0;
-	oBuf[0xc] = 0;
-	oBuf[0xd] = 0;
-	oBuf[0xe] = 0;
-	oBuf[0xf] = 0;
-
-	cur = xmlData->FirstChildElement(level1);
+	std::fill_n(oBuf, 16, 0);
+	if (xmlData == nullptr) {
+		return 0;
+	}
+	TiXmlElement *cur = xmlData->FirstChildElement(level1);
 	if (cur) {
 		cur = cur->FirstChildElement(level2);
 		if (cur) {

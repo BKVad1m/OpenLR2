@@ -98,46 +98,7 @@ int ReadKeyConfig(game *game, const char *FilePath) {
 int ReadMIDI(game *gs, const char *filepath){
 	TiXmlDocument *hXml;
 
-	(gs->config).input.midi_control[0] = 0;
-	(gs->config).input.midi_control[1] = 0;
-	(gs->config).input.midi_control[2] = 0;
-	(gs->config).input.midi_control[3] = 0;
-	(gs->config).input.midi_control[4] = 0;
-	(gs->config).input.midi_control[5] = 0;
-	(gs->config).input.midi_control[6] = 0;
-	(gs->config).input.midi_control[7] = 0;
-	(gs->config).input.midi_control[8] = 0;
-	(gs->config).input.midi_control[9] = 0;
-	(gs->config).input.midi_control[10] = 0;
-	(gs->config).input.midi_control[0xb] = 0;
-	(gs->config).input.midi_control[0xc] = 0;
-	(gs->config).input.midi_control[0xd] = 0;
-	(gs->config).input.midi_control[0xe] = 0;
-	(gs->config).input.midi_control[0xf] = 0;
-	(gs->config).input.midi_control[0x10] = 0;
-	(gs->config).input.midi_control[0x11] = 0;
-	(gs->config).input.midi_control[0x12] = 0;
-	(gs->config).input.midi_control[0x13] = 0;
-	(gs->config).input.midi_control[0x14] = 0;
-	(gs->config).input.midi_control[0x15] = 0;
-	(gs->config).input.midi_control[0x16] = 0;
-	(gs->config).input.midi_control[0x17] = 0;
-	(gs->config).input.midi_control[0x18] = 0;
-	(gs->config).input.midi_control[0x19] = 0;
-	(gs->config).input.midi_control[0x1a] = 0;
-	(gs->config).input.midi_control[0x1b] = 0;
-	(gs->config).input.midi_control[0x1c] = 0;
-	(gs->config).input.midi_control[0x1d] = 0;
-	(gs->config).input.midi_control[0x1e] = 0;
-	(gs->config).input.midi_control[0x1f] = 0;
-	(gs->config).input.midi_control[0x20] = 0;
-	(gs->config).input.midi_control[0x21] = 0;
-	(gs->config).input.midi_control[0x22] = 0;
-	(gs->config).input.midi_control[0x23] = 0;
-	(gs->config).input.midi_control[0x24] = 0;
-	(gs->config).input.midi_control[0x25] = 0;
-	(gs->config).input.midi_control[0x26] = 0;
-	(gs->config).input.midi_control[0x27] = 0;
+	std::fill_n((gs->config).input.midi_control, 40, 0);
 
 	hXml = new TiXmlDocument(filepath);
 	if (!parse_cp932_xml(hXml, filepath)) {
