@@ -6,6 +6,7 @@
 int LR2SEInit(game* g) {
 	InitBmsList(&g->sSelect);
 	InitObjectString(&g->txtStruct);
+	InitGameplay(&g->gameplay, &g->config.play);
 
 	return 0;
 }
@@ -434,7 +435,7 @@ int LR2SESceneInit(game *g, int type) {
 	g->skstruct.GrHandle[GrH_Stage] = LoadGraph("LR2files\\Config\\title.bmp", 0);
 
 	InitGameplay(&g->gameplay, &g->config.play);
-	PlayPreviewSample(g);
+	
 
 	switch (type) {
 	case SKINTYPE_SELECT:
@@ -449,6 +450,7 @@ int LR2SESceneInit(game *g, int type) {
 	case SKINTYPE_7KEYSBATTLE:
 	case SKINTYPE_5KEYSBATTLE:
 	case SKINTYPE_9KEYSBATTLE:
+		PlayPreviewSample(g);
 		break;
 
 	case SKINTYPE_RESULT:
