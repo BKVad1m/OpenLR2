@@ -1587,8 +1587,9 @@ int WORKSPACE::drawTreeView() {
     snprintf(title, sizeof(title), "Tree##%d", num);
     
 
-    //if (ImGui::BeginTable(title, 24, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody)) //ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody))
-    //{
+    if (ImGui::BeginTable(title, 24, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody)) //ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody))
+    {
+
     //    // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
     //    ImGui::TableSetupColumn("Command", ImGuiTableColumnFlags_NoHide);
     //    for (int p = 0; p < 24 - 1; p++) {
@@ -1648,8 +1649,8 @@ int WORKSPACE::drawTreeView() {
     //        }*/
 
     //    }        
-    //    ImGui::EndTable();
-    //}
+        ImGui::EndTable();
+    }
 
     ImGui::End();
     return 0;
@@ -1810,26 +1811,27 @@ int WORKSPACE::drawDstView() {
                         float dx, dy, dw, dh;
                         float da, dr, dg, db;
 
-                        DST_ANIMATION dstdFirst = ((DST_ANIMATION*)dst[i].arr_animation.data)[0];
-                        DST_ANIMATION dstdLast = ((DST_ANIMATION*)dst[i].arr_animation.data)[dst->arr_animation.count-1];
+                        DST_ANIMATION &dstdFirst = ((DST_ANIMATION*)dst[i].arr_animation.data)[0];
+                        DST_ANIMATION &dstdLast = ((DST_ANIMATION*)dst[i].arr_animation.data)[dst->arr_animation.count-1];
 
                         int tStart = dstdFirst.time;
                         int tEnd = dstdLast.time;
-                        DstViewTime;
-                        dst->loop;
+                        int viewTime = (int)DstViewTime;
+                        dst[i].loop;
                         int t = tEnd;
                         int ani;
 
-                        if (tStart <= tEnd && tStart <= DstViewTime && (0 <= dst->loop || DstViewTime <= tEnd)) {
-                            if (tStart == tEnd || dst->loop == tEnd) {
-                                if (DstViewTime < t) {
-                                    t = DstViewTime;
+                        if (tStart <= tEnd && tStart <= viewTime && (0 <= dst[i].loop || viewTime <= tEnd)) {
+                            if (tStart == tEnd || dst[i].loop == tEnd) {
+                                if (viewTime < t) {
+                                    t = viewTime;
                                 }
                             }
-                            else if (dst->loop < tEnd) {
-                                t = DstViewTime;
-                                if (tEnd < t) {
-                                    t = (int)(DstViewTime - dst->loop) % (tEnd - dst->loop) + dst->loop;
+                            else if (dst[i].loop < tEnd) {
+                                t = viewTime;
+                                if (tEnd < viewTime) {
+                                    //if (dst[i].loop == -1) continue; // only for SE
+                                    t = (int)(viewTime - dst[i].loop) % (tEnd - dst[i].loop) + dst[i].loop;
                                 }
                             }
                             else {
@@ -1905,8 +1907,9 @@ int WORKSPACE::drawDstView() {
             ImGui::Text("%s %dlines", dst->name.outstr(), dst->animation);
             for (int i = 0; i < dst->arr_animation.count; i++)
             {
-                DST_ANIMATION dstd = ((DST_ANIMATION*)dst->arr_animation.data)[i];
+                DST_ANIMATION dstd = ((DST_ANIMATION*)dst->arr_animation.data)[i];                
                 ImGui::Text("%d %.0f %.0f %.0f %.0f", dstd.time, dstd.x, dstd.y, dstd.w, dstd.h);
+                if (i == 0) ImGui::Text("%d", dst->loop);;
             }
             
         }
