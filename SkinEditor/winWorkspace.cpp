@@ -928,7 +928,17 @@ int WORKSPACE::MakeObjects() {
         SEOBJ* seobj = (SEOBJ*)arr_seobj.Get_new();
         seobj->ID = i;
         seobj->dst = i;
-        seobj->name.assign(((DST*)arr_DST.data)[i].name);
+
+        seobj->name.assign("");
+        if (((DST*)arr_DST.data)[i].op1 >= 0) {
+            seobj->name.add(dstName(((DST*)arr_DST.data)[i].op1));
+        }
+        else {
+            seobj->name.add("Not_");
+            seobj->name.add(dstName(-((DST*)arr_DST.data)[i].op1));
+        }
+        
+
         seobj->src = ((DST*)arr_DST.data)[i].src;
     }
     
@@ -1937,9 +1947,9 @@ int WORKSPACE::drawObjectManager() {
             for (int i = 0; i < arr_seobj.count; i++) {
                 ImGui::PushID(i);
                 SEOBJ& seobj = ((SEOBJ*)arr_seobj.data)[i];
-
+                
                 char buf[260];
-                sprintf(buf, "%03d:%03d(%s)", seobj.src, seobj.dst, seobj.name.outstr());
+                sprintf(buf, "%03d(%s)", seobj.ID, seobj.name.outstr());
                 if (ImGui::Selectable(buf, selected_obj == i)) {
                     selected_obj = i;
                 }
