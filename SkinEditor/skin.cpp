@@ -467,6 +467,24 @@ int LR2SESceneInit(game *g, int type) {
 		break;
 
 	case SKINTYPE_COURSERESULT:
+		g->gameplay.player[0].judgecount[0] = 1;
+		g->gameplay.player[0].judgecount[1] = 2;
+		g->gameplay.player[0].judgecount[2] = 3;
+		g->gameplay.player[0].judgecount[3] = 4;
+		g->gameplay.player[0].judgecount[4] = 5;
+		g->gameplay.player[0].judgecount[5] = 6;
+		g->gameplay.player[0].exscore = 17;
+		g->gameplay.player[0].totalnotes = 20;
+
+
+		g->gameplay.player[1].judgecount[0] = 1;
+		g->gameplay.player[1].judgecount[1] = 10;
+		g->gameplay.player[1].judgecount[2] = 100;
+		g->gameplay.player[1].judgecount[3] = 1000;
+		g->gameplay.player[1].judgecount[4] = 10000;
+		g->gameplay.player[1].judgecount[5] = 100000;
+		g->gameplay.player[1].exscore = 12345;
+		g->gameplay.player[1].totalnotes = 11110;
 		break;
 
 	case SKINTYPE_SOUNDSET:
