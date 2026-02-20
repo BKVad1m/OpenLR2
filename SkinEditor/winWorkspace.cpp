@@ -1947,13 +1947,29 @@ int WORKSPACE::drawObjectManager() {
             for (int i = 0; i < arr_seobj.count; i++) {
                 ImGui::PushID(i);
                 SEOBJ& seobj = ((SEOBJ*)arr_seobj.data)[i];
+
+                SRC& src = ((SRC*)arr_SRC.data)[((SEOBJ*)arr_seobj.data)[i].src];
+                DST& dst = ((DST*)arr_DST.data)[((SEOBJ*)arr_seobj.data)[i].dst];
                 
+
+                SKINFILELINEREAD& readS = ((SKINFILELINEREAD*)skinfileLines.data)[src.declare];
+                SKINFILELINEREAD& readD = ((SKINFILELINEREAD*)skinfileLines.data)[dst.declare];
+                
+
                 char buf[260];
-                sprintf(buf, "%03d(%s)", seobj.ID, seobj.name.outstr());
+                if (readS.ifgroup == readD.ifgroup) {
+                    sprintf(buf, "%02d_", readS.ifgroup);
+                    for(int k = 0 ; k < ((IFUNIT*)arr_ifunit.data)[readS.ifgroup].depth; k++)
+                        sprintf(buf, "%s_", buf);   
+                    sprintf(buf, "%s%03d(%s)", buf, seobj.ID, seobj.name.outstr());
+                }
+                else {
+                    sprintf(buf, "%03d(%s)", seobj.ID, seobj.name.outstr());
+                }
+               
                 if (ImGui::Selectable(buf, selected_obj == i)) {
                     selected_obj = i;
                 }
-
                 ImGui::PopID();
             }
         }

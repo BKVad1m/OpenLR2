@@ -454,6 +454,7 @@ int LR2SESceneInit(game *g, int type) {
 		break;
 
 	case SKINTYPE_RESULT:
+		ProcS_Result(g);
 		break;
 	case SKINTYPE_KEYCONFIG:
 		g->KeyInput.config_keymode = 0;
