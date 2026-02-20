@@ -244,6 +244,10 @@ typedef struct WORKSPACE {
     bool wObjectManager;
     int drawObjectManager();
     int selected_obj;
+
+
+    bool wObjectManagerTest;
+    int drawObjectManagerTest();
     
 
 }WORKSPACE;

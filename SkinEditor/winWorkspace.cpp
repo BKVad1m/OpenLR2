@@ -97,6 +97,7 @@ int WORKSPACE::draw() {
                 ImGui::MenuItem("SimplePreview", NULL, &wSimplePreview);
                 ImGui::MenuItem("dstView", NULL, &wDstView);
                 ImGui::MenuItem("objectManager", NULL, &wObjectManager);
+                ImGui::MenuItem("objectManagerTest", NULL, &wObjectManagerTest);
                 ImGui::EndMenu();
             }
         }
@@ -123,6 +124,7 @@ int WORKSPACE::draw() {
     if (wSimplePreview) drawSimplePreview();
     if (wDstView) drawDstView();
     if (wObjectManager) drawObjectManager();
+    if (wObjectManagerTest) drawObjectManagerTest();
 
 
     return 0;
@@ -1931,6 +1933,31 @@ int WORKSPACE::drawDstView() {
 
 //HOW TO ADD FEATURE - STEP 2 : write function
 
+int WORKSPACE::drawObjectManagerTest() {
+
+    char title[260];
+    snprintf(title, sizeof(title), "objectManagerTest##%d", num);
+    if (ImGui::Begin(title, &wObjectManagerTest)) {
+        g.skstruct.image.src;
+
+        g.skstruct.otherObject[0].srcSize;
+
+        for (int i = 0; i < g.skstruct.image.srcSize; i++) {
+            SRCstruct& src = g.skstruct.image.src[i];
+            DSTstruct& dst = g.skstruct.image.dst[i];
+            ImGui::Text("#SRC_IMAGE%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_IMAGE%03d: %s %s %s %s", i, timerName(dst.timer), dst.opt1 ? dstName(dst.opt1) : "", dst.opt2 ? dstName(dst.opt2) : "", dst.opt3 ? dstName(dst.opt3) : "");
+        }
+
+        for(int i = 0 ; i < 20 ; i++){
+            SRCstruct& src = g.skstruct.src_NOTE[i];
+            ImGui::Text("#SRC_NOTE%02d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+        }
+        
+    }
+    ImGui::End();
+    return 0;
+}
 
 //TODO - iftree, *wildcardtree, insert, delete, group, dst thing
 //group should have both if / endif
@@ -2006,6 +2033,8 @@ int WORKSPACE::drawObjectManager() {
 
     return 0;
 }
+
+
 
 
 ARR workspaceList;
