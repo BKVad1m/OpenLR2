@@ -936,7 +936,7 @@ int DPsplit(LaneStruct *lane, int start, CHARTCONVERTER *cc) {
 void MakeExtraChart(gameplay *gp, CHARTCONVERTER *cc) {  //test completed
 
 	int notecount = 0;
-	double endtime;
+	double endtime{};
 	qsort(gp->bmsobj.notes, gp->bmsobj.count, sizeof(NoteStruct), CMP_NotesByRealTimingOp);
 
 	for (int i = 0; i < gp->bmsobj.count; i++) {
@@ -1320,7 +1320,7 @@ void PMStoSP(gameplay *gp) { //test&fix completed
 	int mingap;
 	char laneA[10], laneB[10], laneC[10];
 	int newLane, measureLaneCount;
-	int emptyLane, emptyLaneL, emptyLaneR;
+	int emptyLane{}, emptyLaneL{}, emptyLaneR{};
 	int countLaneA;
 	int left, right;
 
@@ -3451,7 +3451,7 @@ int ParseBmsFile(gameplay *gp, CSTR filename, AUDIO *aud, ConfigStruct* cfg, BMS
 				if (cfg->play.random[0] >= 3 && gp->bmsobj.notes[i].op < 20) assist = (cfg->play.randSC[0] != 0);
 				else if (cfg->play.random[1] >= 3 && gp->bmsobj.notes[i].op >= 20) assist = (cfg->play.randSC[1] != 0);
 
-				int randLanes;
+				int randLanes{};
 				switch (meta->keymode) {
 					case 5:
 					case 10:
