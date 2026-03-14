@@ -1477,8 +1477,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				GetTimeWrap();
 				for (int i = 0; i < gs.skstruct.image.srcSize; i++) {
 
-					if (gs.skstruct.image.dst[i].dstCount && GetOptionFlag_dst(&gs, gs.skstruct.image.dst[i].opt1) 
-						&& GetOptionFlag_dst(&gs, gs.skstruct.image.dst[i].opt2) && GetOptionFlag_dst(&gs, gs.skstruct.image.dst[i].opt3)) {
+					if (gs.skstruct.image.dst[i].dstCount && GetOptionFlag_dst(&gs, gs.skstruct.image.dst[i].op1) 
+						&& GetOptionFlag_dst(&gs, gs.skstruct.image.dst[i].op2) && GetOptionFlag_dst(&gs, gs.skstruct.image.dst[i].op3)) {
 
 						if ( (gs.skstruct.adjust.dark_type == 1 && gs.skstruct.image.dst[i].timer)
 							|| (gs.skstruct.adjust.dark_type != 1 && (gs.skstruct.adjust.dark_type != 2
@@ -1546,10 +1546,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 								}
 							}
 							
-							if (gs.skstruct.image.dst[i].opt4 == 1) {
+							if (gs.skstruct.image.dst[i].op4 == 1) {
 								AddDrawingBuffer_Scratch(&gs.skstruct.drBuf, &gs.skstruct.image.src[i], &gs.skstruct.image.dst[i], &gs.timer1, gs.skstruct.scratchAngle_1);
 							}
-							else if (gs.skstruct.image.dst[i].opt4 == 2) {
+							else if (gs.skstruct.image.dst[i].op4 == 2) {
 								AddDrawingBuffer_Scratch(&gs.skstruct.drBuf, &gs.skstruct.image.src[i], &gs.skstruct.image.dst[i], &gs.timer1, gs.skstruct.scratchAngle_2);
 							}
 							else {
@@ -1587,8 +1587,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (gs.procSelecter == 4 || gs.is_starter) {
 					if (GetTimeLapse(41, &gs.timer1) >= 0.0 && gs.config.play.bga > 0) {
 						for (int i = 0; i < gs.skstruct.otherObject[4].srcSize; i++) {
-							if (GetOptionFlag_dst(&gs, gs.skstruct.otherObject[4].dst[i].opt1) && GetOptionFlag_dst(&gs, gs.skstruct.otherObject[4].dst[i].opt2)
-								&& GetOptionFlag_dst(&gs, gs.skstruct.otherObject[4].dst[i].opt3) && gs.skstruct.adjust.dark_type != 2) {
+							if (GetOptionFlag_dst(&gs, gs.skstruct.otherObject[4].dst[i].op1) && GetOptionFlag_dst(&gs, gs.skstruct.otherObject[4].dst[i].op2)
+								&& GetOptionFlag_dst(&gs, gs.skstruct.otherObject[4].dst[i].op3) && gs.skstruct.adjust.dark_type != 2) {
 
 								if (gs.config.play.poorbga > GetTimeWrap() - gs.gameplay.lastMissTime && gs.gameplay.missLayer >= 0 && gs.config.play.bga != 3) {
 									AddDrawingBuffer_BGA(&gs.skstruct.drBuf, &gs.skstruct.otherObject[4].src[i], &gs.skstruct.otherObject[4].dst[i], &gs.timer1, gs.gameplay.bgaHandle[gs.gameplay.missLayer], 0);
@@ -1605,24 +1605,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 
 				for (int i = 0; i < gs.skstruct.otherObject[1].srcSize; i++) {
-					if (GetOptionFlag_dst(&gs, gs.skstruct.otherObject[1].dst[i].opt1) && GetOptionFlag_dst(&gs, gs.skstruct.otherObject[1].dst[i].opt2)
-						&& GetOptionFlag_dst(&gs, gs.skstruct.otherObject[1].dst[i].opt3) && gs.skstruct.adjust.dark_type != 2) {
+					if (GetOptionFlag_dst(&gs, gs.skstruct.otherObject[1].dst[i].op1) && GetOptionFlag_dst(&gs, gs.skstruct.otherObject[1].dst[i].op2)
+						&& GetOptionFlag_dst(&gs, gs.skstruct.otherObject[1].dst[i].op3) && gs.skstruct.adjust.dark_type != 2) {
 
 						AddDrawingBuffer_Image(&gs.skstruct.drBuf, &gs.skstruct.otherObject[1].src[i], &gs.skstruct.otherObject[1].dst[i], &gs.timer1);
 
 					}
 				}
 				for (int i = 0; i < gs.skstruct.otherObject[2].srcSize; i++) {
-					if (GetOptionFlag_dst(&gs, gs.skstruct.otherObject[2].dst[i].opt1) && GetOptionFlag_dst(&gs, gs.skstruct.otherObject[2].dst[i].opt2)
-						&& GetOptionFlag_dst(&gs, gs.skstruct.otherObject[2].dst[i].opt3) && gs.skstruct.adjust.dark_type != 2) {
+					if (GetOptionFlag_dst(&gs, gs.skstruct.otherObject[2].dst[i].op1) && GetOptionFlag_dst(&gs, gs.skstruct.otherObject[2].dst[i].op2)
+						&& GetOptionFlag_dst(&gs, gs.skstruct.otherObject[2].dst[i].op3) && gs.skstruct.adjust.dark_type != 2) {
 
 						AddDrawingBuffer_Slider(&gs.skstruct.drBuf, &gs.skstruct.otherObject[2].src[i], &gs.skstruct.otherObject[2].dst[i], &gs.timer1);
 
 					}
 				}
 				for (int i = 0; i < gs.skstruct.otherObject[6].srcSize; i++) {
-					if (GetOptionFlag_dst(&gs, gs.skstruct.otherObject[6].dst[i].opt1) && GetOptionFlag_dst(&gs, gs.skstruct.otherObject[6].dst[i].opt2)
-						&& GetOptionFlag_dst(&gs, gs.skstruct.otherObject[6].dst[i].opt3) && gs.skstruct.adjust.dark_type != 2) {
+					if (GetOptionFlag_dst(&gs, gs.skstruct.otherObject[6].dst[i].op1) && GetOptionFlag_dst(&gs, gs.skstruct.otherObject[6].dst[i].op2)
+						&& GetOptionFlag_dst(&gs, gs.skstruct.otherObject[6].dst[i].op3) && gs.skstruct.adjust.dark_type != 2) {
 
 						AddDrawingBuffer_Numbers(&gs.skstruct.drBuf, &gs.skstruct.otherObject[6].src[i], &gs.skstruct.otherObject[6].dst[i], &gs.timer1, SetObjectValue_Num(&gs, gs.skstruct.otherObject[6].src[i].op1), 0, 0);
 
@@ -1630,8 +1630,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 				if (gs.txtStruct.readme.show != true) {
 					for (int i = 0; i < gs.skstruct.otherObject[3].srcSize; i++) {
-						if (GetOptionFlag_dst(&gs, gs.skstruct.otherObject[3].dst[i].opt1) && GetOptionFlag_dst(&gs, gs.skstruct.otherObject[3].dst[i].opt2)
-							&& GetOptionFlag_dst(&gs, gs.skstruct.otherObject[3].dst[i].opt3) && gs.skstruct.adjust.dark_type != 2) {
+						if (GetOptionFlag_dst(&gs, gs.skstruct.otherObject[3].dst[i].op1) && GetOptionFlag_dst(&gs, gs.skstruct.otherObject[3].dst[i].op2)
+							&& GetOptionFlag_dst(&gs, gs.skstruct.otherObject[3].dst[i].op3) && gs.skstruct.adjust.dark_type != 2) {
 
 							AddDrawingBuffer_OnMouse(&gs.skstruct.drBuf, &gs.skstruct.otherObject[3].src[i], &gs.skstruct.otherObject[3].dst[i], &gs.timer1, &gs.KeyInput, gs.sSelect.panel);
 

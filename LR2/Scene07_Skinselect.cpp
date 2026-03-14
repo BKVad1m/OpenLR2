@@ -133,28 +133,28 @@ int ProcI_SkinSelect(game *g) {
 	}
 	
 	for (int i = 0; i < g->skstruct2.image.srcSize; i++) {
-		if (GetOptionFlag_dst(g, g->skstruct2.image.dst[i].opt1) && GetOptionFlag_dst(g, g->skstruct2.image.dst[i].opt2) && GetOptionFlag_dst(g, g->skstruct2.image.dst[i].opt3)) {
+		if (GetOptionFlag_dst(g, g->skstruct2.image.dst[i].op1) && GetOptionFlag_dst(g, g->skstruct2.image.dst[i].op2) && GetOptionFlag_dst(g, g->skstruct2.image.dst[i].op3)) {
 			AddDrawingBuffer_Image2(&g->skstruct2.drBuf, &g->skstruct2.image.src[i], &g->skstruct2.image.dst[i], &g->timer2);
 		}
 	}
 
 	for (int i = 0; i < g->skstruct2.otherObject[1].srcSize; i++) {
-		if (GetOptionFlag_dst(g, g->skstruct2.otherObject[1].dst[i].opt1) && GetOptionFlag_dst(g, g->skstruct2.otherObject[1].dst[i].opt2) && GetOptionFlag_dst(g, g->skstruct2.otherObject[1].dst[i].opt3)) {
+		if (GetOptionFlag_dst(g, g->skstruct2.otherObject[1].dst[i].op1) && GetOptionFlag_dst(g, g->skstruct2.otherObject[1].dst[i].op2) && GetOptionFlag_dst(g, g->skstruct2.otherObject[1].dst[i].op3)) {
 			AddDrawingBuffer_Image(&g->skstruct2.drBuf, &g->skstruct2.otherObject[1].src[i], &g->skstruct2.otherObject[1].dst[i], &g->timer2);
 		}
 	}
 	for (int i = 0; i < g->skstruct2.otherObject[2].srcSize; i++) {
-		if (GetOptionFlag_dst(g, g->skstruct2.otherObject[2].dst[i].opt1) && GetOptionFlag_dst(g, g->skstruct2.otherObject[2].dst[i].opt2) && GetOptionFlag_dst(g, g->skstruct2.otherObject[2].dst[i].opt3)) {
+		if (GetOptionFlag_dst(g, g->skstruct2.otherObject[2].dst[i].op1) && GetOptionFlag_dst(g, g->skstruct2.otherObject[2].dst[i].op2) && GetOptionFlag_dst(g, g->skstruct2.otherObject[2].dst[i].op3)) {
 			AddDrawingBuffer_Slider (&g->skstruct2.drBuf, &g->skstruct2.otherObject[2].src[i], &g->skstruct2.otherObject[2].dst[i], &g->timer2);
 		}
 	}
 	for (int i = 0; i < g->skstruct2.otherObject[6].srcSize; i++) {
-		if (GetOptionFlag_dst(g, g->skstruct2.otherObject[6].dst[i].opt1) && GetOptionFlag_dst(g, g->skstruct2.otherObject[6].dst[i].opt2) && GetOptionFlag_dst(g, g->skstruct2.otherObject[6].dst[i].opt3)) {
+		if (GetOptionFlag_dst(g, g->skstruct2.otherObject[6].dst[i].op1) && GetOptionFlag_dst(g, g->skstruct2.otherObject[6].dst[i].op2) && GetOptionFlag_dst(g, g->skstruct2.otherObject[6].dst[i].op3)) {
 			AddDrawingBuffer_Numbers(&g->skstruct2.drBuf, &g->skstruct2.otherObject[6].src[i], &g->skstruct2.otherObject[6].dst[i], &g->timer2,SetObjectValue_Num(g,g->skstruct2.otherObject[6].src[i].op1),0,0);
 		}
 	}
 	for (int i = 0; i < g->skstruct2.otherObject[3].srcSize; i++) {
-		if (GetOptionFlag_dst(g, g->skstruct2.otherObject[3].dst[i].opt1) && GetOptionFlag_dst(g, g->skstruct2.otherObject[3].dst[i].opt2) && GetOptionFlag_dst(g, g->skstruct2.otherObject[3].dst[i].opt3)) {
+		if (GetOptionFlag_dst(g, g->skstruct2.otherObject[3].dst[i].op1) && GetOptionFlag_dst(g, g->skstruct2.otherObject[3].dst[i].op2) && GetOptionFlag_dst(g, g->skstruct2.otherObject[3].dst[i].op3)) {
 			AddDrawingBuffer_OnMouse(&g->skstruct2.drBuf, &g->skstruct2.otherObject[3].src[i], &g->skstruct2.otherObject[3].dst[i], &g->timer2, &g->KeyInput, g->sSelect.panel);
 		}
 	}
@@ -185,7 +185,7 @@ int ProcI_SkinSelect(game *g) {
 		}
 		if (GetTimeLapse(41, &g->timer2) >= 0.0 && g->config.play.bga) {
 			for (int i = 0; i < g->skstruct2.otherObject[4].srcSize; i++) {
-				if (g->gameplay.bgaLayer1 >= 0 && GetOptionFlag_dst(g, g->skstruct2.otherObject[4].dst[i].opt1) && GetOptionFlag_dst(g, g->skstruct2.otherObject[4].dst[i].opt2) && GetOptionFlag_dst(g, g->skstruct2.otherObject[4].dst[i].opt3)) {
+				if (g->gameplay.bgaLayer1 >= 0 && GetOptionFlag_dst(g, g->skstruct2.otherObject[4].dst[i].op1) && GetOptionFlag_dst(g, g->skstruct2.otherObject[4].dst[i].op2) && GetOptionFlag_dst(g, g->skstruct2.otherObject[4].dst[i].op3)) {
 					AddDrawingBuffer_BGA(&g->skstruct2.drBuf, &g->skstruct2.otherObject[4].src[i], &g->skstruct2.otherObject[4].dst[i], &g->timer2, g->gameplay.bgaHandle[g->gameplay.bgaLayer1],1);
 				}
 			}

@@ -46,11 +46,11 @@ int InitSRC(SRCstruct *src){
 int InitDST(DSTstruct *dst) {
 	dst->n = 0;
 	dst->loop = 0;
-	dst->opt1 = 0;
-	dst->opt2 = 0;
-	dst->opt3 = 0;
-	dst->opt4 = 0;
-	dst->opt5 = 0;
+	dst->op1 = 0;
+	dst->op2 = 0;
+	dst->op3 = 0;
+	dst->op4 = 0;
+	dst->op5 = 0;
 	dst->dstCount = 0;
 	dst->dataSize = 0;
 	return 1;
@@ -64,11 +64,11 @@ int ReadDST(DSTstruct *dst, CSVbuf *csv, int order){
 		dst->n = csv->val[1];
 		dst->loop = csv->val[16];
 		dst->timer = csv->val[17];
-		dst->opt1 = csv->val[18];
-		dst->opt2 = csv->val[19];
-		dst->opt3 = csv->val[20];
-		dst->opt4 = csv->val[21];
-		dst->opt5 = csv->val[22];
+		dst->op1 = csv->val[18];
+		dst->op2 = csv->val[19];
+		dst->op3 = csv->val[20];
+		dst->op4 = csv->val[21];
+		dst->op5 = csv->val[22];
 	}
 
 	//memory allocation if needed
@@ -326,11 +326,11 @@ int InitSkin(skstruct *sk, int p5, char font) {
 	InitSRC(&sk->src_MOUSECURSOR);
 	sk->dst_MOUSECURSOR.n = 0;
 	sk->dst_MOUSECURSOR.loop = 0;
-	sk->dst_MOUSECURSOR.opt1 = 0;
-	sk->dst_MOUSECURSOR.opt2 = 0;
-	sk->dst_MOUSECURSOR.opt3 = 0;
-	sk->dst_MOUSECURSOR.opt4 = 0;
-	sk->dst_MOUSECURSOR.opt5 = 0;
+	sk->dst_MOUSECURSOR.op1 = 0;
+	sk->dst_MOUSECURSOR.op2 = 0;
+	sk->dst_MOUSECURSOR.op3 = 0;
+	sk->dst_MOUSECURSOR.op4 = 0;
+	sk->dst_MOUSECURSOR.op5 = 0;
 	sk->dst_MOUSECURSOR.dstCount = 0;
 	sk->dst_MOUSECURSOR.dataSize = 0;
 
@@ -860,8 +860,8 @@ int ApplyFlipside(skstruct *sk){
 	for (int i = 0; i < (sk->image).srcSize; i++) {
 		FlipSide_Timer(&sk->image.src[i].timer);
 		FlipSide_Timer(&sk->image.dst[i].timer);
-		if (sk->image.dst[i].opt5 == 1) sk->image.dst[i].opt5 = 2;
-		else if (sk->image.dst[i].opt5 == 2) sk->image.dst[i].opt5 = 1;
+		if (sk->image.dst[i].op5 == 1) sk->image.dst[i].op5 = 2;
+		else if (sk->image.dst[i].op5 == 2) sk->image.dst[i].op5 = 1;
 	}
 
 	for (int i = 0; i < sk->otherObject[6].srcSize; i++) {

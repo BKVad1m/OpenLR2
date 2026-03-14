@@ -2222,7 +2222,7 @@ int SetObjectValue_Bargraph(game *g) {
 
 	for (int i = 0; i < g->skstruct.otherObject[5].srcSize; i++) {
 
-		if (GetOptionFlag_dst(g, g->skstruct.otherObject[5].dst[i].opt1) && GetOptionFlag_dst(g, g->skstruct.otherObject[5].dst[i].opt2) && GetOptionFlag_dst(g, g->skstruct.otherObject[5].dst[i].opt3)) {
+		if (GetOptionFlag_dst(g, g->skstruct.otherObject[5].dst[i].op1) && GetOptionFlag_dst(g, g->skstruct.otherObject[5].dst[i].op2) && GetOptionFlag_dst(g, g->skstruct.otherObject[5].dst[i].op3)) {
 
 			switch (g->skstruct.otherObject[5].src[i].op1) {
 				
@@ -2474,7 +2474,7 @@ int SetObjectValue_Slider(game *g, skstruct *sk, Timer *T, char flag) {
 	}
 
 	for (int i = 0; i < sk->otherObject[2].srcSize; i++) {
-		if (GetOptionFlag_dst(g, sk->otherObject[2].dst[i].opt1) == 0 || GetOptionFlag_dst(g, sk->otherObject[2].dst[i].opt2) == 0 || GetOptionFlag_dst(g, sk->otherObject[2].dst[i].opt3) == 0) continue;
+		if (GetOptionFlag_dst(g, sk->otherObject[2].dst[i].op1) == 0 || GetOptionFlag_dst(g, sk->otherObject[2].dst[i].op2) == 0 || GetOptionFlag_dst(g, sk->otherObject[2].dst[i].op3) == 0) continue;
 		if (sk->otherObject[2].src[i].op2 < 1) continue;
 
 		iBuf = 0;
@@ -2681,8 +2681,8 @@ int Proc_Text(game *g, sqlite3 *sql, char flag) {
 	}
 
 	for (int i = 0; i < g->skstruct.otherObject[0].srcSize; i++) {
-		if (GetOptionFlag_dst(g, g->skstruct.otherObject[0].dst[i].opt1) && GetOptionFlag_dst(g, g->skstruct.otherObject[0].dst[i].opt2)
-			&& GetOptionFlag_dst(g, g->skstruct.otherObject[0].dst[i].opt3)) {
+		if (GetOptionFlag_dst(g, g->skstruct.otherObject[0].dst[i].op1) && GetOptionFlag_dst(g, g->skstruct.otherObject[0].dst[i].op2)
+			&& GetOptionFlag_dst(g, g->skstruct.otherObject[0].dst[i].op3)) {
 
 			if (flag == 0 && g->skstruct.otherObject[0].src[i].op1 == 1 && (g->skstruct.otherObject[0].src[i].op2 == 0 || g->skstruct.otherObject[0].src[i].op2 == g->sSelect.panel) && g->txtStruct.st_text_num == -1
 				&& MouseOnObject(&g->skstruct.otherObject[0].dst[i], &g->timer1, &g->KeyInput.mouse_oldX, &g->KeyInput.mouse_oldY)) {
@@ -2922,7 +2922,7 @@ int SetObjectValue_Button(game *g, skstruct *sk, Timer *T, char flag) {
 
 	for (int i = 0; i < sk->otherObject[1].srcSize; i++) {
 		isClickSuccess = 0;
-		if (GetOptionFlag_dst(g, sk->otherObject[1].dst[i].opt1)==0 || GetOptionFlag_dst(g, sk->otherObject[1].dst[i].opt2)==0 || GetOptionFlag_dst(g, sk->otherObject[1].dst[i].opt3)==0) continue;
+		if (GetOptionFlag_dst(g, sk->otherObject[1].dst[i].op1)==0 || GetOptionFlag_dst(g, sk->otherObject[1].dst[i].op2)==0 || GetOptionFlag_dst(g, sk->otherObject[1].dst[i].op3)==0) continue;
 
 		iTmp = 0;
 		int op = sk->otherObject[1].src[i].op1;

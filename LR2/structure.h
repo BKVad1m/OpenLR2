@@ -530,11 +530,11 @@ typedef struct DSTstruct DSTstruct, *PDSTstruct;
 
 struct DSTstruct { /* 44bytes.4*0x0b */
 	int n; /* (NULL) on file */
-	int opt1; /* dst_option */
-	int opt2; /* and dst_option */
-	int opt3; /* and dst_option */
-	int opt4; /* scratch */
-	int opt5;
+	int op1; /* dst_option */
+	int op2; /* and dst_option */
+	int op3; /* and dst_option */
+	int op4; /* scratch */
+	int op5;
 	int timer;
 	struct DSTdraw * draw;
 	int dataSize;

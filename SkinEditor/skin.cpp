@@ -16,8 +16,8 @@ int LR2SEDrawLoop(game* g, int gHandle, int sizeX, int sizeY) {
 
 	for (int i = 0; i < g->skstruct.image.srcSize; i++) {
 
-		if (g->skstruct.image.dst[i].dstCount && GetOptionFlag_dst(g, g->skstruct.image.dst[i].opt1)
-			&& GetOptionFlag_dst(g, g->skstruct.image.dst[i].opt2) && GetOptionFlag_dst(g, g->skstruct.image.dst[i].opt3)) {
+		if (g->skstruct.image.dst[i].dstCount && GetOptionFlag_dst(g, g->skstruct.image.dst[i].op1)
+			&& GetOptionFlag_dst(g, g->skstruct.image.dst[i].op2) && GetOptionFlag_dst(g, g->skstruct.image.dst[i].op3)) {
 
 			if ((g->skstruct.adjust.dark_type == 1 && g->skstruct.image.dst[i].timer)
 				|| (g->skstruct.adjust.dark_type != 1 && (g->skstruct.adjust.dark_type != 2
@@ -85,10 +85,10 @@ int LR2SEDrawLoop(game* g, int gHandle, int sizeX, int sizeY) {
 					}
 				}
 
-				if (g->skstruct.image.dst[i].opt4 == 1) {
+				if (g->skstruct.image.dst[i].op4 == 1) {
 					AddDrawingBuffer_Scratch(&g->skstruct.drBuf, &g->skstruct.image.src[i], &g->skstruct.image.dst[i], &g->timer1, g->skstruct.scratchAngle_1);
 				}
-				else if (g->skstruct.image.dst[i].opt4 == 2) {
+				else if (g->skstruct.image.dst[i].op4 == 2) {
 					AddDrawingBuffer_Scratch(&g->skstruct.drBuf, &g->skstruct.image.src[i], &g->skstruct.image.dst[i], &g->timer1, g->skstruct.scratchAngle_2);
 				}
 				else {
@@ -126,8 +126,8 @@ int LR2SEDrawLoop(game* g, int gHandle, int sizeX, int sizeY) {
 	if (g->procSelecter == 4 || g->is_starter) {
 		if (GetTimeLapse(41, &g->timer1) >= 0.0 && g->config.play.bga > 0) {
 			for (int i = 0; i < g->skstruct.otherObject[4].srcSize; i++) {
-				if (GetOptionFlag_dst(g, g->skstruct.otherObject[4].dst[i].opt1) && GetOptionFlag_dst(g, g->skstruct.otherObject[4].dst[i].opt2)
-					&& GetOptionFlag_dst(g, g->skstruct.otherObject[4].dst[i].opt3) && g->skstruct.adjust.dark_type != 2) {
+				if (GetOptionFlag_dst(g, g->skstruct.otherObject[4].dst[i].op1) && GetOptionFlag_dst(g, g->skstruct.otherObject[4].dst[i].op2)
+					&& GetOptionFlag_dst(g, g->skstruct.otherObject[4].dst[i].op3) && g->skstruct.adjust.dark_type != 2) {
 
 					if (g->config.play.poorbga > GetTimeWrap() - g->gameplay.lastMissTime && g->gameplay.missLayer >= 0 && g->config.play.bga != 3) {
 						AddDrawingBuffer_BGA(&g->skstruct.drBuf, &g->skstruct.otherObject[4].src[i], &g->skstruct.otherObject[4].dst[i], &g->timer1, g->gameplay.bgaHandle[g->gameplay.missLayer], 0);
@@ -144,24 +144,24 @@ int LR2SEDrawLoop(game* g, int gHandle, int sizeX, int sizeY) {
 	}
 
 	for (int i = 0; i < g->skstruct.otherObject[1].srcSize; i++) {
-		if (GetOptionFlag_dst(g, g->skstruct.otherObject[1].dst[i].opt1) && GetOptionFlag_dst(g, g->skstruct.otherObject[1].dst[i].opt2)
-			&& GetOptionFlag_dst(g, g->skstruct.otherObject[1].dst[i].opt3) && g->skstruct.adjust.dark_type != 2) {
+		if (GetOptionFlag_dst(g, g->skstruct.otherObject[1].dst[i].op1) && GetOptionFlag_dst(g, g->skstruct.otherObject[1].dst[i].op2)
+			&& GetOptionFlag_dst(g, g->skstruct.otherObject[1].dst[i].op3) && g->skstruct.adjust.dark_type != 2) {
 
 			AddDrawingBuffer_Image(&g->skstruct.drBuf, &g->skstruct.otherObject[1].src[i], &g->skstruct.otherObject[1].dst[i], &g->timer1);
 
 		}
 	}
 	for (int i = 0; i < g->skstruct.otherObject[2].srcSize; i++) {
-		if (GetOptionFlag_dst(g, g->skstruct.otherObject[2].dst[i].opt1) && GetOptionFlag_dst(g, g->skstruct.otherObject[2].dst[i].opt2)
-			&& GetOptionFlag_dst(g, g->skstruct.otherObject[2].dst[i].opt3) && g->skstruct.adjust.dark_type != 2) {
+		if (GetOptionFlag_dst(g, g->skstruct.otherObject[2].dst[i].op1) && GetOptionFlag_dst(g, g->skstruct.otherObject[2].dst[i].op2)
+			&& GetOptionFlag_dst(g, g->skstruct.otherObject[2].dst[i].op3) && g->skstruct.adjust.dark_type != 2) {
 
 			AddDrawingBuffer_Slider(&g->skstruct.drBuf, &g->skstruct.otherObject[2].src[i], &g->skstruct.otherObject[2].dst[i], &g->timer1);
 
 		}
 	}
 	for (int i = 0; i < g->skstruct.otherObject[6].srcSize; i++) {
-		if (GetOptionFlag_dst(g, g->skstruct.otherObject[6].dst[i].opt1) && GetOptionFlag_dst(g, g->skstruct.otherObject[6].dst[i].opt2)
-			&& GetOptionFlag_dst(g, g->skstruct.otherObject[6].dst[i].opt3) && g->skstruct.adjust.dark_type != 2) {
+		if (GetOptionFlag_dst(g, g->skstruct.otherObject[6].dst[i].op1) && GetOptionFlag_dst(g, g->skstruct.otherObject[6].dst[i].op2)
+			&& GetOptionFlag_dst(g, g->skstruct.otherObject[6].dst[i].op3) && g->skstruct.adjust.dark_type != 2) {
 
 			AddDrawingBuffer_Numbers(&g->skstruct.drBuf, &g->skstruct.otherObject[6].src[i], &g->skstruct.otherObject[6].dst[i], &g->timer1, SetObjectValue_Num(g, g->skstruct.otherObject[6].src[i].op1), 0, 0);
 
@@ -169,8 +169,8 @@ int LR2SEDrawLoop(game* g, int gHandle, int sizeX, int sizeY) {
 	}
 	if (g->txtStruct.readme.show != true) {
 		for (int i = 0; i < g->skstruct.otherObject[3].srcSize; i++) {
-			if (GetOptionFlag_dst(g, g->skstruct.otherObject[3].dst[i].opt1) && GetOptionFlag_dst(g, g->skstruct.otherObject[3].dst[i].opt2)
-				&& GetOptionFlag_dst(g, g->skstruct.otherObject[3].dst[i].opt3) && g->skstruct.adjust.dark_type != 2) {
+			if (GetOptionFlag_dst(g, g->skstruct.otherObject[3].dst[i].op1) && GetOptionFlag_dst(g, g->skstruct.otherObject[3].dst[i].op2)
+				&& GetOptionFlag_dst(g, g->skstruct.otherObject[3].dst[i].op3) && g->skstruct.adjust.dark_type != 2) {
 
 				AddDrawingBuffer_OnMouse(&g->skstruct.drBuf, &g->skstruct.otherObject[3].src[i], &g->skstruct.otherObject[3].dst[i], &g->timer1, &g->KeyInput, g->sSelect.panel);
 
