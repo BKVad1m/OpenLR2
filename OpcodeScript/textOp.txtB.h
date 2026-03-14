@@ -12,7 +12,7 @@ case 17: return "THISSONG_PLAYLEVEL";
 case 18: return "THISSONG_DIFFICULTYCOUNT";
 
 
-case 20: return "TAGEDIT_TITLE";
+case 20: return "TAGEDIT_TITLE/IRMESSAGE";
 case 21: return "TAGEDIT_SUBTITLE";
 case 22: return "TAGEDIT_FULLTITLE";
 case 23: return "TAGEDIT_GENRE";

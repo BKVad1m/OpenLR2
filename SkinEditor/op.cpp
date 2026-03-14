@@ -1,7 +1,8 @@
 #include "op.h"
 
 //dst OP
-const char* dstName(unsigned n) {
+const char* dstName(unsigned n, bool skipzero) {
+	if (n == 0 && skipzero) return "";
 	switch (n) {
 		case 0: return "AlwaysTrue";
 		case 1: return "ThisBarFolder";
@@ -1133,7 +1134,7 @@ const char* textName(unsigned n) {
 		case 18: return "THISSONG_DIFFICULTYCOUNT";
 
 
-		case 20: return "TAGEDIT_TITLE";
+		case 20: return "TAGEDIT_TITLE/IRMESSAGE";
 		case 21: return "TAGEDIT_SUBTITLE";
 		case 22: return "TAGEDIT_FULLTITLE";
 		case 23: return "TAGEDIT_GENRE";
@@ -1289,7 +1290,8 @@ const char* textName(unsigned n) {
 	}
 }
 
-const char* timerName(unsigned n) {
+const char* timerName(unsigned n, bool skipzero) {
+	if (n == 0 && skipzero) return "";
 	switch (n) {
 		case 0: return "MainTimer";
 		case 1: return "StartInputDone";

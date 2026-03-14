@@ -60,7 +60,7 @@ int ARR::InsertAt(int at, void* newdata) {
     return 0;
 }
 
-int ARR::DeleteAt(int at, void* newdata) {
+int ARR::DeleteAt(int at) {
     if (at < 0 || at > count) return -1;
     for (int i = count; i >= at; i--) {
         memcpy((void*)((int)data + unitSize * i), (void*)((int)data + unitSize * (i+1)), unitSize);

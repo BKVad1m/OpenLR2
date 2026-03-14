@@ -8,6 +8,19 @@ int LR2SEInit(game* g) {
 	InitObjectString(&g->txtStruct);
 	InitGameplay(&g->gameplay, &g->config.play);
 
+
+	DeleteGraph(g->skstruct.GrHandle[GrH_BackBMP]); 
+	DeleteGraph(g->skstruct.GrHandle[GrH_Preview]);
+	DeleteGraph(g->skstruct.GrHandle[GrH_Stage]);
+	DeleteGraph(g->skstruct.GrHandle[GrH_Banner]);
+	g->skstruct.GrHandle[GrH_BackBMP] = LoadGraph("LR2files/Config/white.bmp");
+	g->skstruct.GrHandle[GrH_Preview] = LoadGraph("LR2files/Config/white.bmp");
+	g->skstruct.GrHandle[GrH_Stage] = LoadGraph("LR2files/Config/title.bmp");
+	g->skstruct.GrHandle[GrH_Banner] = LoadGraph("LR2files/Config/white.bmp");
+
+	//LoadGraph("LR2files/Config/loading.bmp", 0);
+
+
 	return 0;
 }
 
@@ -450,7 +463,110 @@ int LR2SESceneInit(game *g, int type) {
 	case SKINTYPE_7KEYSBATTLE:
 	case SKINTYPE_5KEYSBATTLE:
 	case SKINTYPE_9KEYSBATTLE:
-		PlayPreviewSample(g);
+	{
+		InitKeysound(g);
+
+		//PlayPreviewSample(g);
+		int scratchSide = 0;
+		ConfigStruct tCfg = g->config;
+		tCfg.play.battle = (g->skinData.select >= 12);
+		g->gameplay.isAutoplay = 1;
+		scratchSide = 0;
+		if (g->skinData.select == 3 && g->skinData.Data[g->skinData.skinID[3]].type == SKINTYPE_14KEYS)
+			scratchSide = g->skstruct.scratchside_1 + g->skstruct.scratchside_2 * 2;
+		if (g->skinData.select == 1 && g->skinData.Data[g->skinData.skinID[1]].type == SKINTYPE_7KEYS)
+			scratchSide = g->skstruct.scratchside_1 + g->skstruct.scratchside_2 * 2;
+		if (g->skinData.select == 13 && g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_5KEYSBATTLE)
+			scratchSide = g->skstruct.scratchside_1 + g->skstruct.scratchside_2 * 2;
+		ProcS_Select(g);
+		ReleaseBGA(g);
+		switch (g->skinData.select) {
+		default: //case 0:?
+			ReadKeyConfig(g, "LR2files\\Config\\keyconfig.xml");
+			g->sSelect.metaSelected.keymode = 7;
+			InitGameplay(&g->gameplay, &tCfg.play);
+			ParseBmsFile(&g->gameplay, "LR2files\\Config\\sample_7.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide);
+			LoadBmsResource(&g->gameplay, "LR2files\\Config\\sample_7.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide, 0);
+			break;
+
+		case 1:
+			if (g->skinData.Data[g->skinData.skinID[1]].type == SKINTYPE_7KEYS)
+				ReadKeyConfig(g, "LR2files\\Config\\keyconfig.xml");
+			else
+				ReadKeyConfig(g, "LR2files\\Config\\keyconfig_5.xml");
+			g->sSelect.metaSelected.keymode = 5;
+			InitGameplay(&g->gameplay, &tCfg.play);
+			ParseBmsFile(&g->gameplay, "LR2files\\Config\\sample_5.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide);
+			LoadBmsResource(&g->gameplay, "LR2files\\Config\\sample_5.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide, 0);
+			break;
+
+		case 2:
+			ReadKeyConfig(g, "LR2files\\Config\\keyconfig.xml");
+			g->sSelect.metaSelected.keymode = 14;
+			InitGameplay(&g->gameplay, &tCfg.play);
+			ParseBmsFile(&g->gameplay, "LR2files\\Config\\sample_14.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide);
+			LoadBmsResource(&g->gameplay, "LR2files\\Config\\sample_14.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide, 0);
+			break;
+
+		case 3:
+			if (g->skinData.Data[g->skinData.skinID[3]].type == SKINTYPE_14KEYS)
+				ReadKeyConfig(g, "LR2files\\Config\\keyconfig.xml");
+			else
+				ReadKeyConfig(g, "LR2files\\Config\\keyconfig_5.xml");
+			g->sSelect.metaSelected.keymode = 10;
+			InitGameplay(&g->gameplay, &tCfg.play);
+			ParseBmsFile(&g->gameplay, "LR2files\\Config\\sample_10.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide);
+			LoadBmsResource(&g->gameplay, "LR2files\\Config\\sample_10.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide, 0);
+			break;
+
+		case 4:
+			ReadKeyConfig(g, "LR2files\\Config\\keyconfig_p.xml");
+			g->sSelect.metaSelected.keymode = 9;
+			InitGameplay(&g->gameplay, &tCfg.play);
+			ParseBmsFile(&g->gameplay, "LR2files\\Config\\sample_9.pms", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide);
+			LoadBmsResource(&g->gameplay, "LR2files\\Config\\sample_9.pms", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide, 0);
+			break;
+
+		case 13:
+			if (g->skinData.Data[g->skinData.skinID[13]].type == SKINTYPE_5KEYSBATTLE)
+				ReadKeyConfig(g, "LR2files\\Config\\keyconfig.xml");
+			else
+				ReadKeyConfig(g, "LR2files\\Config\\keyconfig_5.xml");
+			g->sSelect.metaSelected.keymode = 5;
+			InitGameplay(&g->gameplay, &tCfg.play);
+			ParseBmsFile(&g->gameplay, "LR2files\\Config\\sample_5.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide);
+			LoadBmsResource(&g->gameplay, "LR2files\\Config\\sample_5.bme", &g->audio, &tCfg, &g->sSelect.metaSelected, 1, scratchSide, 0);
+			break;
+		}
+
+		g->gameplay.bgaLayer1 = 1;
+		if (g->skinData.select == 7) {
+			g->gameplay.player[0].clearType = (GetRand(1) == 0) ? 5 : 1;
+			g->gameplay.player[1].clearType = g->gameplay.player[0].clearType;
+			for (int p = 0; p < 2; p++) {
+				g->gameplay.player[p].rate = 100.0;
+				g->gameplay.player[p].totalnotes = 1000;
+				g->gameplay.player[p].max_combo = 1000;
+				g->gameplay.player[p].judgecount[5] = 1000;
+				g->gameplay.player[p].exscore = 2000;
+				g->gameplay.player[p].score = 200000;
+
+				for (int i = 0; i < 1000; i++) {
+					g->gameplay.statgraph[p].combo[i] = g->gameplay.player[p].totalnotes * i / 1000;
+					g->gameplay.statgraph[p].exscore[i] = g->gameplay.player[p].totalnotes * i * 16 / 9000;
+					g->gameplay.statgraph[p].hp[i] = (100 * i) / 1000;
+					if (p == 0) {
+						g->gameplay.rategraph[0].val[i] = g->gameplay.statgraph[0].exscore[0] * 7 / 8;
+						g->gameplay.rategraph[1].val[i] = g->gameplay.statgraph[0].exscore[0] * 6 / 8;
+					}
+				}
+
+				g->gameplay.statgraph[p].cursor = 1000;
+				g->gameplay.rategraph[0].cursor = 1000;
+				g->gameplay.rategraph[1].cursor = 1000;
+			}
+		}
+	}
 		break;
 
 	case SKINTYPE_RESULT:

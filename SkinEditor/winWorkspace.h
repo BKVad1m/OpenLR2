@@ -14,9 +14,21 @@ typedef struct SKINFILELINEREAD {
     CSTR line;
     bool isComment;
     bool isSEcomment;
+    bool show = true;
+
     CSVbuf csv;
 
     int ifgroup;
+
+    bool isIfGroupHead = false;
+    bool isIfGroupEnd = false;
+    bool isGroupHead = false;
+    bool isGroupEnd = false;
+    bool isObjectHead = false;
+    bool isObjectEnd = false;
+
+    int objType;
+    int objInTypeID;
 
 }SKINFILELINEREAD;
 
@@ -109,6 +121,11 @@ typedef struct SKINUNIT {
 
     int src;
     int dst;
+
+    int ifGroup;
+
+    int igType;
+    int igID;
 }SKINUNIT, SEOBJ;
 
 typedef enum HISTORYOP {
@@ -194,6 +211,7 @@ typedef struct WORKSPACE {
     //TextEdit
     bool wTextEdit;
     int drawTextEdit();
+    int textCursor = 0;
     bool hideComment = false;
     bool hideBlank = false;
 
@@ -201,6 +219,7 @@ typedef struct WORKSPACE {
 
     bool wPreview;
     int drawPreview();
+    int timerSelected;
     bool wCustomize;
     int drawCustomize();
 
@@ -248,6 +267,13 @@ typedef struct WORKSPACE {
 
     bool wObjectManagerTest;
     int drawObjectManagerTest();
+    struct preview_selected_obj {
+        float x;
+        float y;
+        float w;
+        float h;
+    }preview_selected_obj;
+    int selectedObjectTest;
     
 
 }WORKSPACE;

@@ -93,7 +93,7 @@ int WORKSPACE::draw() {
                 ImGui::MenuItem("ImgManager", NULL, &wImgManager);
                 //if (ImGui::MenuItem("ImgManager", NULL, &wImgManager)) { loadSRC(); };
                 ImGui::MenuItem("fileManager", NULL, &wFileManager);
-                ImGui::MenuItem("treeVeiw", NULL, &wTreeView);
+                ImGui::MenuItem("treeView", NULL, &wTreeView);
                 ImGui::MenuItem("SimplePreview", NULL, &wSimplePreview);
                 ImGui::MenuItem("dstView", NULL, &wDstView);
                 ImGui::MenuItem("objectManager", NULL, &wObjectManager);
@@ -207,58 +207,58 @@ int WORKSPACE::ReadSkin(char* path) {
     FILE* pFile;
 
     pFile = fopen(path, "rb");
-    if (pFile) {
-        int c = 0;
-        
-        SKINFILELINEREAD& readS = ((SKINFILELINEREAD*)skinfileLines.data)[skinfileLines.count];
-        readS.line.resize(1024);
-        sprintf(readS.line, "$FILE \'%s\' start", path);
-        readS.isComment = true;
-        readS.isSEcomment = true;
-        readS.numTotal = skinfileLines.count;
-        readS.num = 0;
-        skinfileLines.count++;
+    if (!pFile) return -1;
 
-        while (1) {
-            int i = skinfileLines.count;
-            SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[i];
-            read.line.resize(1024);
-            read.filename.resize(260);
+    SKINFILELINEREAD* readS = (SKINFILELINEREAD*)skinfileLines.Get_new();
+    readS->line.resize(1024);
+    sprintf(readS->line, "$FILE \'%s\' start", path);
+    readS->isComment = true;
+    readS->isSEcomment = true;
+    readS->numTotal = skinfileLines.count;
+    readS->num = 1;
 
-            if (fgets(read.line.outstr(), 1023, pFile) == 0) break;
-            DealWhiteSpace(&read.line);
-            read.numTotal = i;
-            read.filename.assign(path);
-            read.num = c;
-            read.isComment = (*read.line.atPos(0) != '#');
-            read.isSEcomment = (*read.line.atPos(0) != '$');
+    int c = 2;
+    while (1) {
+        char readbuf[1024];
 
-            if(!read.isComment) SplitCSV(read.line, &read.csv, ",");
+        if (fgets(readbuf, 1023, pFile) == 0) break;
+
+        SKINFILELINEREAD* read = (SKINFILELINEREAD*)skinfileLines.Get_new();
+        read->line.resize(1024);
+        read->filename.resize(260);
+        read->line.assign(readbuf);
             
-            skinfileLines.count++;
-            c++;
-            if (skinfileLines.count == skinfileLines.bufSize) skinfileLines.Realloc(skinfileLines.bufSize + 1000);
+        DealWhiteSpace(&read->line);
+        read->numTotal = skinfileLines.count;
+        read->filename.assign(path);
+        read->num = c;
+        read->isComment = (*read->line.atPos(0) != '#');
+        read->isSEcomment = (*read->line.atPos(0) != '$');
 
-            SKINFILELINEREAD& read2 = ((SKINFILELINEREAD*)skinfileLines.data)[i];
-            if (read2.line.left(8).isSame("#INCLUDE")) {
-                if (read2.csv.str[1].canOpenFile()) {
-                    CSTR& tmp = read2.csv.str[1];
-                    arr_subpath.push_back(&tmp);
+        if(!read->isComment) SplitCSV(read->line, &read->csv, ",");
+            
+        c++;
 
-                    ReadSkin(read2.csv.str[1]);
-                }
+        if (read->line.left(8).isSame("#INCLUDE")) {
+            if (read->csv.str[1].canOpenFile()) {
+                CSTR& tmp = read->csv.str[1];
+                arr_subpath.push_back(&tmp);
+
+                ReadSkin(read->csv.str[1]);
             }
         }
-        SKINFILELINEREAD& readE = ((SKINFILELINEREAD*)skinfileLines.data)[skinfileLines.count];
-        readE.line.resize(1024);
-        sprintf(readE.line, "$FILE \'%s\' end", path);
-        readE.isComment = true;
-        readE.isSEcomment = true;
-        readE.numTotal = skinfileLines.count;
-        readE.num = 0;
-        skinfileLines.count++;
-        fclose(pFile);
     }
+
+    SKINFILELINEREAD* readE = (SKINFILELINEREAD*)skinfileLines.Get_new();
+    readE->line.resize(1024);
+    sprintf(readE->line, "$FILE \'%s\' end", path);
+    readE->isComment = true;
+    readE->isSEcomment = true;
+    readE->numTotal = skinfileLines.count;
+    readE->num = c;
+        
+
+    fclose(pFile);
 
     return 0;
 }
@@ -305,6 +305,8 @@ int WORKSPACE::ParseSkin() {
             arr_ifunit.push_back(&tif);
             read.ifgroup = IFcur;
 
+            read.isIfGroupHead = true;
+            read.isGroupHead = true;
         }
         else if (read.csv.str[0].isSame("#ELSEIF")) {
             isif = true;
@@ -323,6 +325,9 @@ int WORKSPACE::ParseSkin() {
 
             grCount -= ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount;
             grInIf = 0;
+
+            read.isIfGroupHead = true;
+            read.isGroupHead = true;
         }
         else if (read.csv.str[0].isSame("#ELSE")) {
             isif = true;
@@ -341,6 +346,9 @@ int WORKSPACE::ParseSkin() {
 
             grCount -= ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount;
             grInIf = 0;
+
+            read.isIfGroupHead = true;
+            read.isGroupHead = true;
         }
         else if (read.csv.str[0].isSame("#ENDIF")) {
             isif = true;
@@ -353,6 +361,9 @@ int WORKSPACE::ParseSkin() {
 
             grCount -= ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount;
             grInIf = 0;
+
+            read.isIfGroupEnd = true;
+            read.isGroupEnd = true;
         }
         else {
             read.ifgroup = IFcur + cOrder;
@@ -431,9 +442,7 @@ int WORKSPACE::ParseSkin() {
 
         if (read.csv.str[0].isSame("#SRC_IMAGE")) {
 
-            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
-                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
 
             SRC *src = (SRC*)(arr_SRC.Get_new());
                         
@@ -465,8 +474,12 @@ int WORKSPACE::ParseSkin() {
             srcNow++;
         }
 
+        else if (read.csv.str[0].isSame("#DST_BGA")) {
+
+        }
         else if (read.csv.str[0].isSame("#DST_IMAGE") || read.csv.str[0].isSame("#DST_SLIDER") || read.csv.str[0].isSame("#DST_BUTTON") 
-            || read.csv.str[0].isSame("#DST_BARGRAPH") || read.csv.str[0].isSame("#DST_NUMBER") || read.csv.str[0].isSame("#DST_TEXT") || read.csv.str[0].isSame("#DST_ONMOUSE")) {
+            || read.csv.str[0].isSame("#DST_BARGRAPH") || read.csv.str[0].isSame("#DST_NUMBER") || read.csv.str[0].isSame("#DST_TEXT") || read.csv.str[0].isSame("#DST_ONMOUSE")
+            || read.csv.str[0].left(5).isSame("#DST_")) {
             
             DST* dst = NULL;
             if (srcNow > srcOld) {
@@ -519,15 +532,11 @@ int WORKSPACE::ParseSkin() {
             dst->animation++;
             dst->leadDST = currentLeadDST;
         }
-        else if (read.csv.str[0].isSame("#DST_BGA")) {
-
-        }
+        
 
         else if (read.csv.str[0].isSame("#SRC_NUMBER")) { 
 
-            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
-                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -565,9 +574,7 @@ int WORKSPACE::ParseSkin() {
         
         else if (read.csv.str[0].isSame("#SRC_SLIDER")) {
 
-            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
-                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) { srcNow++; continue; }
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -605,9 +612,7 @@ int WORKSPACE::ParseSkin() {
         }
         else if (read.csv.str[0].isSame("#SRC_BUTTON")) {
 
-            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
-                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) { srcNow++; continue; }
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -645,9 +650,7 @@ int WORKSPACE::ParseSkin() {
         }
         else if (read.csv.str[0].isSame("#SRC_BARGRAPH")) {
 
-            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
-                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) { srcNow++; continue; }
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -683,9 +686,7 @@ int WORKSPACE::ParseSkin() {
          }
         else if (read.csv.str[0].isSame("#SRC_TEXT")) {
 
-            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
-                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) { srcNow++; continue; }
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -721,9 +722,7 @@ int WORKSPACE::ParseSkin() {
         }
         else if (read.csv.str[0].isSame("#SRC_ONMOUSE")) {
 
-            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
-                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) { srcNow++; continue; }
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -758,9 +757,7 @@ int WORKSPACE::ParseSkin() {
             }
         else if (read.csv.str[0].isSame("#SRC_BGA")) {
 
-            if (read.csv.val[2] == GrH_Stage || read.csv.val[2] == GrH_BackBMP ||
-                read.csv.val[2] == GrH_Banner || read.csv.val[2] == GrH_Preview ||
-                read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) { srcNow++; continue; }
 
             SRC* src = (SRC*)(arr_SRC.Get_new());
 
@@ -795,18 +792,13 @@ int WORKSPACE::ParseSkin() {
             srcNow++;
         }
 
-        
     }
     
-
-
-
     //images load
     int gr = 0;
     for (int n = 0; n < arr_SRCGR.count; n++) {
         SRCGR& img = ((SRCGR*)arr_SRCGR.data)[n];
         CSTR& path = ((SRCGR*)arr_SRCGR.data)[n].path;
-
 
         if (path.isSame("CONTINUE")) {
             gr++;
@@ -846,22 +838,6 @@ int WORKSPACE::ParseSkin() {
 }
 
 int WORKSPACE::LoadSkin(char* path) {
-    //FILE* pFile;
-    //pFile = fopen(path, "rb");
-    //if (pFile) {
-    //    fseek(pFile, 0, SEEK_END);
-    //    filedatasize = ftell(pFile);
-
-    //    if (filedata) free(filedata);
-    //    filedata = (byte*)malloc(filedatasize + 1);//we need null to work
-    //    if (filedata) {
-    //        memset(filedata, 0, filedatasize + 1);
-    //        fseek(pFile, 0, SEEK_SET);
-    //        fread(filedata, 1, filedatasize, pFile);
-    //    }
-
-    //    fclose(pFile);
-    //}
     skinSizeX = meta.targetX;
     skinSizeY = meta.targetY;
 
@@ -921,6 +897,9 @@ int WORKSPACE::LoadSkin(char* path) {
     //previewScreen = MakeSoftImage(640, 480);
     previewScreen = MakeARGB8ColorSoftImage(skinSizeX, skinSizeY);
 
+    wPreview = 1;
+    wObjectManagerTest = 1;
+
     return 0;
 }
 
@@ -930,6 +909,7 @@ int WORKSPACE::MakeObjects() {
         SEOBJ* seobj = (SEOBJ*)arr_seobj.Get_new();
         seobj->ID = i;
         seobj->dst = i;
+        seobj->src = ((DST*)arr_DST.data)[i].src;
 
         seobj->name.assign("");
         if (((DST*)arr_DST.data)[i].op1 >= 0) {
@@ -939,9 +919,15 @@ int WORKSPACE::MakeObjects() {
             seobj->name.add("Not_");
             seobj->name.add(dstName(-((DST*)arr_DST.data)[i].op1));
         }
-        
 
-        seobj->src = ((DST*)arr_DST.data)[i].src;
+        seobj->ifGroup = ((SRC*)arr_SRC.data)[seobj->src].ifGroup;
+        if (seobj->ifGroup) {
+            seobj->name.add("_");
+        }
+
+        seobj->igType;
+        seobj->igID;
+        
     }
     
     
@@ -1013,18 +999,59 @@ int WORKSPACE::drawPreview() {
     LR2SEDrawLoop(&g, previewScreen, skinSizeX, skinSizeY);
     
     ImGui::Begin(title, &wPreview, ImGuiWindowFlags_HorizontalScrollbar);
+
+    ImVec2 p = ImGui::GetCursorScreenPos();
+
     LoadTextureFromRawMemory(GetImageAddressSoftImage(previewScreen), renderer, &preview_tex, skinSizeX, skinSizeY, 4);
     ImGui::Image(preview_tex, { (float)skinSizeX, (float)skinSizeY }, { 0, 0 }, { 1, 1 });
 
-    if (ImGui::Button("Start")) {
+    if (ImGui::Button("MainStart")) {
         LR2SESceneInit(&g, meta.type);
         playing = true;
     }
     if(playing)
         LR2SESceneProc(&g, meta.type);
 
+    if (ImGui::BeginCombo("##Timer",timerName(timerSelected))) {
+        for (int timer = 0; timer < 200; timer++) {
+            ImGui::PushID(timer);
+            const bool is_selected = (timerSelected == timer);
+            char timerNameBuf[64];
+            sprintf(timerNameBuf, "%03d:%s", timer, timerName(timer));
+            if (ImGui::Selectable(timerNameBuf, is_selected))
+                timerSelected = timer;
+
+            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+            
+
+            ImGui::PopID();
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Start")) {
+        SetTimeLapse(timerSelected, &g.timer1);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Reset")) {
+        ResetTimeLapse(timerSelected, &g.timer1);
+    }
+
     //D_IDirect3DSurface9* d9 = (D_IDirect3DSurface9*)GetUseDirect3D9BackBufferSurface();
     //d9->GetDC()
+
+    //test draw square on preview
+    ImVec2 srcposLU = { p.x + preview_selected_obj.x - 1, p.y + preview_selected_obj.y - 1 };
+    ImVec2 srcposRB = { p.x + preview_selected_obj.x + preview_selected_obj.w + 1, p.y + preview_selected_obj.y + preview_selected_obj.h + 1 };
+
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+    bool flicking = ((int)GetTimeLapse(1, &g.timer1) % 200 > 100);
+    ImColor color = flicking ? 0xff0080ff : 0x000000;
+    draw_list->AddRect(srcposLU, srcposRB, color, 0.0f, ImDrawFlags_Closed, 1.0f);
+    //test draw square on preview
 
     ImGui::End();
 
@@ -1036,7 +1063,7 @@ int WORKSPACE::drawTextEdit() {
     char title[260];
     snprintf(title, sizeof(title), "TextEdit##%d", num);
 
-    ImGui::Begin(title, &wTextEdit, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::Begin(title, &wTextEdit, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("Hide")) {
@@ -1049,16 +1076,41 @@ int WORKSPACE::drawTextEdit() {
         ImGui::EndMenuBar();
     }
 
+    //vertical scroll & skip hidden
+    ImGuiIO& io = ImGui::GetIO();
+    textCursor -= io.MouseWheel;
+    if (textCursor < 0) textCursor = 0;
+    SKINFILELINEREAD* read1 = &((SKINFILELINEREAD*)skinfileLines.data)[textCursor];
+    while ((hideBlank && *read1->line.atPos(0) == '\0') || (hideComment && read1->isComment)) {
+        if (io.MouseWheel < 0) textCursor++;
+        else textCursor--;
 
-    for (int n = 0; n < skinfileLines.count; n++) {
+        if (textCursor < 0) {
+            textCursor = 0;
+            read1 = &((SKINFILELINEREAD*)skinfileLines.data)[textCursor];
+            while ((hideBlank && *read1->line.atPos(0) == '\0') || (hideComment && read1->isComment)) {
+                textCursor++;
+                read1 = &((SKINFILELINEREAD*)skinfileLines.data)[textCursor];
+            }
+        }
+        read1 = &((SKINFILELINEREAD*)skinfileLines.data)[textCursor];
+    }
+    if (textCursor < 0) textCursor = 0;
+    if (textCursor >= skinfileLines.count) textCursor = skinfileLines.count-1;
+    
+    //print every line
+    int printed = 0;
+    for (int n = textCursor; n < skinfileLines.count && printed < 30; n++) {
         SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[n];
-        /*char itemname[260];
-        snprintf(itemname, sizeof(itemname), "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());*/
+
         ImVec4 color;
         color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-        if (hideBlank && *read.line.atPos(0) == '\0') continue;
-        if (hideComment && read.isComment) continue;
+        if ((hideBlank && *read.line.atPos(0) == '\0') || (hideComment && read.isComment)) {
+            continue;
+        }
+        /*char itemname[260];
+        snprintf(itemname, sizeof(itemname), "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());*/
 
         //ImGui::PushID(n);
         //ImGui::Button(" ");
@@ -1074,7 +1126,7 @@ int WORKSPACE::drawTextEdit() {
         //ImGui::SameLine();
 
         IFUNIT& ifs = ((IFUNIT*)arr_ifunit.data)[read.ifgroup];
-        bool head = (read.numTotal == ifs.declare);
+        bool head = read.isIfGroupHead || read.isGroupHead;//(read.numTotal == ifs.declare);
         bool isHide = ifs.hide;
         int parIFCursor = ifs.parentID;
         for (int i = 0; i < ifs.depth; i++) {
@@ -1088,16 +1140,28 @@ int WORKSPACE::drawTextEdit() {
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV((head + isHide) / 3.0f, 0.7f, 0.7f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV((head + isHide) / 3.0f, 0.8f, 0.8f));
         if (ImGui::Button(" ")) {
-
-            if (read.numTotal == ifs.declare) {
+            if (head){//read.numTotal == ifs.declare) {
                 ifs.hide ^= 1;
             }
+        }        
+
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+            if (ImGui::BeginPopupContextWindow()) {
+                ImGui::MenuItem("move");
+                ImGui::MenuItem("insert");
+                ImGui::MenuItem("group");
+                ImGui::MenuItem("delete");
+                ImGui::EndPopup();
+            }
         }
+
         ImGui::PopStyleColor(3);
         ImGui::PopID();
         ImGui::SameLine();
 
+
         ImGui::Text("%d ", read.ifgroup);
+        
         ImGui::SameLine();
 
         if (read.isComment) {
@@ -1135,7 +1199,7 @@ int WORKSPACE::drawTextEdit() {
 
             char tablename[260];
             snprintf(tablename, sizeof(tablename), "##w%d_text", num);
-            if (ImGui::BeginTable(tablename, 22, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_ScrollX | ImGuiTableFlags_NoPadInnerX, {4000,30},3999))
+            if (ImGui::BeginTable(tablename, 22, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_NoPadInnerX , {4000,18},3999))
             {
                 ImGui::PushItemWidth(FLT_MAX);
                 ImGui::TableNextRow();
@@ -1154,7 +1218,6 @@ int WORKSPACE::drawTextEdit() {
                         
                         if (GetCommandHelp(read.csv.str[0].outstr(), column).left(2).isSame("op")) {
                             if (ImGui::BeginCombo(inputname, dstName(read.csv.val[column]), ImGuiComboFlags_None)) {
-                                ;
                                 for (int op = 0; op < 1000; op++) {
                                     ImGui::PushID(op);
                                     const bool is_selected = (read.csv.val[column] == op);
@@ -1173,12 +1236,32 @@ int WORKSPACE::drawTextEdit() {
                                 ImGui::EndCombo();
                             }
                         }
+                        else if (GetCommandHelp(read.csv.str[0].outstr(), column).left(2).isSame("st")) {
+                            if (ImGui::BeginCombo(inputname, textName(read.csv.val[column]), ImGuiComboFlags_None)) {
+                                for (int op = 0; op < 200; op++) {
+                                    ImGui::PushID(op);
+                                    const bool is_selected = (read.csv.val[column] == op);
+                                    char opname[64];
+                                    sprintf(opname, "%03d:%s", op, textName(op));
+
+                                    if (ImGui::Selectable(opname, is_selected))
+                                        read.csv.val[column] = op;
+
+                                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                    if (is_selected)
+                                        ImGui::SetItemDefaultFocus();
+
+                                    ImGui::PopID();
+                                }
+                                ImGui::EndCombo();
+                            }
+                        }
                         else
                             ImGui::InputText(inputname, read.csv.str[column], 260, ImGuiInputTextFlags_AutoSelectAll);
                         
                     }
 
-                    if (ImGui::BeginItemTooltip())
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
                     {
                         //ImGui::Text("%d",ifs.grCount);
                         ImGui::Text("%s", GetCommandHelp(read.csv.str[0].outstr(), column).outstr());
@@ -1210,7 +1293,8 @@ int WORKSPACE::drawTextEdit() {
                 ImGui::EndTable();
             }
         }
-
+        
+        printed++;
         /*if (ImGui::BeginChild(ImGuiChildFlags_FrameStyle))
         {
             for (int n = 0; n < skinfileLines.count; n++){
@@ -1275,7 +1359,7 @@ int WORKSPACE::drawImgManager() {
             ImGui::PushID(i);
             if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull | ((gr_selected == i) ? ImGuiTreeNodeFlags_Selected : NULL)))
             {
-                if (ImGui::BeginItemTooltip())
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
                 {
                     ImGui::Text("%s", img.path.outstr());
                     ImGui::EndTooltip();
@@ -1301,7 +1385,7 @@ int WORKSPACE::drawImgManager() {
                             ImGui::TreePop();
                         }
 
-                        if (ImGui::BeginItemTooltip())
+                        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
                         {
                             if (img.texture != NULL) {
                                 int sizeX = src.sizeX == -1 ? img.sizeX - src.x : src.sizeX;
@@ -1346,7 +1430,7 @@ int WORKSPACE::drawImgManager() {
                 if (ImGui::IsItemClicked()) {
                     gr_selected = img.grID;
                 }
-                if (ImGui::BeginItemTooltip())
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
                 {
                     ImGui::Text("%s", img.path.outstr());
                     ImGui::EndTooltip();
@@ -1415,7 +1499,7 @@ int WORKSPACE::drawImgManager() {
                     if (ImGui::IsItemClicked()) {
                         gr_selected = hoversrc.gr;
                     }
-                    if (ImGui::BeginItemTooltip())
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
                     {
                         ImGui::Text("line %d : %d %d ~ %d %d",hoversrc.declare , hoversrc.x, hoversrc.y, hoversrc.x + hoversrc.sizeX, hoversrc.y + hoversrc.sizeY);
                         ImGui::EndTooltip();
@@ -1539,7 +1623,7 @@ int WORKSPACE::drawSaveMenu() {
         ImGui::SeparatorText("Comments");
         ImGui::RadioButton("maintain memo", &nocomment, 0);
         ImGui::RadioButton("delete memo", &nocomment, 1);
-        if(ImGui::BeginTooltip()){
+        if(ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip()){
             ImGui::Text("this will remove all group, only for Scene start speed on LR2.\nAre your sure this?");
             ImGui::EndTooltip();
         }
@@ -1781,13 +1865,11 @@ int WORKSPACE::drawDstView() {
                     selected_dst = i;
                     SetTimeLapse(1, &g.timer1);
                 }
-                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone)) {
-                    if(ImGui::BeginTooltip()) {
-                        if (dst.op1) ImGui::Text("%03d(%s)\n", dst.op1, dstName(dst.op1));
-                        if (dst.op2) ImGui::Text("%03d(%s)\n", dst.op2, dstName(dst.op2));
-                        if (dst.op3) ImGui::Text("%03d(%s)", dst.op3, dstName(dst.op3));
-                        ImGui::EndTooltip();
-                    }
+                if(ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip()) {
+                    if (dst.op1) ImGui::Text("%03d(%s)\n", dst.op1, dstName(dst.op1));
+                    if (dst.op2) ImGui::Text("%03d(%s)\n", dst.op2, dstName(dst.op2));
+                    if (dst.op3) ImGui::Text("%03d(%s)", dst.op3, dstName(dst.op3));
+                    ImGui::EndTooltip();
                 }
                 ImGui::PopID();
             }
@@ -1937,23 +2019,100 @@ int WORKSPACE::drawObjectManagerTest() {
 
     char title[260];
     snprintf(title, sizeof(title), "objectManagerTest##%d", num);
-    if (ImGui::Begin(title, &wObjectManagerTest)) {
-        g.skstruct.image.src;
 
-        g.skstruct.otherObject[0].srcSize;
+    int objcount = 0;
+    if (ImGui::Begin(title, &wObjectManagerTest)) {
+        char buf[260];
 
         for (int i = 0; i < g.skstruct.image.srcSize; i++) {
             SRCstruct& src = g.skstruct.image.src[i];
             DSTstruct& dst = g.skstruct.image.dst[i];
-            ImGui::Text("#SRC_IMAGE%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
-            ImGui::Text("#DST_IMAGE%03d: %s %s %s %s", i, timerName(dst.timer), dst.opt1 ? dstName(dst.opt1) : "", dst.opt2 ? dstName(dst.opt2) : "", dst.opt3 ? dstName(dst.opt3) : "");
+            sprintf(buf, "$OBJ_IMAGE%03d: %s %s %s %s %s %s %s %s", i, timerName(src.timer,1), dstName(src.op1,1), dstName(src.op2,1), dstName(src.op3,1), timerName(dst.timer,1), dstName(dst.op1,1), dstName(dst.op2,1), dstName(dst.op3,1));
+            if (ImGui::Selectable(buf)) {
+                preview_selected_obj = { dst.draw[dst.dstCount-1].x, dst.draw[dst.dstCount - 1].y, dst.draw[dst.dstCount - 1].w, dst.draw[dst.dstCount - 1].h};
+                selectedObjectTest = objcount;
+            }
+            objcount++;
+            //ImGui::Text("#SRC_IMAGE%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            //ImGui::Text("#DST_IMAGE%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+        for (int i = 0; i < g.skstruct.otherObject[0].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[0].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[0].dst[i];
+            sprintf(buf, "$OBJ_TEXT%03d: %s %s %s %s %s %s %s %s", i, textName(src.st), dstName(src.op1, 1), dstName(src.op2, 1), dstName(src.op3, 1), timerName(dst.timer, 1), dstName(dst.op1, 1), dstName(dst.op2, 1), dstName(dst.op3, 1));
+            if (ImGui::Selectable(buf)) {
+                preview_selected_obj = { dst.draw[dst.dstCount - 1].x, dst.draw[dst.dstCount - 1].y, dst.draw[dst.dstCount - 1].w, dst.draw[dst.dstCount - 1].h };
+                selectedObjectTest = objcount;
+            }
+            objcount++;
+        }
+        for (int i = 0; i < g.skstruct.otherObject[1].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[1].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[1].dst[i];
+            ImGui::Text("#SRC_BUTTON%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_BUTTON%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+        for (int i = 0; i < g.skstruct.otherObject[2].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[2].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[2].dst[i];
+            ImGui::Text("#SRC_SLIDER%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_SLIDER%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+        for (int i = 0; i < g.skstruct.otherObject[3].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[3].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[3].dst[i];
+            ImGui::Text("#SRC_ONMOUSET%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_ONMOUSE%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+        for (int i = 0; i < g.skstruct.otherObject[4].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[4].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[4].dst[i];
+            ImGui::Text("#SRC_BGA%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_BGA%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+        for (int i = 0; i < g.skstruct.otherObject[5].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[5].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[5].dst[i];
+            ImGui::Text("#SRC_BARGRAPH%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_BARGRAPH%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+        for (int i = 0; i < g.skstruct.otherObject[6].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[6].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[6].dst[i];
+            sprintf(buf, "$OBJ_NUMBER%03d: %s %s %s %s %s %s", i, timerName(src.timer,1), numberName(src.op1), timerName(dst.timer,1), dstName(dst.op1,1), dstName(dst.op2,1), dstName(dst.op3,1));
+            if (ImGui::Selectable(buf)) {
+                preview_selected_obj = { dst.draw[dst.dstCount - 1].x, dst.draw[dst.dstCount - 1].y, dst.draw[dst.dstCount - 1].w, dst.draw[dst.dstCount - 1].h };
+            }
+        }
+        for (int i = 0; i < g.skstruct.otherObject[7].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[7].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[7].dst[i];
+            ImGui::Text("#SRC_MASK%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_MASK%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+
+        //select
+
+        //
+        if(true){
+            SRCstruct& src = g.skstruct.src_MOUSECURSOR;
+            DSTstruct& dst = g.skstruct.dst_MOUSECURSOR;
+            ImGui::Text("#SRC_MOUSECURSOR: %s %s %s %s", timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_MOUSECURSOR: %s %s %s %s", timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
         }
 
         for(int i = 0 ; i < 20 ; i++){
             SRCstruct& src = g.skstruct.src_NOTE[i];
             ImGui::Text("#SRC_NOTE%02d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
         }
-        
+
+    }
+    if (ImGui::BeginPopupContextWindow()){
+        ImGui::Text("selected : %d", selectedObjectTest);
+        ImGui::Separator();
+        ImGui::MenuItem("move");
+        ImGui::MenuItem("delete");
+        ImGui::EndPopup();
     }
     ImGui::End();
     return 0;
@@ -1986,8 +2145,8 @@ int WORKSPACE::drawObjectManager() {
                 char buf[260];
                 if (readS.ifgroup == readD.ifgroup) {
                     sprintf(buf, "%02d_", readS.ifgroup);
-                    for(int k = 0 ; k < ((IFUNIT*)arr_ifunit.data)[readS.ifgroup].depth; k++)
-                        sprintf(buf, "%s_", buf);   
+                    for (int k = 0; k < ((IFUNIT*)arr_ifunit.data)[readS.ifgroup].depth; k++)
+                        sprintf(buf, "%s_", buf);
                     sprintf(buf, "%s%03d(%s)", buf, seobj.ID, seobj.name.outstr());
                 }
                 else {
