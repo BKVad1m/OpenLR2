@@ -9,13 +9,11 @@ int LoadCommandHelp(const char* file) { //temp function, later hardcoded... with
 	CSVbuf csv;
 	FILE* hFile;
 
-
 	hFile = fopen(file, "r");
 	if (!hFile) return 0;
 
 	CSTR fBuf(260);
 	char* pFbuf;
-
 
 	arr_CommandHelp.Free();
 	arr_CommandHelp.Alloc(sizeof(CSVbuf), 100);
@@ -44,3 +42,5 @@ CSTR GetCommandHelp(const char* command, int column) {
 	}
 	return "WIP";
 }
+
+///////////////////////////////////////////////////////////////////////

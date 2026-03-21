@@ -16,5 +16,6 @@ typedef struct ARR {
     bool Is_full();
     void* Get_new();
     int InsertAt(int at, void* newdata);
+    void* Get_newAt(int at);
     int DeleteAt(int at);
 }ARR;

@@ -51,7 +51,7 @@ void* ARR::Get_new() {
 }
 
 int ARR::InsertAt(int at, void* newdata) {
-    if (count >= bufSize) Realloc(bufSize * 2); //make buffer size double
+    if (count+1 >= bufSize) Realloc(bufSize * 2); //make buffer size double
     for (int i = count; i >= at; i--) {
         memcpy((void*)((int)data + unitSize * (i+1)), (void*)((int)data + unitSize * i), unitSize);
     }
@@ -60,12 +60,21 @@ int ARR::InsertAt(int at, void* newdata) {
     return 0;
 }
 
+void* ARR::Get_newAt(int at) {
+    if (count + 1 >= bufSize) Realloc(bufSize * 2); //make buffer size double
+    for (int i = count; i >= at; i--) {
+        memcpy((void*)((int)data + unitSize * (i + 1)), (void*)((int)data + unitSize * i), unitSize);
+    }
+    memset((void*)((int)data + unitSize * at), 0, unitSize);
+    count++;
+    return (void*)((int)data + unitSize * at);
+}
+
 int ARR::DeleteAt(int at) {
     if (at < 0 || at > count) return -1;
-    for (int i = count; i >= at; i--) {
+    for (int i = at; i < count-1; i++) {
         memcpy((void*)((int)data + unitSize * i), (void*)((int)data + unitSize * (i+1)), unitSize);
     }
-    memset((void*)((int)data + unitSize * count), 0x00, unitSize);
     count--;
     return 0;
 }

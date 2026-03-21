@@ -30,6 +30,9 @@ typedef struct SKINFILELINEREAD {
     int objType;
     int objInTypeID;
 
+    bool isSRC = false;
+    bool isDST = false;
+    bool isOther = false;
 }SKINFILELINEREAD;
 
 typedef struct IFUNIT {
@@ -37,7 +40,7 @@ typedef struct IFUNIT {
     int depth = 0; //
     int order = 0;
     int parentID = 0; //
-    int declare = 0;
+    //int declare = 0;
 
     bool hide = 0;
 
@@ -84,6 +87,9 @@ typedef struct SRC {
     int declare;
     int ifGroup;
     int srcID;
+
+    int objType;//
+    int objID;
 }SRC;
 
 typedef struct DST {
@@ -202,6 +208,8 @@ typedef struct WORKSPACE {
     int ParseSkin();
     int currentLeadDST = -1;
 
+    int ParseSkin2();
+
     int SaveSkinScript(char* path, bool split, bool nocomment);
 
 
@@ -220,6 +228,9 @@ typedef struct WORKSPACE {
     bool wPreview;
     int drawPreview();
     int timerSelected;
+    ImVec2 clickPos;
+    bool drawRightClick;
+
     bool wCustomize;
     int drawCustomize();
 
@@ -231,6 +242,10 @@ typedef struct WORKSPACE {
     int loadSRC();
     ImVec4 bgColor;
     int oldIf = -1;
+
+    int printSrcImg(SRC src, bool button = 0);
+    int printSrcImgButton(SRC src, int num, int w, int h);
+    int printSrcImgEx(SRC src, int w, int h);
 
     bool wFileManager;
     int drawFileManager();

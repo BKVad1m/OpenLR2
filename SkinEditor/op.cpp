@@ -1516,3 +1516,19 @@ const char* bargraphName(unsigned n) {
 	default: return "";
 	}
 }
+
+const char* barindexName(unsigned n) {
+	switch (n) {
+	case 0: return "Song";
+	case 1: return "Folder";
+	case 2: return "CustomFolder";
+	case 3: return "NewFolder";
+	case 4: return "RivalFolder";
+	case 5: return "SongInRivalmode";
+	case 6: return "CourseFolder";
+	case 7: return "CreateFolder";
+	case 8: return "Course";
+	case 9: return "RandomCourse";
+	default: return "";
+	}
+}

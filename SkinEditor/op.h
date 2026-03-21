@@ -14,3 +14,4 @@ const char* timerName(unsigned n, bool skipzero = 0);
 
 const char* bargraphName(unsigned n);
 
+const char* barindexName(unsigned n);
