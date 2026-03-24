@@ -291,6 +291,12 @@ typedef struct WORKSPACE {
     int selectedObjectTest;
     
 
+    int InsertLine(int pos);
+    int DeleteLine(int pos);
+    int EditLine(int pos, CSTR newlinebody);
+    int EditValue(int pos, int column, int newVal);
+
+
 }WORKSPACE;
 
 //every windows have procs, flags

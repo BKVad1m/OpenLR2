@@ -2950,6 +2950,47 @@ int WORKSPACE::drawObjectManager() {
 }
 
 
+int WORKSPACE::InsertLine(int pos) {
+    
+    SKINFILELINEREAD* line = (SKINFILELINEREAD*)skinfileLines.Get_newAt(pos - 1);
+    line->line.assign("newline");
+    line->isComment = true;
+    line->num = pos;
+
+    return 0;
+}
+int WORKSPACE::DeleteLine(int pos) {
+    
+    skinfileLines.DeleteAt(pos - 1);
+
+    return 0;
+}
+int WORKSPACE::EditLine(int pos, CSTR newlinebody) {
+
+    SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
+    line.line.assign(newlinebody);
+
+    line.isComment = (*line.line.atPos(0) != '#');
+    line.isSEcomment = (*line.line.atPos(0) != '$');
+
+    if (!line.isComment) SplitCSV(line.line, &line.csv, ",");
+
+    return 0;
+}
+
+int WORKSPACE::EditValue(int pos, int column, int newVal) {
+
+    SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
+    //we need function, table line into csv str
+
+
+    //EditLine(pos, )
+
+    return 0;
+}
+
+
+
 
 
 ARR workspaceList;
