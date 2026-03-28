@@ -2,10 +2,12 @@
 #include "../LR2/LR2_skinmanage.h"
 #include "../LR2/LR2_skinload.h"
 #include "../LR2/LR2_skindraw.h"
+#include "../LR2/LR2_configsave.h"
 #include "../LR2/En_fileutil.h"
 #include "../LR2/Scene07_Skinselect.h"
 #include "../LR2/En_timer.h"
 #include "../LR2/En_value.h" //for ByTime
+
 #include "DxLib//DxLib.h"
 #include "winWorkspace.h"
 
@@ -1612,11 +1614,11 @@ int WORKSPACE::drawPreview() {
     LR2SEDrawLoop(&g, previewScreen, skinSizeX, skinSizeY);
     
     ImGui::Begin(title, &wPreview, ImGuiWindowFlags_HorizontalScrollbar);
-
+    ImGui::SliderFloat("##zoom", &zoom, 0.125f, 8.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
     ImVec2 p = ImGui::GetCursorScreenPos();
 
     LoadTextureFromRawMemory(GetImageAddressSoftImage(previewScreen), renderer, &preview_tex, skinSizeX, skinSizeY, 4);
-    ImGui::Image(preview_tex, { (float)skinSizeX, (float)skinSizeY }, { 0, 0 }, { 1, 1 });
+    ImGui::Image(preview_tex, { (float)skinSizeX / zoom, (float)skinSizeY / zoom }, { 0, 0 }, { 1, 1 });
 
     if (ImGui::Button("MainStart")) {
         LR2SESceneInit(&g, meta.type);
@@ -1651,6 +1653,8 @@ int WORKSPACE::drawPreview() {
     if (ImGui::Button("Reset")) {
         ResetTimeLapse(timerSelected, &g.timer1);
     }
+
+    
 
     //D_IDirect3DSurface9* d9 = (D_IDirect3DSurface9*)GetUseDirect3D9BackBufferSurface();
     //d9->GetDC()
@@ -3109,11 +3113,11 @@ int WORKSPACE::CsvToLine(int pos) {
 }
 
 // 
-// file -> ->       -> -> LR2 (almost done)
-// file -> line -> [csv -> LR2]
+// [file -> ->       -> -> LR2]
+// file -> line -> csv -> LR2
 //                     -> SE (?)
 // //                     -> tmpFile -> LR2?
-// ???? -> csv -> line -> file
+// ???? -> [csv -> line -> file]
 
 //utf-8 shift-jis problem
 

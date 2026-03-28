@@ -230,6 +230,7 @@ typedef struct WORKSPACE {
     int timerSelected;
     ImVec2 clickPos;
     bool drawRightClick;
+    float zoom = 1.0f;
 
     bool wCustomize;
     int drawCustomize();
