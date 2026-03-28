@@ -98,6 +98,7 @@ int WORKSPACE::draw() {
                 ImGui::MenuItem("dstView", NULL, &wDstView);
                 ImGui::MenuItem("objectManager", NULL, &wObjectManager);
                 ImGui::MenuItem("objectManagerTest", NULL, &wObjectManagerTest);
+                ImGui::MenuItem("history", NULL, &wHistory);
                 ImGui::EndMenu();
             }
         }
@@ -125,6 +126,7 @@ int WORKSPACE::draw() {
     if (wDstView) drawDstView();
     if (wObjectManager) drawObjectManager();
     if (wObjectManagerTest) drawObjectManagerTest();
+    if (wHistory) drawHistory();
 
 
     return 0;
@@ -209,15 +211,16 @@ int WORKSPACE::ReadSkin(char* path) {
     pFile = fopen(path, "rb");
     if (!pFile) return -1;
 
+    //TODO : $FILE are stacked when save/load
     SKINFILELINEREAD* readS = (SKINFILELINEREAD*)skinfileLines.Get_new();
     readS->line.resize(1024);
     sprintf(readS->line, "$FILE \'%s\' start", path);
     readS->isComment = true;
     readS->isSEcomment = true;
     readS->numTotal = skinfileLines.count;
-    readS->num = 1;
+    readS->num = 0;
 
-    int c = 2;
+    int c = 1;
     while (1) {
         char readbuf[1024];
 
@@ -233,7 +236,7 @@ int WORKSPACE::ReadSkin(char* path) {
         read->filename.assign(path);
         read->num = c;
         read->isComment = (*read->line.atPos(0) != '#');
-        read->isSEcomment = (*read->line.atPos(0) != '$');
+        read->isSEcomment = (*read->line.atPos(0) == '$');
 
         if(!read->isComment) SplitCSV(read->line, &read->csv, ",");
             
@@ -1470,6 +1473,10 @@ int WORKSPACE::LoadSkin(char* path) {
     arr_seobj.Free();
     arr_seobj.Alloc(sizeof(SEOBJ),400);
 
+    arr_history.Free();
+    arr_history.Alloc(sizeof(HISTORY), 1);
+
+
     ReadSkin(path);
     ParseSkin();
     MakeObjects();
@@ -1701,7 +1708,7 @@ int WORKSPACE::drawTextEdit() {
     char title[260];
     snprintf(title, sizeof(title), "TextEdit##%d", num);
 
-    ImGui::Begin(title, &wTextEdit, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    ImGui::Begin(title, &wTextEdit, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("Hide")) {
@@ -1784,22 +1791,18 @@ int WORKSPACE::drawTextEdit() {
             if (head){//read.numTotal == ifs.declare) {
                 ifs.hide ^= 1;
             }
-        }        
+        }
 
-        //right click menu
-        if (ImGui::IsMouseClicked(ImGuiMouseButton_Right),1) {
-            if (ImGui::BeginPopupContextWindow()) {
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Right), 1) {
+            if (ImGui::BeginPopupContextItem()) {
+                ImGui::Text("selected : %d", n);
                 ImGui::MenuItem("move");
-                if(ImGui::MenuItem("insert")) {
-                    SKINFILELINEREAD* line = (SKINFILELINEREAD*)skinfileLines.Get_newAt(10-1);
-                    line->line.assign("newline");
-                    line->isComment = true;
-                    line->num = 10;
-
+                if (ImGui::MenuItem("insert")) {
+                    InsertLine(n);
                 }
                 ImGui::MenuItem("group");
                 if (ImGui::MenuItem("delete")) {
-                    skinfileLines.DeleteAt(10-1);
+                    DeleteLine(n);
                 }
                 ImGui::EndPopup();
             }
@@ -1813,7 +1816,7 @@ int WORKSPACE::drawTextEdit() {
         ImGui::Text("%d ", read.ifgroup);
         
         ImGui::SameLine();
-
+        
         if (read.isComment) {
             ImGui::TextDisabled("%04d:%04d: ", read.numTotal, read.num);
 
@@ -1831,7 +1834,10 @@ int WORKSPACE::drawTextEdit() {
             //ImGui::PopID();
 
             ImGui::SameLine();
-            ImGui::TextDisabled("%s", read.line.outstr());
+            //ImGui::TextDisabled("%s", read.line.outstr());
+            ImGui::PushID(n);
+            ImGui::InputText("", read.line.outstr(), 260);
+            ImGui::PopID();
             //ImGui::TextColored(color, "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());
 
 
@@ -1877,7 +1883,7 @@ int WORKSPACE::drawTextEdit() {
                         ImGui::SetNextItemWidth(-FLT_MIN);
 
                         
-                        if (GetCommandHelp(read.csv.str[0].outstr(), column).left(2).isSame("$op")) {
+                        if (GetCommandHelp(read.csv.str[0].outstr(), column).left(3).isSame("$op")) {
                             if (ImGui::BeginCombo(inputname, dstName(read.csv.val[column]), ImGuiComboFlags_None)) {
                                 for (int op = 0; op < 1000; op++) {
                                     ImGui::PushID(op);
@@ -1885,8 +1891,11 @@ int WORKSPACE::drawTextEdit() {
                                     char opname[64];
                                     sprintf(opname, "%03d:%s", op, dstName(op));
 
-                                    if (ImGui::Selectable(opname, is_selected))
-                                        read.csv.val[column] = op;
+                                    if (ImGui::Selectable(opname, is_selected)) {
+                                        //read.csv.val[column] = op;
+                                        EditValue(n, column, op);
+                                    }
+                                        
 
                                     // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
                                     if (is_selected)
@@ -1897,7 +1906,7 @@ int WORKSPACE::drawTextEdit() {
                                 ImGui::EndCombo();
                             }
                         }
-                        else if (GetCommandHelp(read.csv.str[0].outstr(), column).left(2).isSame("$st")) {
+                        else if (GetCommandHelp(read.csv.str[0].outstr(), column).left(3).isSame("$st")) {
                             if (ImGui::BeginCombo(inputname, textName(read.csv.val[column]), ImGuiComboFlags_None)) {
                                 for (int op = 0; op < 200; op++) {
                                     ImGui::PushID(op);
@@ -1905,9 +1914,10 @@ int WORKSPACE::drawTextEdit() {
                                     char opname[64];
                                     sprintf(opname, "%03d:%s", op, textName(op));
 
-                                    if (ImGui::Selectable(opname, is_selected))
-                                        read.csv.val[column] = op;
-
+                                    if (ImGui::Selectable(opname, is_selected)) {
+                                        //read.csv.val[column] = op;
+                                        EditValue(n, column, op);
+                                    }
                                     // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
                                     if (is_selected)
                                         ImGui::SetItemDefaultFocus();
@@ -1917,8 +1927,22 @@ int WORKSPACE::drawTextEdit() {
                                 ImGui::EndCombo();
                             }
                         }
-                        else
+                        else {
+                            static CSTR tmp;
                             ImGui::InputText(inputname, read.csv.str[column], 260, ImGuiInputTextFlags_AutoSelectAll);
+                            if (ImGui::IsItemActivated()) {
+                                tmp.assign(read.line.outstr());
+                            }
+                            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                                HISTORY* hs = (HISTORY*)arr_history.Get_new();
+                                hs->op = overwriteLine;
+                                hs->target = n;
+                                CsvToLine(n);
+                                hs->older.line.assign(tmp);
+                                hs->newer.line.assign(read.line.outstr());
+                            }
+                        }
+                            
                         
                     }
 
@@ -1972,6 +1996,7 @@ int WORKSPACE::drawTextEdit() {
 
 
     }
+
     ImGui::End();
     return 0;
 }
@@ -2341,8 +2366,8 @@ int WORKSPACE::SaveSkinScript(char* path, bool split, bool nocomment) {
     pFile = fopen(path, "wb");
     if (pFile == NULL) return -1;
     for (int i = 0; i < skinfileLines.count; i++) {
+        CsvToLine(i);
         if (nocomment && ((SKINFILELINEREAD*)skinfileLines.data)[i].isComment) continue;
-
         fputs(((SKINFILELINEREAD*)skinfileLines.data)[i].line, pFile);
         fputs("\n", pFile);
     }
@@ -2949,46 +2974,148 @@ int WORKSPACE::drawObjectManager() {
     return 0;
 }
 
+int WORKSPACE::drawHistory() {
+
+
+    ImGui::PushID(num);
+    if (ImGui::Begin("History", &wHistory)) {
+
+        int item_selected_idx = 0;
+    
+        for (int n = 0; n < arr_history.count; n++){
+            ImGui::PushID(n);
+            const bool is_selected = (item_selected_idx == n);
+            char itemname[260];
+            
+            HISTORY& hs = ((HISTORY*)arr_history.data)[n];
+            sprintf(itemname, "%d %d\n%s \n%s", hs.op, hs.target, hs.older.line.outstr(), hs.newer.line.outstr());
+            if (ImGui::Selectable(itemname, is_selected)) {
+                item_selected_idx = n;
+            }
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+
+
+            ImGui::PopID();
+        }
+
+    }
+    ImGui::End();
+    ImGui::PopID();
+
+    return 0;
+}
+
 
 int WORKSPACE::InsertLine(int pos) {
     
-    SKINFILELINEREAD* line = (SKINFILELINEREAD*)skinfileLines.Get_newAt(pos - 1);
+    SKINFILELINEREAD* line = (SKINFILELINEREAD*)skinfileLines.Get_newAt(pos);
     line->line.assign("newline");
     line->isComment = true;
     line->num = pos;
+
+    HISTORY* hs = (HISTORY*)arr_history.Get_new();
+    hs->op = insertLine;
+    hs->target = pos;
 
     return 0;
 }
 int WORKSPACE::DeleteLine(int pos) {
     
-    skinfileLines.DeleteAt(pos - 1);
+    skinfileLines.DeleteAt(pos);
+
+    HISTORY* hs = (HISTORY*)arr_history.Get_new();
+    hs->op = removeLine;;
+    hs->target = pos;
 
     return 0;
 }
-int WORKSPACE::EditLine(int pos, CSTR newlinebody) {
+int WORKSPACE::EditLine(int pos,CSTR oldlinebody, CSTR newlinebody) {
+
 
     SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
     line.line.assign(newlinebody);
 
     line.isComment = (*line.line.atPos(0) != '#');
-    line.isSEcomment = (*line.line.atPos(0) != '$');
+    line.isSEcomment = (*line.line.atPos(0) == '$');
 
     if (!line.isComment) SplitCSV(line.line, &line.csv, ",");
 
+    HISTORY* hs = (HISTORY*)arr_history.Get_new();
+    hs->op = overwriteLine;
+    hs->target = pos;
+    CsvToLine(pos);
+    hs->older.line.assign(oldlinebody);
+    hs->newer.line.assign(newlinebody);
+
     return 0;
 }
 
+int WORKSPACE::EditValue(int pos, int column, const char* newVal) {
+
+    SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
+    CSTR oldLine(line.line);
+
+    line.csv.str[column].assign(newVal);
+    line.csv.val[column] = atol(newVal);
+    CsvToLine(pos);
+
+    HISTORY* hs = (HISTORY*)arr_history.Get_new();
+    hs->op = overwriteLine;
+    hs->target = pos;
+    hs->older.line.assign(oldLine);
+    hs->newer.line.assign(line.line);
+
+    return 0;
+}
 int WORKSPACE::EditValue(int pos, int column, int newVal) {
 
     SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
-    //we need function, table line into csv str
+    CSTR oldLine(line.line);
+    line.csv.str[column].resize(12);
+    ltoa(newVal,line.csv.str[column],10);
+    line.csv.val[column] = newVal;
+    CsvToLine(pos);
 
-
-    //EditLine(pos, )
+    HISTORY* hs = (HISTORY*)arr_history.Get_new();
+    hs->op = overwriteLine;
+    hs->target = pos;
+    hs->older.line.assign(oldLine);
+    hs->newer.line.assign(line.line);
 
     return 0;
 }
 
+int WORKSPACE::CsvToLine(int pos) {
+    SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
+
+    line.isComment = (*line.line.atPos(0) != '#');
+    line.isSEcomment = (*line.line.atPos(0) == '$');
+
+    if (line.isComment || line.isSEcomment) {
+        return 0;
+    }
+
+    //TODO : truncate ','
+    CSTR buf("");
+    
+    cstrSprintf(&buf, "%s", line.csv.str[0]);
+    for (int i = 1; i < 25; i++) {
+        cstrSprintf(&buf, "%s,%s", buf, (line.csv.str[i].body == NULL)? "":line.csv.str[i].outstr());
+    }
+
+    line.line.assign(buf);
+    return 0;
+}
+
+// 
+// file -> ->       -> -> LR2 (almost done)
+// file -> line -> [csv -> LR2]
+//                     -> SE (?)
+// //                     -> tmpFile -> LR2?
+// ???? -> csv -> line -> file
+
+//utf-8 shift-jis problem
 
 
 

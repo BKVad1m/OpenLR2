@@ -289,13 +289,17 @@ typedef struct WORKSPACE {
         float h;
     }preview_selected_obj;
     int selectedObjectTest;
+
+    bool wHistory;
+    int drawHistory();
     
 
     int InsertLine(int pos);
     int DeleteLine(int pos);
-    int EditLine(int pos, CSTR newlinebody);
+    int EditLine(int pos, CSTR oldlinebody, CSTR newlinebody);
+    int EditValue(int pos, int column, const char* newVal);
     int EditValue(int pos, int column, int newVal);
-
+    int CsvToLine(int pos);
 
 }WORKSPACE;
 
