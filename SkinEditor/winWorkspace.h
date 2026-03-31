@@ -204,7 +204,7 @@ typedef struct WORKSPACE {
     int drawSkinList();
 
     int LoadSkin(char* path);
-    int ReadSkin(char* path);
+    int ReadSkinSE(char* path);
     int ParseSkin();
     int currentLeadDST = -1;
 
@@ -301,6 +301,9 @@ typedef struct WORKSPACE {
     int EditValue(int pos, int column, const char* newVal);
     int EditValue(int pos, int column, int newVal);
     int CsvToLine(int pos);
+
+
+    int LoadSceneSE(skstruct* sk, CSTR skinfile, int p5, char font);
 
 }WORKSPACE;
 

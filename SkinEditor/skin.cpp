@@ -21,6 +21,9 @@ int LR2SEInit(game* g) {
 	//LoadGraph("LR2files/Config/loading.bmp", 0);
 
 
+	InitializeCriticalSection(&g->gameplay.criticalSection);
+	InitializeCriticalSection(&g->criticalSection);
+
 	return 0;
 }
 
@@ -448,6 +451,7 @@ int LR2SESceneInit(game *g, int type) {
 	g->skstruct.GrHandle[GrH_Stage] = LoadGraph("LR2files\\Config\\title.bmp", 0);
 
 	InitGameplay(&g->gameplay, &g->config.play);
+	
 	
 
 	switch (type) {

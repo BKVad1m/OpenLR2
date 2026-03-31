@@ -61,14 +61,15 @@ int WORKSPACE::proc() {
     return 0;
 }
 int WORKSPACE::init() {
-    
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+
     return 0;
 }
 int WORKSPACE::draw() {
     
-    const ImGuiViewport* viewport = ImGui::GetMainViewport();
-    //ImGui::SetNextWindowPos(viewport->WorkPos);
-    //ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(num);
 
     ImGui::Begin(title, &alive, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings);
 
@@ -207,7 +208,7 @@ int WORKSPACE::drawSkinList() {
     return 0;
 }
 
-int WORKSPACE::ReadSkin(char* path) {
+int WORKSPACE::ReadSkinSE(char* path) {
     FILE* pFile;
 
     pFile = fopen(path, "rb");
@@ -249,7 +250,7 @@ int WORKSPACE::ReadSkin(char* path) {
                 CSTR& tmp = read->csv.str[1];
                 arr_subpath.push_back(&tmp);
 
-                ReadSkin(read->csv.str[1]);
+                ReadSkinSE(read->csv.str[1]);
             }
         }
     }
@@ -1479,7 +1480,7 @@ int WORKSPACE::LoadSkin(char* path) {
     arr_history.Alloc(sizeof(HISTORY), 1);
 
 
-    ReadSkin(path);
+    ReadSkinSE(path);
     ParseSkin();
     MakeObjects();
 
@@ -1516,6 +1517,39 @@ int WORKSPACE::LoadSkin(char* path) {
     wObjectManagerTest = 1;
 
     return 0;
+}
+
+//copied from LR2 LoadScene
+int WORKSPACE::LoadSceneSE(skstruct* sk, CSTR skinfile, int p5, char font) {
+    SkinUser tsku;
+    CSTR tStr;
+    
+    InitSkin(sk, p5, font);
+
+    //sk->skinMD5.assign(MD5str(skinfile));
+    //cstrSprintf(&tStr, "LR2files\\SkinCustomize\\%s.xml", sk->skinMD5.body);
+    //ReadSkinCustomize(&tsku, tStr);
+
+
+    (sk->adjust).shift_x = tsku.adjust.shift_x;
+    (sk->adjust).shift_y = tsku.adjust.shift_y;
+    (sk->adjust).rate_x = tsku.adjust.rate_x;
+    (sk->adjust).rate_y = tsku.adjust.rate_y;
+    (sk->adjust).judge_x = tsku.adjust.judge_x;
+    (sk->adjust).judge_y = tsku.adjust.judge_y;
+    (sk->adjust).size_x = tsku.adjust.size_x;
+    (sk->adjust).size_y = tsku.adjust.size_y;
+    (sk->adjust).dark_type = tsku.adjust.dark_type;
+    (sk->adjust).note_1p_x = tsku.adjust.note_1p_x;
+    (sk->adjust).note_1p_y = tsku.adjust.note_1p_y;
+    (sk->adjust).note_2p_x = tsku.adjust.note_2p_x;
+    (sk->adjust).note_2p_y = tsku.adjust.note_2p_y;
+    constexpr size_t s = offsetof(SkinUser, SkinUser::customize_value);
+    for (int i = 0; i < 40; i++) {
+        int t = tsku.customize_value[i];
+        if (900 <= t && t < 1000) sk->op[t] = 1;
+    }
+    return 0; ReadSkin(sk, skinfile, p5, 0, &tsku, font);
 }
 
 int WORKSPACE::MakeObjects() {
@@ -1614,9 +1648,10 @@ int WORKSPACE::drawPreview() {
     LR2SEDrawLoop(&g, previewScreen, skinSizeX, skinSizeY);
     
     ImGui::Begin(title, &wPreview, ImGuiWindowFlags_HorizontalScrollbar);
-    ImGui::SliderFloat("##zoom", &zoom, 0.125f, 8.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+    ImGui::SliderFloat("CTRL+Click##zoom", &zoom, 0.25f, 4.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
     ImVec2 p = ImGui::GetCursorScreenPos();
-
+    //TODO init zoom value
+    //TODO support HD skins
     LoadTextureFromRawMemory(GetImageAddressSoftImage(previewScreen), renderer, &preview_tex, skinSizeX, skinSizeY, 4);
     ImGui::Image(preview_tex, { (float)skinSizeX / zoom, (float)skinSizeY / zoom }, { 0, 0 }, { 1, 1 });
 
@@ -1841,6 +1876,19 @@ int WORKSPACE::drawTextEdit() {
             //ImGui::TextDisabled("%s", read.line.outstr());
             ImGui::PushID(n);
             ImGui::InputText("", read.line.outstr(), 260);
+
+            static CSTR tmp;
+            if (ImGui::IsItemActivated()) {
+                tmp.assign(read.line.outstr());
+            }
+            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                HISTORY* hs = (HISTORY*)arr_history.Get_new();
+                hs->op = overwriteLine;
+                hs->target = n;
+                CsvToLine(n);
+                hs->older.line.assign(tmp);
+                hs->newer.line.assign(read.line.outstr());
+            }
             ImGui::PopID();
             //ImGui::TextColored(color, "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());
 
@@ -3118,6 +3166,9 @@ int WORKSPACE::CsvToLine(int pos) {
 //                     -> SE (?)
 // //                     -> tmpFile -> LR2?
 // ???? -> [csv -> line -> file]
+
+// file -> csv -> file
+
 
 //utf-8 shift-jis problem
 
