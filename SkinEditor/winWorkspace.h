@@ -204,9 +204,13 @@ typedef struct WORKSPACE {
     int drawSkinList();
 
     int LoadSkin(char* path);
-    int ReadSkinSE(char* path);
+    int LoadSkinScript(char* path);
     int ParseSkin();
     int currentLeadDST = -1;
+
+
+    int LoadSceneSE();
+    int ReadSkinSE();
 
     int ParseSkin2();
 
