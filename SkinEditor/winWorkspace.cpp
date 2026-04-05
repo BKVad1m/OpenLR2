@@ -65,12 +65,16 @@ int WORKSPACE::init() {
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
 
+    zoom = 1.0f;
+
+    initFlag = 1;
     return 0;
 }
 int WORKSPACE::draw() {
     
     ImGui::SetNextWindowViewport(num);
 
+    if (initFlag == 0) init();
     ImGui::Begin(title, &alive, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings);
 
     if (ImGui::BeginMenuBar()) {
@@ -220,7 +224,7 @@ int WORKSPACE::ReadSkinSE(char* path) {
     sprintf(readS->line, "$FILE \'%s\' start", path);
     readS->isComment = true;
     readS->isSEcomment = true;
-    readS->numTotal = skinfileLines.count;
+    readS->numTotal = skinfileLines.count-1;
     readS->num = 0;
 
     int c = 1;
@@ -235,7 +239,7 @@ int WORKSPACE::ReadSkinSE(char* path) {
         read->line.assign(readbuf);
             
         DealWhiteSpace(&read->line);
-        read->numTotal = skinfileLines.count;
+        read->numTotal = skinfileLines.count - 1;
         read->filename.assign(path);
         read->num = c;
         read->isComment = (*read->line.atPos(0) != '#');
@@ -260,7 +264,7 @@ int WORKSPACE::ReadSkinSE(char* path) {
     sprintf(readE->line, "$FILE \'%s\' end", path);
     readE->isComment = true;
     readE->isSEcomment = true;
-    readE->numTotal = skinfileLines.count;
+    readE->numTotal = skinfileLines.count - 1;
     readE->num = c;
         
 
@@ -1549,7 +1553,7 @@ int WORKSPACE::LoadSceneSE(skstruct* sk, CSTR skinfile, int p5, char font) {
         int t = tsku.customize_value[i];
         if (900 <= t && t < 1000) sk->op[t] = 1;
     }
-    return 0; ReadSkin(sk, skinfile, p5, 0, &tsku, font);
+    return ReadSkin(sk, skinfile, p5, 0, &tsku, font);
 }
 
 int WORKSPACE::MakeObjects() {
@@ -1585,7 +1589,7 @@ int WORKSPACE::MakeObjects() {
 }
 
 int WORKSPACE::SeInit() {
-
+    zoom = 1.0f;
 }
 int WORKSPACE::SeLoadInit() {
 
@@ -1648,7 +1652,7 @@ int WORKSPACE::drawPreview() {
     LR2SEDrawLoop(&g, previewScreen, skinSizeX, skinSizeY);
     
     ImGui::Begin(title, &wPreview, ImGuiWindowFlags_HorizontalScrollbar);
-    ImGui::SliderFloat("CTRL+Click##zoom", &zoom, 0.25f, 4.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+    ImGui::SliderFloat("zoom##zoom", &zoom, 0.25f, 4.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
     ImVec2 p = ImGui::GetCursorScreenPos();
     //TODO init zoom value
     //TODO support HD skins
@@ -1935,7 +1939,29 @@ int WORKSPACE::drawTextEdit() {
                         ImGui::SetNextItemWidth(-FLT_MIN);
 
                         
-                        if (GetCommandHelp(read.csv.str[0].outstr(), column).left(3).isSame("$op")) {
+                        if (GetCommandHelp(read.csv.str[0].outstr(), column).left(5).isSame("$type")) {
+                            if (ImGui::BeginCombo(inputname, SKINTYPESTR[read.csv.val[column]], ImGuiComboFlags_None)) {
+                                for (int op = 0; op < 21; op++) {
+                                    ImGui::PushID(op);
+                                    const bool is_selected = (read.csv.val[column] == op);
+                                    char opname[64];
+                                    sprintf(opname, "%03d:%s", op, SKINTYPESTR[op]);
+
+                                    if (ImGui::Selectable(opname, is_selected)) {
+                                        //read.csv.val[column] = op;
+                                        EditValue(n, column, op);
+                                    }
+
+                                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                    if (is_selected)
+                                        ImGui::SetItemDefaultFocus();
+
+                                    ImGui::PopID();
+                                }
+                                ImGui::EndCombo();
+                            }
+                        }
+                        else if (GetCommandHelp(read.csv.str[0].outstr(), column).left(3).isSame("$op")) {
                             if (ImGui::BeginCombo(inputname, dstName(read.csv.val[column]), ImGuiComboFlags_None)) {
                                 for (int op = 0; op < 1000; op++) {
                                     ImGui::PushID(op);
@@ -1948,7 +1974,6 @@ int WORKSPACE::drawTextEdit() {
                                         EditValue(n, column, op);
                                     }
                                         
-
                                     // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
                                     if (is_selected)
                                         ImGui::SetItemDefaultFocus();
@@ -3018,8 +3043,6 @@ int WORKSPACE::drawObjectManager() {
 
 
 
-
-
     }
     ImGui::End();
 
@@ -3046,7 +3069,6 @@ int WORKSPACE::drawHistory() {
             }
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
-
 
             ImGui::PopID();
         }

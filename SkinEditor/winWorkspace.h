@@ -154,7 +154,7 @@ typedef struct HISTORY {
 
 typedef struct WORKSPACE {
 
-    
+    char initFlag = 0;
     //data
     game g;
 

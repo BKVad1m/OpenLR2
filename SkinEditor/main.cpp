@@ -20,8 +20,6 @@
 #include <SDL3/SDL.h>
 #include <DxLib/DxLib.h>
 
-
-
 #include "winWorkspace.h"
 #include "seHelper.h"
 
@@ -125,7 +123,7 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
     work->num = workspaceList.count - 1;
     snprintf(work->title, 260, "Workspace %d", workspaceList.count - 1);
 
-    work->init();
+    //work->init();
 
 
 
@@ -210,13 +208,7 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
                     work->alive = true;
                     work->num = workspaceList.count - 1;
                     snprintf(work->title, 260, "Workspace %d", workspaceList.count -1);
-                    work->init();
-                    /*//if (workspaceList.count == workspaceList.bufSize) ReallocWorkspace(workspaceList.count + 1);
-                    if (workspaceList.count == workspaceList.bufSize) workspaceList.Realloc(workspaceList.count + 1);
-                    ((WORKSPACE*)(workspaceList.data))[workspaceList.count].alive = true;
-                    ((WORKSPACE*)(workspaceList.data))[workspaceList.count].num = workspaceList.count;
-                    snprintf(((WORKSPACE*)(workspaceList.data))[workspaceList.count].title, 260, "Workspace %d", workspaceList.count);
-                    workspaceList.count++;*/
+                    //work->init();
                 }
                 ImGui::Separator();
                 for (int i = 0; i < workspaceList.count; i++) {
@@ -241,10 +233,13 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
             //float minWinSizeX = style.WindowMinSize.x;
             //style.WindowMinSize.x = 1280;
             //style.WindowMinSize.x = minWinSizeX;
+            
 
             WORKSPACE* arr = (WORKSPACE*)(workspaceList.data);
+            //if (arr[i].initFlag == 0) {
+            //    arr[i].init();
+            //}
             if (arr[i].alive) {
-
                 arr[i].draw();
             }
         }
