@@ -223,7 +223,17 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
             
             ImGui::EndMainMenuBar();
         }
+        // Update and Render additional Platform Windows
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
 
+            ImGuiBackendFlags_PlatformHasViewports;
+            ImGuiBackendFlags_RendererHasViewports;
+        }
+
+        
         for (int i = 0; i < workspaceList.count; i++) {
 
             //char dock[64];
@@ -254,13 +264,6 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
         SDL_RenderPresent(renderer);
 
 
-        // Update and Render additional Platform Windows
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            // TODO for OpenGL: restore current GL context.
-        }
     }
 #ifdef __EMSCRIPTEN__
     EMSCRIPTEN_MAINLOOP_END;

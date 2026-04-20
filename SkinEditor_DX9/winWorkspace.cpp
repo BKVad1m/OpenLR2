@@ -1,0 +1,3580 @@
+#include "imgui/imgui.h"
+
+#include "../LR2/structure.h"
+#include "../LR2/LR2_skinmanage.h"
+#include "../LR2/LR2_skinload.h"
+#include "../LR2/LR2_skindraw.h"
+#include "../LR2/LR2_configsave.h"
+#include "../LR2/En_fileutil.h"
+#include "../LR2/Scene07_Skinselect.h"
+#include "../LR2/En_timer.h"
+#include "../LR2/En_value.h" //for ByTime
+
+#include "../lib/DxLib/DxLib.h"
+#include "winWorkspace.h"
+
+#include "skin.h"
+#include "op.h"
+#include "arr.hpp"
+#include "seHelper.h"
+
+const char* SKINTYPESTR[]= {
+    "7KEYS",
+    "5KEYS",
+    "14KEYS",
+    "10KEYS",
+    "9KEYS",
+    "SELECT",
+    "DECIDE",
+    "RESULT",
+    "KEYCONFIG",
+    "SKINSELECT",
+    "SOUNDSET",
+    "THEME",
+    "7KEYSBATTLE",
+    "5KEYSBATTLE",
+    "9KEYSBATTLE",
+    "COURSERESULT",
+    "OPENING",
+    "MODESELECT",
+    "MODEDECIDE",
+    "COURSESELECT",
+    "COURSEEDIT"
+}; 
+///////////////////
+byte TexTransparent[] =    "\x42\x4D\x76\x02\x00\x00\x00\x00\x00\x00\x76\x00\x00\x00\x28\x00\x00\x00\x20\x00\x00\x00\x20\x00\x00\x00\x01\x00\x04\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x80\x00\x00\x00\x80\x80\x00\x80\x00\x00\x00\x80\x00\x80\x00\x80\x80\x00\x00\x80\x80\x80\x00\xC0\xC0\xC0\x00\x00\x00\xFF\x00\x00\xFF\x00\x00\x00\xFF\xFF\x00\xFF\x00\x00\x00\xFF\x00\xFF\x00\xFF\xFF\x00\x00\xFF\xFF\xFF\x00\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x88\x88\x88\x88\x88\x88\x88\x88\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
+
+PDIRECT3DTEXTURE9 transBackground;
+int makeTransBackground(){
+    int x, y;
+    LoadTextureFromMemory(TexTransparent, sizeof(TexTransparent), &transBackground, &x, &y);
+    //LoadTextureFromRawMemory(TexTransparent, renderer, &transBackground, 64, 64, 1);
+    return 0;
+}
+
+
+///////////////////
+int WORKSPACE::proc() {
+
+    return 0;
+}
+int WORKSPACE::init() {
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+
+    zoom = 1.0f;
+
+    initFlag = 1;
+    return 0;
+}
+int WORKSPACE::draw() {
+    
+    //ImGui::SetNextWindowViewport(num);
+
+    if (initFlag == 0) init();
+    ImGui::Begin(title, &alive, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings);
+
+    if (ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("New", NULL, &wNewskin)) {
+                //
+            }
+            if (ImGui::MenuItem("Open", NULL, &wSkinList)) {
+                ScanSkins();
+            }
+            if (loaded) {
+                ImGui::MenuItem("Save as", NULL, &wSaveMenu);
+            }
+            ImGui::EndMenu();
+        }
+        if (loaded) {
+            
+            if (ImGui::BeginMenu("Windows")) {
+                //HOW TO ADD FEATURE - STEP 3 : add menu and flag here
+                ImGui::MenuItem("Text Editor", NULL, &wTextEdit);
+                ImGui::MenuItem("Preview", NULL, &wPreview);
+                ImGui::MenuItem("Customize", NULL, &wCustomize);
+                ImGui::MenuItem("ImgManager", NULL, &wImgManager);
+                //if (ImGui::MenuItem("ImgManager", NULL, &wImgManager)) { loadSRC(); };
+                ImGui::MenuItem("fileManager", NULL, &wFileManager);
+                ImGui::MenuItem("treeView", NULL, &wTreeView);
+                ImGui::MenuItem("SimplePreview", NULL, &wSimplePreview);
+                ImGui::MenuItem("dstView", NULL, &wDstView);
+                ImGui::MenuItem("objectManager", NULL, &wObjectManager);
+                ImGui::MenuItem("objectManagerTest", NULL, &wObjectManagerTest);
+                ImGui::MenuItem("history", NULL, &wHistory);
+                ImGui::EndMenu();
+            }
+        }
+        ImGui::EndMenuBar();
+    }
+
+    ImGui::Text("%s", loaded? "" : "no skin loaded");
+
+    ImGui::End();
+
+    //subwindows
+    //HOW TO ADD FEATURE - STEP 4 : call function. end
+    if (wSkinList) drawSkinList();
+    if (wNewskin) drawNewskin();
+
+    if (wSaveMenu) drawSaveMenu();
+
+    if (wTextEdit) drawTextEdit();
+    if (wPreview) drawPreview();
+    if (wCustomize) drawCustomize();
+    if (wImgManager) drawImgManager();
+    if (wFileManager) drawFileManager();
+    if (wTreeView) drawTreeView();
+    if (wSimplePreview) drawSimplePreview();
+    if (wDstView) drawDstView();
+    if (wObjectManager) drawObjectManager();
+    if (wObjectManagerTest) drawObjectManagerTest();
+    if (wHistory) drawHistory();
+
+
+    return 0;
+}
+
+int WORKSPACE::ScanSkins() {
+    InitSkinData(&g.skinData);
+    MakeSkinList(&g.skinData, CSTR("LR2files\\Theme\\"));
+    MakeSkinList(&g.skinData, CSTR("LR2files\\Sound\\"));
+    return 1;
+}
+
+int WORKSPACE::drawSkinList() {
+    static int item_selected_idx = 0;
+    int oldSelected = item_selected_idx;
+    static PDIRECT3DTEXTURE9 preview_tex;
+    static int preview_size_x, preview_size_y;
+    static bool isPreview = false;
+
+    ImGui::Begin("Open from skinlist", &wSkinList);
+
+    if (ImGui::BeginChild(ImGuiChildFlags_FrameStyle, { 300,-1 }))
+    {
+        for (int n = 0; n < g.skinData.Count; n++)
+        {
+            const bool is_selected = (item_selected_idx == n);
+            char itemname[260];
+            snprintf(itemname, sizeof(itemname), "%02d:%s -%s", n, g.skinData.Data[n].title.outstr(), SKINTYPESTR[g.skinData.Data[n].type]);
+            if (ImGui::Selectable(itemname, is_selected)) {
+                item_selected_idx = n;
+            }
+
+            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndChild();
+    }
+    
+
+    int& m = item_selected_idx;
+    ImGui::SameLine(0, 0);
+    ImGui::BeginGroup();
+    //ImTextureRef preview_texid = io.Fonts->TexRef;
+
+    if (oldSelected != m) {
+        isPreview = LoadTextureFromFile(g.skinData.Data[m].thumbnail.outstr(), &preview_tex, &preview_size_x, &preview_size_y);
+        oldSelected = m;
+    }
+    ImGui::Image(isPreview ? preview_tex : NULL, { 320, 240 }, { 0, 0 }, { 1, 1 });
+    ImGui::Text("%s", g.skinData.Data[m].skinFile.outstr());
+    ImGui::Text("%s", g.skinData.Data[m].title.outstr());
+    ImGui::Text("%s", g.skinData.Data[m].maker.outstr());
+    ImGui::Text("%s", SKINTYPESTR[g.skinData.Data[m].type]);
+    ImGui::Text("%d * %d", g.skinData.Data[m].targetX, g.skinData.Data[m].targetY);
+
+    if (ImGui::Button("LOAD", { 0, 0 })) {
+        meta = g.skinData.Data[m];
+        snprintf(title, 260, "%s -%s", meta.title.outstr(), SKINTYPESTR[meta.type]);
+        
+        strncpy(mainpath, g.skinData.Data[m].skinFile.outstr(), MAX_PATH);
+        LoadSkin(mainpath);
+        wSkinList = false;
+        loaded = true;
+        
+    }
+
+    ImGui::SameLine(0, 3);
+    ImGui::Button("CLONE", { 0, 0 });
+    ImGui::SameLine(0, 3);
+    ImGui::Button("BROWSE", { 0, 0 });
+    ImGui::SameLine(0, 0);
+    ImGui::EndGroup();
+    ImGui::End();
+
+    return 0;
+}
+
+int WORKSPACE::LoadSkinScript(char* path) {
+    FILE* pFile;
+
+    pFile = fopen(path, "rb");
+    if (!pFile) return -1;
+
+    //TODO : $FILE are stacked when save/load
+    SKINFILELINEREAD* readS = (SKINFILELINEREAD*)skinfileLines.Get_new();
+    readS->line.resize(1024);
+    sprintf(readS->line, "$FILE \'%s\' start", path);
+    readS->isComment = true;
+    readS->isSEcomment = true;
+    readS->numTotal = skinfileLines.count-1;
+    readS->num = 0;
+
+    int c = 1;
+    while (1) {
+        char readbuf[1024];
+
+        if (fgets(readbuf, 1023, pFile) == 0) break;
+
+        SKINFILELINEREAD* read = (SKINFILELINEREAD*)skinfileLines.Get_new();
+        read->line.resize(1024);
+        read->filename.resize(260);
+        read->line.assign(readbuf);
+            
+        DealWhiteSpace(&read->line);
+        read->numTotal = skinfileLines.count - 1;
+        read->filename.assign(path);
+        read->num = c;
+        read->isComment = (*read->line.atPos(0) != '#');
+        read->isSEcomment = (*read->line.atPos(0) == '$');
+
+        if(!read->isComment) SplitCSV(read->line, &read->csv, ",");
+            
+        c++;
+
+        if (read->line.left(8).isSame("#INCLUDE")) {
+            if (read->csv.str[1].canOpenFile()) {
+                CSTR& tmp = read->csv.str[1];
+                arr_subpath.push_back(&tmp);
+
+                LoadSkinScript(read->csv.str[1]);
+            }
+        }
+    }
+
+    SKINFILELINEREAD* readE = (SKINFILELINEREAD*)skinfileLines.Get_new();
+    readE->line.resize(1024);
+    sprintf(readE->line, "$FILE \'%s\' end", path);
+    readE->isComment = true;
+    readE->isSEcomment = true;
+    readE->numTotal = skinfileLines.count - 1;
+    readE->num = c;
+        
+
+    fclose(pFile);
+
+    return 0;
+}
+
+int WORKSPACE::ParseSkin() {
+
+    int IFcur = 0;
+    int IFdepth = 0;    
+    int cOrder = 0;
+
+    int grCount = 0;
+    int grInIf = 0;
+
+    int srcNow = -1;
+    int srcOld = -1;
+
+    int objTypeCount[100] = { 0, };
+
+    for (int i = 0; i < skinfileLines.count; i++) {
+        SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[i];
+        if (read.csv.str[0].left(4).isSame("#SRC")) {
+            read.isSRC = true;
+        }
+        else if (read.csv.str[0].left(4).isSame("#DST")) {
+            read.isDST = true;
+        }
+        else {
+            read.isOther = true;
+        }
+    }
+
+
+    for (int i = 0; i < skinfileLines.count; i++) {
+        SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[i];
+        bool isif = false;
+
+        if (i == 0) {
+            IFUNIT tif;
+            arr_ifunit.push_back(&tif);
+        }
+
+        if (read.isComment) continue;
+
+        //if (read.line.left(strlen("#IF")).isSame("#IF")) {
+        if (read.csv.str[0].isSame("#IF")) {
+            
+            IFdepth++;
+
+            isif = true;
+
+            IFUNIT tif;
+            for (int val = 0; val < 10; val++) {
+                tif.data[val] = read.csv.val[val+1];
+            }
+            tif.depth = IFdepth;
+            tif.order = cOrder = 0;
+            tif.parentID = IFcur;
+            //tif.declare = i;
+
+            IFcur = arr_ifunit.count;
+            arr_ifunit.push_back(&tif);
+            read.ifgroup = IFcur;
+
+            read.isIfGroupHead = true;
+            read.isGroupHead = true;
+        }
+        else if (read.csv.str[0].isSame("#ELSEIF")) {
+            isif = true;
+
+            IFUNIT tif;
+            for (int val = 0; val < 10; val++) {
+                tif.data[val] = read.csv.val[val+1];
+            }
+            tif.depth = IFdepth;
+            tif.order = ++cOrder;
+            tif.parentID = ((IFUNIT*)arr_ifunit.data)[IFcur].parentID;
+            //tif.declare = i;
+
+            arr_ifunit.push_back(&tif);;
+            read.ifgroup = IFcur + cOrder;
+
+            grCount -= ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount;
+            grInIf = 0;
+
+            read.isIfGroupHead = true;
+            read.isGroupHead = true;
+        }
+        else if (read.csv.str[0].isSame("#ELSE")) {
+            isif = true;
+
+            IFUNIT tif;
+            for (int val = 0; val < 10; val++) {
+                tif.data[val] = 0;
+            }
+            tif.depth = IFdepth;
+            tif.order = ++cOrder;
+            tif.parentID = ((IFUNIT*)arr_ifunit.data)[IFcur].parentID;
+            //tif.declare = i;
+
+            arr_ifunit.push_back(&tif);
+            read.ifgroup = IFcur + cOrder;
+
+            grCount -= ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount;
+            grInIf = 0;
+
+            read.isIfGroupHead = true;
+            read.isGroupHead = true;
+        }
+        else if (read.csv.str[0].isSame("#ENDIF")) {
+            isif = true;
+
+            read.ifgroup = IFcur + cOrder;
+            IFcur = ((IFUNIT*)arr_ifunit.data)[IFcur].parentID;;
+
+            IFdepth--;
+            cOrder = 0;
+
+            grCount -= ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount;
+            grInIf = 0;
+
+            read.isIfGroupEnd = true;
+            read.isGroupEnd = true;
+        }
+        else {
+            read.ifgroup = IFcur + cOrder;
+        }
+
+        if (isif) continue;
+
+
+        if (read.csv.str[0].isSame("#CUSTOMFILE")) {
+            CSTR* tmpstr = (CSTR*)(arr_CustomFile.Get_new());
+            tmpstr->assign(read.csv.str[2]);
+        }
+
+        else if (read.csv.str[0].isSame("#IMAGE")) {
+            
+            CSTR line(read.csv.str[1]);
+
+            bool isWild = false;
+
+            for (int wc = 0; wc < arr_CustomFile.count; wc++) {
+                if (line.isSame(((CSTR*)arr_CustomFile.data)[wc].outstr())) {
+                    isWild = true;
+                    break;
+                }
+            }
+            if (strrchr(line.outstr(), '*')) isWild = true;
+
+            if (!isWild) {
+                SRCGR* tmp = (SRCGR*)(arr_SRCGR.Get_new());
+                tmp->path.assign(line);
+                
+                char* cur = strrchr(read.csv.str[1].outstr(), '/');
+                if (cur == NULL) cur = strrchr(read.csv.str[1].outstr(), '\\');
+                if (cur)         tmp->filename.assign(cur + 1);
+
+                tmp->grID = grCount;
+                tmp->isIf = read.ifgroup;
+                tmp->wildcard = false;
+            }
+            
+            else if (isWild) {
+                WIN32_FIND_DATA FindFileData;
+                LPWIN32_FIND_DATAA lpFindFileData;
+                HANDLE hFindFile;
+
+                CSTR str1(line.left(line.findStrPos("*")));
+                CSTR str2(line.right(line.length() - str1.length() - 1));
+                CSTR str3(str1);
+                str3.add("*");
+
+                hFindFile = FindFirstFileA(str3, (LPWIN32_FIND_DATAA)&FindFileData);
+                if (hFindFile != (HANDLE)-1) {
+                    do {
+                        if (strcmp("..", (char*)FindFileData.cFileName) && strcmp(".", (char*)FindFileData.cFileName)) {
+
+                            SRCGR* tmp2 = (SRCGR*)(arr_SRCGR.Get_new());
+                            tmp2->path.assign(str1);
+                            tmp2->path.add(FindFileData.cFileName);
+                            tmp2->filename.assign(FindFileData.cFileName);
+
+                            tmp2->fromWildcard = true;
+                            tmp2->grID = grCount;
+                            tmp2->isIf = read.ifgroup;
+                        }
+                    } while (FindNextFileA(hFindFile, (LPWIN32_FIND_DATAA)&FindFileData));
+                    FindClose(hFindFile);
+                }
+            }
+
+            grCount++;
+            ((IFUNIT*)arr_ifunit.data)[read.ifgroup].grCount++;
+        }
+
+
+        ////////////////
+        if (read.csv.str[0].isSame("#SRC_IMAGE")) {
+
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
+
+            SRC *src = (SRC*)(arr_SRC.Get_new());
+                        
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7];
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer) {
+                sprintf(tmp, "T%d(%s) : %d*%d ##%d", src->timer, timerName(src->timer), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+
+            src->objType = 10;
+            src->objID = objTypeCount[9]++;
+            
+            srcNow++;
+        }
+
+        else if (read.csv.str[0].isSame("#DST_BGA")) {
+
+        }
+        else if (read.csv.str[0].isSame("#DST_IMAGE") || read.csv.str[0].isSame("#DST_SLIDER") || read.csv.str[0].isSame("#DST_BUTTON") 
+            || read.csv.str[0].isSame("#DST_BARGRAPH") || read.csv.str[0].isSame("#DST_NUMBER") || read.csv.str[0].isSame("#DST_TEXT") || read.csv.str[0].isSame("#DST_ONMOUSE")
+            || read.csv.str[0].left(5).isSame("#DST_")) {
+            
+            DST* dst = NULL;
+            if (srcNow > srcOld) {
+                dst = (DST*)(arr_DST.Get_new());
+
+                dst->name.assign(dstName(dst->op1));
+                dst->animation = 0;
+                currentLeadDST = arr_DST.count - 1;
+                dst->src = srcNow;
+                dst->declare = i;
+
+                dst->arr_animation.Free();
+                dst->arr_animation.Alloc(sizeof(DST_ANIMATION), 1);
+                srcOld = srcNow;
+            }
+            else {// if(srcNow == srcOld){
+                dst = &(((DST*)arr_DST.data)[currentLeadDST]);
+            }
+            
+            if (!dst) continue;
+            DST_ANIMATION* dstd = (DST_ANIMATION*)(dst->arr_animation.Get_new());
+
+            dstd->time = read.csv.val[2];
+            dstd->x = read.csv.val[3];
+            dstd->y = read.csv.val[4];
+            dstd->w = read.csv.val[5];
+            dstd->h = read.csv.val[6];
+
+            dstd->acc = read.csv.val[7];
+            dstd->a = read.csv.val[8];
+            dstd->r = read.csv.val[9];
+            dstd->g = read.csv.val[10];
+            dstd->b = read.csv.val[11];
+
+            dstd->blend = read.csv.val[12];
+            dstd->filter = read.csv.val[13];
+            dstd->angle = read.csv.val[14];
+            dstd->center = read.csv.val[15];
+
+            if (dst->animation == 0) {
+                dst->loop = read.csv.val[16];
+                dst->timer = read.csv.val[17];
+
+                dst->op1 = read.csv.val[18];
+                dst->op2 = read.csv.val[19];
+                dst->op3 = read.csv.val[20];
+                dst->op4 = read.csv.val[21];
+                //op5 is on 22??
+            }
+            dst->animation++;
+            dst->leadDST = currentLeadDST;
+        }
+        
+
+        else if (read.csv.str[0].isSame("#SRC_NUMBER")) { 
+
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) {srcNow++; continue;}
+
+            SRC* src = (SRC*)(arr_SRC.Get_new());
+
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7]; //have to be 10, 11, 24 set divs
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->num = read.csv.val[11];
+            src->align = read.csv.val[12];
+            src->keta = read.csv.val[13];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer || src->type) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), numberName(src->num), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+
+            src->objType = 7;
+            src->objID = objTypeCount[6]++;
+
+            srcNow++;
+
+        }
+        
+        else if (read.csv.str[0].isSame("#SRC_SLIDER")) {
+
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) { srcNow++; continue; }
+
+            SRC* src = (SRC*)(arr_SRC.Get_new());
+
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7]; 
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->muki = read.csv.val[11];
+            src->range = read.csv.val[12];
+            src->type = read.csv.val[13];
+            src->disable = read.csv.val[14];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer || src->type) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), sliderName(src->type), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+
+            srcNow++;
+        }
+        else if (read.csv.str[0].isSame("#SRC_BUTTON")) {
+
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) { srcNow++; continue; }
+
+            SRC* src = (SRC*)(arr_SRC.Get_new());
+
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7];
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->type = read.csv.val[11];
+            src->click = read.csv.val[12];
+            src->panel = read.csv.val[13];
+            src->plusonly = read.csv.val[14];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer || src->type) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), buttonName(src->type), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+
+            srcNow++;
+        }
+        else if (read.csv.str[0].isSame("#SRC_BARGRAPH")) {
+
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) { srcNow++; continue; }
+
+            SRC* src = (SRC*)(arr_SRC.Get_new());
+
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7];
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->type = read.csv.val[11];
+            src->muki = read.csv.val[12];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer || src->type) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), bargraphName(src->type), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+
+            srcNow++;
+         }
+        else if (read.csv.str[0].isSame("#SRC_TEXT")) {
+
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) { srcNow++; continue; }
+
+            SRC* src = (SRC*)(arr_SRC.Get_new());
+
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7]; //have to be 10, 11, 24 set divs
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->num = read.csv.val[11];
+            src->align = read.csv.val[12];
+            src->keta = read.csv.val[13];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer || src->type) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), numberName(src->num), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+            srcNow++;
+        }
+        else if (read.csv.str[0].isSame("#SRC_ONMOUSE")) {
+
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) { srcNow++; continue; }
+
+            SRC* src = (SRC*)(arr_SRC.Get_new());
+
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7]; //have to be 10, 11, 24 set divs
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->num = read.csv.val[11];
+            src->align = read.csv.val[12];
+            src->keta = read.csv.val[13];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer || src->type) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), numberName(src->num), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+            }
+        else if (read.csv.str[0].isSame("#SRC_BGA")) {
+
+            if (read.csv.val[2] == 110 || read.csv.val[2] == 111) { srcNow++; continue; }
+
+            SRC* src = (SRC*)(arr_SRC.Get_new());
+
+            src->gr = read.csv.val[2];
+            src->x = read.csv.val[3];
+            src->y = read.csv.val[4];
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src->gr];
+
+            src->sizeX = read.csv.val[5];// == -1 ? img.sizeX - src->x : read.csv.val[5];
+            src->sizeY = read.csv.val[6];// == -1 ? img.sizeY - src->y : read.csv.val[6];
+
+            src->div_x = read.csv.val[7]; //have to be 10, 11, 24 set divs
+            src->div_y = read.csv.val[8];
+            src->cycle = read.csv.val[9];
+            src->timer = read.csv.val[10];
+
+            src->num = read.csv.val[11];
+            src->align = read.csv.val[12];
+            src->keta = read.csv.val[13];
+
+            src->declare = read.numTotal;
+
+            char tmp[260];
+            if (src->timer || src->type) {
+                sprintf(tmp, "T%d(%s) : %s %d*%d ##%d", src->timer, timerName(src->timer), numberName(src->num), src->sizeX, src->sizeY, read.numTotal);
+            }
+            else {
+                sprintf(tmp, "noname : %d*%d ##%d", src->sizeX, src->sizeY, read.numTotal);
+            }
+            src->name.assign(tmp);
+            srcNow++;
+        }
+
+    }
+    
+    //images load
+    int gr = 0;
+    for (int n = 0; n < arr_SRCGR.count; n++) {
+        SRCGR& img = ((SRCGR*)arr_SRCGR.data)[n];
+        CSTR& path = ((SRCGR*)arr_SRCGR.data)[n].path;
+
+        if (path.isSame("CONTINUE")) {
+            gr++;
+            
+            img.sizeX = 0;
+            img.sizeY = 0;
+            continue;
+        }
+
+        //TODO: deal *
+
+        bool isLoaded = LoadTextureFromFile(path.outstr(), &(img.texture), &img.sizeX, &img.sizeY);
+
+        if (!isLoaded) 
+         {
+            int dxf = DxLib::FileRead_open(path);
+            if (dxf) {
+                void* Buffer;
+                int FileSize;
+
+                FileSize = FileRead_size(path.outstr());
+                Buffer = malloc(FileSize);
+                DxLib::FileRead_read(Buffer, FileSize, dxf);
+
+                DxLib::FileRead_close(dxf);
+
+                isLoaded = LoadTextureFromMemory(Buffer, FileSize, &(img.texture), &img.sizeX, &img.sizeY);
+
+                free(Buffer);
+            }
+        }
+
+        if (isLoaded) {
+            img.loaded = true;
+        }
+    }
+    return 0;
+}
+
+int WORKSPACE::LoadSkin(char* path) {
+    skinSizeX = meta.targetX;
+    skinSizeY = meta.targetY;
+
+    skinfileLines.Free();
+    skinfileLines.Alloc(sizeof(SKINFILELINEREAD), 1000);
+    arr_subpath.Free();
+    arr_subpath.Alloc(sizeof(CSTR), 1);
+    arr_ifunit.Free();
+    arr_ifunit.Alloc(sizeof(IFUNIT), 50);
+    arr_SRCGR.Free();
+    arr_SRCGR.Alloc(sizeof(SRCGR), 10);
+    arr_SRC.Free();
+    arr_SRC.Alloc(sizeof(SRC), 100);
+    arr_CustomFile.Free();
+    arr_CustomFile.Alloc(sizeof(CSTR), 10);
+
+    for (int i = 0; i < arr_DST.count; i++)
+        ((DST*)arr_DST.data)[i].arr_animation.Free();
+    arr_DST.Free();
+    arr_DST.Alloc(sizeof(DST), 100);
+    for (int i = 0; i < arr_DST.count; i++)
+        ((DST*)arr_DST.data)[i].arr_animation.Alloc(sizeof(DST_ANIMATION), 1);
+
+    arr_seobj.Free();
+    arr_seobj.Alloc(sizeof(SEOBJ),400);
+
+    arr_history.Free();
+    arr_history.Alloc(sizeof(HISTORY), 1);
+
+    //LR2
+    for (int i = 0; i < 200; i++) g.skstruct.caption[i].fillzero();
+    for (int i = 0; i < 10; i++) g.skstruct.helpfilePath[i].fillzero();
+    for (int i = 0; i < 20; i++) g.skstruct.customfileRANDOM[i].fillzero();
+    for (int i = 0; i < 20; i++) g.skstruct.customfile[i].fillzero();
+    g.skstruct.skinMD5.fillzero();
+    g.skstruct.skFontname.fillzero();
+    memset(&g.skstruct, 0, sizeof(skstruct));
+    for (int i = 0; i < 200; i++) g.skstruct.caption[i].fillzero();
+    for (int i = 0; i < 200; i++) g.skstruct.caption[i].assign("(null)");
+    for (int i = 0; i < 200; i++) g.skstruct.GrHandle[i] = -1;
+    for (int i = 0; i < 10; i++) g.skstruct.helpfilePath[i].fillzero();
+    for (int i = 0; i < 10; i++) g.skstruct.helpfilePath[i].assign("(null)");
+    //g.skstruct.skFontname.assign(&config.skin.fontname);
+    //g.skstruct.disableimagefont = (config.skin.disableimagefont != 0);
+    g.skstruct.skinMD5.fillzero();
+    g.skstruct.skinMD5.resize2(34);
+    AllocDrawingBuffer(&g.skstruct.drBuf);
+    //LoadScene(&g.skstruct, mainpath, 0, 0);
+
+    //SE
+    LoadSkinScript(path);
+    ParseSkin();
+    
+    LR2SEInit(&g);
+    LoadSceneSE();
+
+    MakeObjects();
+    
+
+
+
+
+
+    SetWindowUserCloseEnableFlag(0); //DxLib
+
+    
+    DeleteGraph(previewScreen);
+    previewScreen = MakeGraph(skinSizeX, skinSizeY);
+    //SetDrawScreen(previewScreen);
+    //previewScreen = MakeSoftImage(640, 480);
+    //previewScreen = MakeARGB8ColorSoftImage(skinSizeX, skinSizeY); //for SDL3
+
+    wPreview = 1;
+    wObjectManagerTest = 1;
+
+    return 0;
+}
+
+//copied from LR2 LoadScene
+int WORKSPACE::LoadSceneSE() {
+    skstruct* sk = &g.skstruct;
+    SkinUser tsku;
+    CSTR tStr;
+    
+    InitSkin(sk, 0, false);
+
+    //copy of ReadSkinCustomize()
+    sk->adjust.dark_type = 0;
+    sk->adjust.judge_x = 0;
+    sk->adjust.judge_y = 0;
+    sk->adjust.note_1p_x = 0;
+    sk->adjust.note_1p_y = 0;
+    sk->adjust.note_2p_x = 0;
+    sk->adjust.note_2p_y = 0;
+    sk->adjust.unk18 = 0;
+    sk->adjust.unk1c = 0;
+    sk->adjust.size_x = 0;
+    sk->adjust.size_y = 0;
+    sk->adjust.shift_x = 0;
+    sk->adjust.shift_y = 0;
+    sk->adjust.rate_x = 100;
+    sk->adjust.rate_y = 100;
+    
+    constexpr size_t s = offsetof(SkinUser, SkinUser::customize_value);
+    for (int i = 0; i < 40; i++) {
+        int t = tsku.customize_value[i];
+        if (900 <= t && t < 1000) sk->op[t] = 1;
+    }
+    return ReadSkinSE();
+}
+
+int WORKSPACE::ReadSkinSE() {
+    
+    CSTR dir(mainpath);
+    dir.assign(dir.getDirectory());
+    bool flag_skipFont = false;
+
+    CSVbuf csv;
+
+    int tSkin_num = 0;
+    int line = 0;
+    int IFCOUNT = 0, IFSWITCH[100];
+
+    bool flipside = false;
+
+    skstruct* sk = &g.skstruct;
+
+
+    for (int i = 0; i < skinfileLines.count; i++) {
+
+        ExpandSkinObjectMax(&g.skstruct.image, 50);
+        ExpandSkinObjectMax(&g.skstruct.otherObject[0], 20);
+        ExpandSkinObjectMax(&g.skstruct.otherObject[1], 20);
+        ExpandSkinObjectMax(&g.skstruct.otherObject[2], 20);
+        ExpandSkinObjectMax(&g.skstruct.otherObject[3], 20);
+        ExpandSkinObjectMax(&g.skstruct.otherObject[4], 20);
+        ExpandSkinObjectMax(&g.skstruct.otherObject[6], 20);
+        ExpandSkinObjectMax(&g.skstruct.otherObject[7], 20);
+        ExpandSkinObjectMax(&g.skstruct.otherObject[5], 20);
+
+
+        SKINFILELINEREAD& read = ((SKINFILELINEREAD*)(skinfileLines.data))[i];
+        CSTR& fBuf = read.line;
+        line++;
+
+        if (read.line.length() <= 6) continue;
+        if (strncmp(read.line.atPos(0), "#", 1)) continue;
+
+        fBuf.nullAtPos(fBuf.length() - 1);
+        fBuf.trimWhiteSpace();
+        DealWhiteSpace(&fBuf);
+        if (!fBuf.left(1).isDiff("#")) {
+            if (fBuf.left(3).isSame("#IF")) {
+                if (IFCOUNT != 99) {
+                    IFSWITCH[IFCOUNT + 1] = 1;
+                    SplitCSV(fBuf, &csv, ",");
+                    for (int i = 1; i < 10; i++) {
+                        if (csv.val[i] < 0 || csv.val[i]>999 || sk->op[csv.val[i]] == 0) {
+                            i = 10;
+                            IFSWITCH[IFCOUNT + 1] = 2;
+                        }
+                    }
+                    IFCOUNT++;
+                }
+                else {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\nネスト可?な#IFの上限に達しました。\n", line, fBuf);
+                    if (IFSWITCH[IFCOUNT] > 1) {
+                        *fBuf.atPos(0) = '\0';
+                        continue;
+                    }
+                }
+            }
+            else if (fBuf.left(7).isSame("#ELSEIF") && IFSWITCH[IFCOUNT] != 3) {
+                if (IFCOUNT) {
+                    if (IFSWITCH[IFCOUNT] == 1) IFSWITCH[IFCOUNT] = 3;
+                    else {
+                        IFSWITCH[IFCOUNT] = 1;
+                        SplitCSV(fBuf, &csv, ",");
+                        for (int i = 1; i < 10; i++) {
+                            if (csv.val[i] < 0 || csv.val[i]>999 || sk->op[csv.val[i]] == 0) {
+                                i = 10;
+                                IFSWITCH[IFCOUNT] = 2;
+                            }
+                        }
+                    }
+                }
+                else ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n対応する#IFが見つかりません。\n", line, fBuf);
+            }
+            else if (fBuf.left(5).isSame("#ELSE") && IFSWITCH[IFCOUNT] != 3) {
+                if (IFCOUNT == 0) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n対応する#IFが見つかりません。\n", line, fBuf);
+                }
+                else {
+                    IFSWITCH[IFCOUNT] = (IFSWITCH[IFCOUNT] == 1) ? 3 : 1;
+                }
+            }
+            else if (fBuf.left(6).isSame("#ENDIF")) {
+                if (IFCOUNT == 0) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n対応する#IFが見つかりません。\n", line, fBuf);
+                }
+                else {
+                    IFSWITCH[IFCOUNT] = 0;
+                    IFCOUNT--;
+                }
+            }
+        }
+
+        if (IFCOUNT > 0) {
+            if (IFSWITCH[IFCOUNT] > 1) {
+                *fBuf.atPos(0) = '\0';
+                continue;
+            }
+        }
+
+
+        if (!fBuf.left(1).isDiff("#")) {
+            if (fBuf.left(6).isSame("#IMAGE")) {
+                if (sk->count == 100) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\nこれ以上#IMAGEを登?できません。\n", line, fBuf);
+                }
+                else {
+                    SplitCSV(fBuf, &csv, ",");
+                    if (csv.str[1].isSame("CONTINUE")) {
+                        sk->caption[sk->count].assign("CONTINUE");
+                        sk->count++;
+                    }
+                    else {
+                        if (sk->caption[sk->count].isDiff(&csv.str[1]) || sk->grIsMovie[sk->count] == 1 || sk->caption[sk->count].findStrPos("*") != -1) {
+                            DeleteGraph(sk->GrHandle[sk->count]);
+                            sk->caption[sk->count].assign(&csv.str[1]);
+                            if (csv.str[1].right(3).isSame("mpg") || csv.str[1].right(3).isSame("avi") || csv.str[1].right(3).isSame("wma") || csv.str[1].right(3).isSame("ogv")) {
+                                sk->grIsMovie[sk->count] = 1;
+                            }
+                            else {
+                                sk->grIsMovie[sk->count] = 0;
+                            }
+                            for (int i = 0; i < sk->customfile_count; i++) {
+                                if (sk->customfileRANDOM[i].isSame(csv.str[1].left(sk->customfileRANDOM[i].length())) && sk->customfile[i].isDiff("RANDOM") != 0 && sk->customfile[i].isDiff("ERROR") && sk->customfile[i].length() > 0) {
+                                    csv.str[1].replace("*", sk->customfile[i]);
+                                    break;
+                                }
+                            }
+                            CSTR temp(GetRandomFileNoError(csv.str[1], dir), 0);
+                            sk->GrHandle[sk->count] = LoadGraph(temp);
+                            sk->caption[sk->count].assign(&temp);
+                        }
+                        sk->count++;
+                    }
+                }
+            }
+            else if (fBuf.left(5).isSame("#FONT") && !flag_skipFont) {
+                if (sk->num_of_struct == 10) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\nこれ以上#FONTを登?できません。\n", line, fBuf);
+                }
+                else {
+                    SplitCSV(fBuf, &csv, ",");
+                    //sk->fontHandle[sk->num_of_struct] = CreateFontToHandle(sk->fontname, csv.val[1], csv.val[2], csv.val[3], 0, -1, 0, -1, -1); //DxLib3.02
+                    sk->fontHandle[sk->num_of_struct] = CreateFontToHandle(sk->fontname, csv.val[1], csv.val[2], csv.val[3], 0, -1, 0, -1); //DxLib3.24f
+                    if (sk->fontHandle[sk->num_of_struct] == -1) {
+                        sk->fontHandle[sk->num_of_struct] = 0;
+                    }
+                    sk->num_of_struct = sk->num_of_struct + 1;
+                }
+            }
+            else if (fBuf.left(10).isSame("#SRC_IMAGE")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadSRC(&sk->image.src[sk->image.srcSize], &csv, sk);
+                if (sk->image.src[sk->image.srcSize].graphcount < 1 || sk->image.src[sk->image.srcSize].count < 1) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n画像の登?に失敗しました。\n", line, fBuf);
+                }
+                if (sk->image.srcSize > 0 && (sk->image.dst[sk->image.srcSize - 1].dstCount < 1 || sk->image.dst[sk->image.srcSize - 1].dataSize < 1)) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n(この行のエラ?ではありません)ひとつ前の#SRC_IMAGEに対応した#DST_IMAGEが存在しないか、登?に失敗したようです\n", line, fBuf);
+                }
+                sk->image.srcSize++;
+            }
+            else if (fBuf.left(10).isSame("#DST_IMAGE") && sk->image.srcSize > 0) {
+                int oldDstCount = sk->image.dst[sk->image.srcSize - 1].dstCount;
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->image.dst[sk->image.srcSize - 1], &csv, tSkin_num);
+                if (sk->image.dst[sk->image.srcSize - 1].dstCount < 1 || sk->image.dst[sk->image.srcSize - 1].dataSize < 1) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\nDSTの登?に失敗しました。DSTの一番最初がエラ?を起こしている可?性があります。\n", line, fBuf);
+                }
+                else if (sk->image.dst[sk->image.srcSize - 1].dstCount == oldDstCount) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\nDSTの登?に失敗しました。この行の登?のみ失敗しました。\n", line, fBuf);
+                }
+            }
+            else if (fBuf.left(9).isSame("#SRC_TEXT")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->otherObject[0].src[sk->otherObject[0].srcSize].n = csv.val[1];
+                sk->otherObject[0].src[sk->otherObject[0].srcSize].fontHandle = sk->fontHandle[csv.val[2]];
+                sk->otherObject[0].src[sk->otherObject[0].srcSize].cycle = csv.val[2];
+                sk->otherObject[0].src[sk->otherObject[0].srcSize].st = csv.val[3];
+                sk->otherObject[0].src[sk->otherObject[0].srcSize].align = csv.val[4];
+                sk->otherObject[0].src[sk->otherObject[0].srcSize].op1 = csv.val[5];
+                sk->otherObject[0].src[sk->otherObject[0].srcSize].op2 = csv.val[6];
+                sk->otherObject[0].src[sk->otherObject[0].srcSize].op3 = csv.val[7];
+                sk->otherObject[0].src[sk->otherObject[0].srcSize].op4 = csv.val[8];
+                sk->otherObject[0].src[sk->otherObject[0].srcSize].op5 = csv.val[9];
+                sk->otherObject[0].srcSize++;
+            }
+            else if (fBuf.left(9).isSame("#DST_TEXT") && sk->otherObject[0].srcSize > 0) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->otherObject[0].dst[sk->otherObject[0].srcSize - 1], &csv, tSkin_num);
+            }
+            else if (fBuf.left(11).isSame("#SRC_SLIDER")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadSRC(&sk->otherObject[2].src[sk->otherObject[2].srcSize], &csv, sk);
+                if (sk->otherObject[2].src[sk->otherObject[2].srcSize].graphcount < 1 || sk->otherObject[2].src[sk->otherObject[2].srcSize].count < 1) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n画像の登?に失敗しました。\n", line, fBuf);
+                }
+                if (sk->otherObject[2].srcSize > 0 && (sk->otherObject[2].dst[sk->otherObject[2].srcSize - 1].dstCount < 1 || sk->otherObject[2].dst[sk->otherObject[2].srcSize - 1].dataSize < 1)) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n(この行のエラ?ではありません)ひとつ前の#SRC_SLIDERに対応した#DST_SLIDERが存在しないか、登?に失敗したようです\n", line, fBuf);
+                }
+                sk->otherObject[2].srcSize++;
+            }
+            else if (fBuf.left(11).isSame("#DST_SLIDER") && sk->otherObject[2].srcSize > 0) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->otherObject[2].dst[sk->otherObject[2].srcSize - 1], &csv, tSkin_num);
+            }
+            else if (fBuf.left(11).isSame("#SRC_BUTTON")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadSRC(&sk->otherObject[1].src[sk->otherObject[1].srcSize], &csv, sk);
+                if (sk->otherObject[1].src[sk->otherObject[1].srcSize].graphcount < 1 || sk->otherObject[1].src[sk->otherObject[1].srcSize].count < 1) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n画像の登?に失敗しました。\n", line, fBuf);
+                }
+                if (sk->otherObject[1].srcSize > 0 && (sk->otherObject[1].dst[sk->otherObject[1].srcSize - 1].dstCount < 1 || sk->otherObject[1].dst[sk->otherObject[1].srcSize - 1].dataSize < 1)) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n(この行のエラ?ではありません)ひとつ前の#SRC_BUTTONに対応した#DST_BUTTONが存在しないか、登?に失敗したようです\n", line, fBuf);
+                }
+                sk->otherObject[1].srcSize++;
+            }
+            else if (fBuf.left(11).isSame("#DST_BUTTON") && sk->otherObject[1].srcSize > 0) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->otherObject[1].dst[sk->otherObject[1].srcSize - 1], &csv, tSkin_num);
+
+            }
+            else if (fBuf.left(12).isSame("#SRC_ONMOUSE")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadSRC(&sk->otherObject[3].src[sk->otherObject[3].srcSize], &csv, sk);
+                if (sk->otherObject[3].src[sk->otherObject[3].srcSize].graphcount < 1 || sk->otherObject[3].src[sk->otherObject[3].srcSize].count < 1) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n画像の登?に失敗しました。\n", line, fBuf);
+                }
+                if (sk->otherObject[3].srcSize > 0 && (sk->otherObject[3].dst[sk->otherObject[3].srcSize - 1].dstCount < 1 || sk->otherObject[3].dst[sk->otherObject[3].srcSize - 1].dataSize < 1)) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n(この行のエラ?ではありません)ひとつ前の#SRC_BGAに対応した#DST_BGAが存在しないか、登?に失敗したようです\n", line, fBuf);
+                }
+                sk->otherObject[3].srcSize++;
+            }
+            else if (fBuf.left(12).isSame("#DST_ONMOUSE") && sk->otherObject[3].srcSize > 0) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->otherObject[3].dst[sk->otherObject[3].srcSize - 1], &csv, tSkin_num);
+            }
+            else if (fBuf.left(8).isSame("#SRC_BGA")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadSRC(&sk->otherObject[4].src[sk->otherObject[4].srcSize], &csv, sk);
+                if (sk->otherObject[4].src[sk->otherObject[4].srcSize].graphcount < 1 || sk->otherObject[4].src[sk->otherObject[4].srcSize].count < 1) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n画像の登?に失敗しました。\n", line, fBuf);
+                }
+                if (sk->otherObject[4].srcSize > 0 && (sk->otherObject[4].dst[sk->otherObject[4].srcSize - 1].dstCount < 1 || sk->otherObject[4].dst[sk->otherObject[4].srcSize - 1].dataSize < 1)) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n(この行のエラ?ではありません)ひとつ前の#SRC_BGAに対応した#DST_BGAが存在しないか、登?に失敗したようです\n", line, fBuf);
+                }
+                sk->otherObject[4].srcSize++;
+            }
+            else if (fBuf.left(8).isSame("#DST_BGA") && sk->otherObject[4].srcSize > 0) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->otherObject[4].dst[sk->otherObject[4].srcSize - 1], &csv, tSkin_num);
+                tSkin_num++;
+            }
+            else if (fBuf.left(11).isSame("#SRC_NUMBER")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadSRC(&sk->otherObject[6].src[sk->otherObject[6].srcSize], &csv, sk);
+                if (sk->otherObject[6].src[sk->otherObject[6].srcSize].graphcount < 1 || sk->otherObject[6].src[sk->otherObject[6].srcSize].count < 1) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n画像の登?に失敗しました。\n", line, fBuf);
+                }
+                if (sk->otherObject[6].srcSize > 0 && (sk->otherObject[6].dst[sk->otherObject[6].srcSize - 1].dstCount < 1 || sk->otherObject[6].dst[sk->otherObject[6].srcSize - 1].dataSize < 1)) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n(この行のエラ?ではあ りません)ひとつ前の#SRC_NUMBERに対応した#DST_NUMBERが 存在しないか、登?に失敗したようです\n", line, fBuf);
+                }
+                sk->otherObject[6].srcSize++;
+            }
+            else if (fBuf.left(11).isSame("#DST_NUMBER") && sk->otherObject[6].srcSize > 0) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->otherObject[6].dst[sk->otherObject[6].srcSize - 1], &csv, tSkin_num);
+            }
+            else if (fBuf.left(9).isSame("#SRC_MASK")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadSRC(&sk->otherObject[7].src[sk->otherObject[7].srcSize], &csv, sk);
+                sk->otherObject[7].srcSize++;
+            }
+            else if (fBuf.left(9).isSame("#DST_MASK") && sk->otherObject[7].srcSize > 0) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->otherObject[7].dst[sk->otherObject[7].srcSize - 1], &csv, tSkin_num);
+            }
+            else if (fBuf.left(13).isSame("#SRC_BARGRAPH")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadSRC(&sk->otherObject[5].src[sk->otherObject[5].srcSize], &csv, sk);
+                if (sk->otherObject[5].src[sk->otherObject[5].srcSize].graphcount < 1 || sk->otherObject[5].src[sk->otherObject[5].srcSize].count < 1) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n画像の登?に失敗しまし た。\n", line, fBuf);
+                }
+                if (sk->otherObject[5].srcSize > 0 && (sk->otherObject[5].dst[sk->otherObject[5].srcSize - 1].dstCount < 1 || sk->otherObject[5].dst[sk->otherObject[5].srcSize - 1].dataSize < 1)) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n(この行のエラ?ではあ りません)ひとつ前の#SRC_BARGRAPHに対応した#DST_BARGRAP Hが存在しないか、登?に失敗したようです\n", line, fBuf);
+                }
+                sk->otherObject[5].srcSize++;
+            }
+            else if (fBuf.left(13).isSame("#DST_BARGRAPH") && sk->otherObject[5].srcSize > 0) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->otherObject[5].dst[sk->otherObject[5].srcSize - 1], &csv, tSkin_num);
+                tSkin_num++;
+            }
+            else if (fBuf.left(13).isSame("#SRC_BAR_BODY")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 29, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_BAR_BODY[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(17).isSame("#DST_BAR_BODY_OFF")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 29, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_BAR_BODY_OFF[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(16).isSame("#DST_BAR_BODY_ON")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 29, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_BAR_BODY_ON[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(11).isSame("#BAR_CENTER")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 29, line, read.line.outstr())) {
+                    SplitCSV(fBuf, &csv, ",");
+                    sk->BAR_CENTER = csv.val[1];
+                }
+            }
+            else if (fBuf.left(14).isSame("#SRC_BAR_TITLE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 4, line, read.line.outstr())) {
+                    ReadSRC_BAR_TITLE(&sk->src_BAR_TITLE[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(14).isSame("#DST_BAR_TITLE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 4, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_BAR_TITLE[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(11).isSame("#TRANSCOLOR")) {
+                SplitCSV(fBuf, &csv, ",");
+                SetTransColor(csv.val[1], csv.val[2], csv.val[3]);
+            }
+            else if (fBuf.left(11).isSame("#TRANSCLOLR")) {
+                SplitCSV(fBuf, &csv, ",");
+                SetTransColor(csv.val[1], csv.val[2], csv.val[3]);
+            }
+            else if (fBuf.left(12).isSame("#TRANSCLOLOR")) {
+                SplitCSV(fBuf, &csv, ",");
+                SetTransColor(csv.val[1], csv.val[2], csv.val[3]);
+            }
+            else if (fBuf.left(11).isSame("#STARTINPUT")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->startinput_start = csv.val[1];
+                sk->startinput_rank = csv.val[2];
+                sk->startinput_update = csv.val[3];
+            }
+            else if (fBuf.left(10).isSame("#SCENETIME")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->scenetime = csv.val[1];
+            }
+            else if (fBuf.left(8).isSame("#FADEOUT")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->fadeout = csv.val[1];
+            }
+            else if (fBuf.left(6).isSame("#CLOSE")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->close = csv.val[1];
+            }
+            else if (fBuf.left(5).isSame("#SKIP")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->close = csv.val[1];
+            }
+            else if (fBuf.left(10).isSame("#PLAYSTART")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->playstart = csv.val[1];
+            }
+            else if (fBuf.left(10).isSame("#LOADSTART")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->loadstart = csv.val[1];
+            }
+            else if (fBuf.left(8).isSame("#LOADEND")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->loadend = csv.val[1];
+            }
+            else if (fBuf.left(14).isSame("#BAR_AVAILABLE")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->bar_availabe_from = csv.val[1];
+                sk->bar_availabe_to = csv.val[2];
+            }
+            else if (fBuf.left(14).isSame("#SRC_BAR_FLASH")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadSRC(&sk->src_BAR_FLASH, &csv, sk);
+            }
+            else if (fBuf.left(14).isSame("#DST_BAR_FLASH")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->dst_BAR_FLASH, &csv, tSkin_num);
+            }
+            else if (fBuf.left(18).isSame("#DST_BAR_STAGEFILE")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->dst_BAR_STAGEFILE, &csv, tSkin_num);
+            }
+            else if (fBuf.left(16).isSame("#SRC_MOUSECURSOR")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadSRC(&sk->src_MOUSECURSOR, &csv, sk);
+            }
+            else if (fBuf.left(16).isSame("#DST_MOUSECURSOR")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->dst_MOUSECURSOR, &csv, tSkin_num);
+            }
+            else if (fBuf.left(14).isSame("#SRC_BAR_LEVEL")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 10, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_BAR_LEVEL[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(14).isSame("#DST_BAR_LEVEL")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 10, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_BAR_LEVEL[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(9).isSame("#SRC_NOTE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 19, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_NOTE[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(9).isSame("#SRC_MINE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 19, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_MINE[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(13).isSame("#SRC_LN_START")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 19, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_LN_START[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(11).isSame("#SRC_LN_END")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 19, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_LN_END[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(12).isSame("#SRC_LN_BODY")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 19, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_LN_BODY[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(14).isSame("#SRC_AUTO_NOTE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 19, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_AUTO_NOTE[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(14).isSame("#SRC_AUTO_MINE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 19, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_AUTO_MINE[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(18).isSame("#SRC_AUTO_LN_START")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 19, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_AUTO_LN_START[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(16).isSame("#SRC_AUTO_LN_END")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 19, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_AUTO_LN_END[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(17).isSame("#SRC_AUTO_LN_BODY")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 19, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_AUTO_LN_BODY[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(9).isSame("#DST_NOTE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 19, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_NOTE[csv.val[1]], &csv, tSkin_num);
+                    tSkin_num += 2;
+                }
+            }
+            else if (fBuf.left(16).isSame("#SRC_NOWJUDGE_1P")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 5, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_NOWJUDGE_1P[csv.val[1]], &csv, sk);
+                    sk->src_NOWJUDGE_1P[csv.val[1]].timer = 46;
+                }
+            }
+            else if (fBuf.left(16).isSame("#DST_NOWJUDGE_1P")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 5, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_NOWJUDGE_1P[csv.val[1]], &csv, tSkin_num);
+                    sk->dst_NOWJUDGE_1P[csv.val[1]].timer = 46;
+                }
+            }
+            else if (fBuf.left(16).isSame("#SRC_NOWCOMBO_1P")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadSRC(&sk->src_NOWCOMBO_1P[csv.val[1]], &csv, sk);
+                sk->src_NOWCOMBO_1P[csv.val[1]].timer = 46;
+            }
+            else if (fBuf.left(16).isSame("#DST_NOWCOMBO_1P")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->dst_NOWCOMBO_1P[csv.val[1]], &csv, tSkin_num);
+                sk->dst_NOWJUDGE_1P[csv.val[1]].timer = 46; //???mistake?
+            }
+            else if (fBuf.left(16).isSame("#SRC_NOWJUDGE_2P")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 5, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_NOWJUDGE_2P[csv.val[1]], &csv, sk);
+                    sk->src_NOWJUDGE_2P[csv.val[1]].timer = 47;
+                }
+            }
+            else if (fBuf.left(16).isSame("#DST_NOWJUDGE_2P")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 5, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_NOWJUDGE_2P[csv.val[1]], &csv, tSkin_num);
+                    sk->dst_NOWJUDGE_2P[csv.val[1]].timer = 47;
+                }
+            }
+            else if (fBuf.left(16).isSame("#SRC_NOWCOMBO_2P")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 5, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_NOWCOMBO_2P[csv.val[1]], &csv, sk);
+                    sk->src_NOWCOMBO_2P[csv.val[1]].timer = 47;
+                }
+            }
+            else if (fBuf.left(16).isSame("#DST_NOWCOMBO_2P")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 5, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_NOWCOMBO_2P[csv.val[1]], &csv, tSkin_num);
+                    sk->dst_NOWJUDGE_2P[csv.val[1]].timer = 47; //???mistake?
+                }
+            }
+            else if (fBuf.left(16).isSame("#SRC_GROOVEGAUGE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 1, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_GROOVEGAUGE[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(16).isSame("#DST_GROOVEGAUGE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 1, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_GROOVEGAUGE[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(18).isSame("#SRC_GAUGECHART_1P")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 1, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_GAUGECHART_1P[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(18).isSame("#DST_GAUGECHART_1P")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 1, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_GAUGECHART_1P[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(18).isSame("#SRC_GAUGECHART_2P")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 1, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_GAUGECHART_2P[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(18).isSame("#DST_GAUGECHART_2P")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 1, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_GAUGECHART_2P[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(15).isSame("#SRC_SCORECHART")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 2, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_SCORECHART[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(15).isSame("#DST_SCORECHART")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 2, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_SCORECHART[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(9).isSame("#SRC_LINE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 1, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_LINE[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(9).isSame("#DST_LINE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 1, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_LINE[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(14).isSame("#SRC_JUDGELINE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 1, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_JUDGELINE[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(14).isSame("#DST_JUDGELINE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 1, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_JUDGELINE[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(13).isSame("#SRC_BAR_LAMP")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 9, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_BAR_LAMP[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(13).isSame("#DST_BAR_LAMP")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 9, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_BAR_LAMP[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(16).isSame("#SRC_BAR_MY_LAMP")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 9, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_BAR_MY_LAMP[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(16).isSame("#DST_BAR_MY_LAMP")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 9, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_BAR_MY_LAMP[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(19).isSame("#SRC_BAR_RIVAL_LAMP")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 9, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_BAR_RIVAL_LAMP[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(19).isSame("#DST_BAR_RIVAL_LAMP")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 9, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_BAR_RIVAL_LAMP[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(13).isSame("#SRC_BAR_STAR")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 5, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_BAR_STAR[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(13).isSame("#DST_BAR_STAR")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 5, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_BAR_STAR[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(14).isSame("#SRC_THUMBNAIL")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadSRC(&sk->src_THUMBNAIL, &csv, sk);
+            }
+            else if (fBuf.left(14).isSame("#DST_THUMBNAIL")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadDST(&sk->dst_THUMBNAIL, &csv, tSkin_num);
+            }
+            else if (fBuf.left(11).isSame("#SRC_README")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 1, line, read.line.outstr())) {
+                    ReadSRC_BAR_TITLE(&sk->src_README[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(11).isSame("#DST_README")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 1, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_README[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(20).isSame("#DST_EVENT_LOADINGBG")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 4, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_EVENT_LOADINGBG[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(22).isSame("#SRC_EVENT_MODE_CURSOR")) {
+                SplitCSV(fBuf, &csv, ",");
+                ReadSRC(&sk->src_EVENT_MODE_CURSOR, &csv, sk);
+            }
+            else if (fBuf.left(25).isSame("#DST_EVENT_MODE_CURSOR_ON")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 10, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_EVENT_MODE_CURSOR_ON[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(26).isSame("#DST_EVENT_MODE_CURSOR_OFF")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 10, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_EVENT_MODE_CURSOR_OFF[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(17).isSame("#EVENT_STARTINPUT")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->event_STARTINPUT[0] = csv.val[1];
+                sk->event_STARTINPUT[1] = csv.val[2];
+                sk->event_STARTINPUT[2] = csv.val[3];
+                sk->event_STARTINPUT[3] = csv.val[4];
+                sk->event_STARTINPUT[4] = csv.val[5];
+                sk->event_STARTINPUT[5] = csv.val[6];
+                sk->event_STARTINPUT[6] = csv.val[7];
+                sk->event_STARTINPUT[7] = csv.val[8];
+                sk->event_STARTINPUT[8] = csv.val[9];
+                sk->event_STARTINPUT[9] = csv.val[10];
+            }
+            else if (fBuf.left(14).isSame("#EVENT_FADEOUT")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->event_FADEOUT[0] = csv.val[1];
+                sk->event_FADEOUT[1] = csv.val[2];
+                sk->event_FADEOUT[2] = csv.val[3];
+                sk->event_FADEOUT[3] = csv.val[4];
+                sk->event_FADEOUT[4] = csv.val[5];
+                sk->event_FADEOUT[5] = csv.val[6];
+                sk->event_FADEOUT[6] = csv.val[7];
+                sk->event_FADEOUT[7] = csv.val[8];
+                sk->event_FADEOUT[8] = csv.val[9];
+                sk->event_FADEOUT[9] = csv.val[10];
+            }
+            else if (fBuf.left(8).isSame("#LR2FONT") && !flag_skipFont) {
+                SplitCSV(fBuf, &csv, ",");
+                if (sk->num_of_ImageFont == 10) {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\nこれ以上の登?はできま せん。\n", line, fBuf);
+                }
+                else if (csv.val[2] == 1 || sk->disableimagefont == 0) {
+                    if (csv.str[1].isDiff("CONTINUE")) {
+                        for (int i = 0; i < sk->customfile_count; i++) {
+                            if (sk->customfileRANDOM[i].isSame(csv.str[1].left(sk->customfileRANDOM[i].length())) && sk->customfile[i].isDiff("RANDOM") && sk->customfile[i].isDiff("ERROR") && sk->customfile[i].length() > 0) {
+                                csv.str[1].replace("*", sk->customfile[i]);
+                                //line?
+                                break;
+                            }
+                        }
+                        ReadImageFont(GetRandomFileNoError(csv.str[1], dir), &sk->ImageFonts[sk->num_of_ImageFont]);
+                    }
+                    sk->num_of_ImageFont++;
+                }
+                else {
+                    InitImageFont(&sk->ImageFonts[sk->num_of_ImageFont]);
+                    sk->num_of_ImageFont++;
+                }
+            }
+            else if (fBuf.left(9).isSame("#HELPFILE")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (sk->helpfileCount < 10) {
+                    sk->helpfilePath[sk->helpfileCount].assign(&csv.str[1]);
+                    sk->helpfileCount = sk->helpfileCount + 1;
+                }
+            }
+            else if (fBuf.left(6).isSame("#NOBGA")) {
+                sk->flag_BGA = 0;
+            }
+            else if (fBuf.left(11).isSame("#FLIPRESULT")) {
+                sk->flag_flip = true;
+                sk->op[350] = false;
+                sk->op[351] = true;
+            }
+            else if (fBuf.left(9).isSame("#FLIPSIDE")) {
+                flipside = true;
+            }
+            else if (fBuf.left(12).isSame("#DISABLEFLIP")) {
+                sk->flag_flip = false;
+                sk->op[350] = true;
+                sk->op[351] = false;
+            }
+            else if (fBuf.left(11).isSame("#TEXTMERGIN")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->textmergin_1 = csv.val[1];
+                sk->textmergin_2 = csv.val[2];
+            }
+            else if (fBuf.left(12).isSame("#SCRATCHSIDE")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->scratchside_1 = csv.val[1];
+                sk->scratchside_2 = csv.val[2];
+            }
+            else if (fBuf.left(8).isSame("#INCLUDE")) {
+                //SplitCSV(fBuf, &csv, ",");
+                //for (int i = 0; i < sk->customfile_count; i++) {
+                //    if (sk->customfileRANDOM[i].isSame(csv.str[1].left(sk->customfileRANDOM[i].length()))
+                //        && sk->customfile[i].isDiff("RANDOM") && sk->customfile[i].isDiff("ERROR")
+                //        && (sk->customfile[i].length() > 0)) {
+
+                //        csv.str[1].replace("*", sk->customfile[i]);
+                //        break;
+                //    }
+                //}
+                //if (tSkin_num == 0) tSkin_num = 1;
+                //tSkin_num += ReadSkinSE(sk, GetRandomFileNoError(csv.str[1], dir), unused, tSkin_num, sku, flag_skipFont);
+            }
+            else if (fBuf.left(13).isSame("#CUSTOMOPTION")) {
+                sk->customfile_count++;
+            }
+            else if (fBuf.left(11).isSame("#CUSTOMFILE")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->customfileRANDOM[sk->customfile_count].assign(&csv.str[2]);
+                sk->customfile[sk->customfile_count].assign("RANDOM");
+                if (sk->customfile[sk->customfile_count].isSame("RANDOM")) {
+                    sk->customfile[sk->customfile_count].assign(GetRandomFile(sk->customfileRANDOM[sk->customfile_count], 1));
+                }
+                sk->customfile_count++;
+            }
+            else if (fBuf.left(13).isSame("#CUSTOMFOLDER")) {
+                SplitCSV(fBuf, &csv, ",");
+                sk->customfileRANDOM[sk->customfile_count].assign(&csv.str[2]);
+                sk->customfile[sk->customfile_count].assign("RANDOM");
+                sk->customfile_count++;
+            }
+            else if (fBuf.left(13).isSame("#RELOADBANNER")) {
+                sk->reloadbanner = 1;
+            }
+            else if (fBuf.left(10).isSame("#SETOPTION")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (csv.val[1] < 1000) {
+                    sk->op[csv.val[1]] = (csv.val[2] != 0);
+                }
+                else {
+                    ErrorLogFmtAdd("スキン読み込みエラ? %d行目\n%s\n#SETOPTIONの第一引数(オプション値)は900?999の範囲内にして下さい。\n", line, fBuf);
+                }
+            }
+            else if (fBuf.left(13).isSame("#SRC_BAR_RANK")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 9, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_BAR_RANK[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(13).isSame("#DST_BAR_RANK")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 9, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_BAR_RANK[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(14).isSame("#SRC_BAR_RIVAL")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 9, line, read.line.outstr())) {
+                    ReadSRC(&sk->src_BAR_RIVAL[csv.val[1]], &csv, sk);
+                }
+            }
+            else if (fBuf.left(14).isSame("#DST_BAR_RIVAL")) {
+                SplitCSV(fBuf, &csv, ",");
+                if (CheckIndexRange(csv.val[1], 0, 9, line, read.line.outstr())) {
+                    ReadDST(&sk->dst_BAR_RIVAL[csv.val[1]], &csv, tSkin_num);
+                }
+            }
+            else if (fBuf.left(11).isSame("#HORIZONTAL")) {
+                sk->horizontal = 1;
+            }
+        }
+        tSkin_num++;
+    }
+
+    if(flipside)ApplyFlipside(sk);
+
+    return tSkin_num;
+}
+
+int WORKSPACE::MakeObjects() {
+
+    for (int i = 0; i < arr_DST.count; i++) {
+        SEOBJ* seobj = (SEOBJ*)arr_seobj.Get_new();
+        seobj->ID = i;
+        seobj->dst = i;
+        seobj->src = ((DST*)arr_DST.data)[i].src;
+
+        seobj->name.assign("");
+        if (((DST*)arr_DST.data)[i].op1 >= 0) {
+            seobj->name.add(dstName(((DST*)arr_DST.data)[i].op1));
+        }
+        else {
+            seobj->name.add("Not_");
+            seobj->name.add(dstName(-((DST*)arr_DST.data)[i].op1));
+        }
+
+        seobj->ifGroup = ((SRC*)arr_SRC.data)[seobj->src].ifGroup;
+        if (seobj->ifGroup) {
+            seobj->name.add("_");
+        }
+
+        seobj->igType;
+        seobj->igID;
+        
+    }
+    
+    
+
+    return 0;
+}
+
+int WORKSPACE::SeInit() {
+    zoom = 1.0f;
+}
+int WORKSPACE::SeLoadInit() {
+
+}
+
+
+int WORKSPACE::drawCustomize() {
+
+    char title[260];
+    snprintf(title, sizeof(title), "Customize##%d", num);
+    ImGui::Begin(title, &wCustomize);
+
+    for (int i = 0; i < meta.custom_count; i++) {
+        SkinCustom& cu = meta.customs[i];
+
+        ImGui::Text("%s", cu.title.outstr());
+        ImGui::SameLine();
+        
+        char item[64];
+
+        if(cu.dst_op_start)
+            snprintf(item, sizeof(item), "%03d : %s", cu.dst_op_start + cu.dst_op_selected, cu.op_label[cu.dst_op_selected].outstr());
+        else
+            snprintf(item, sizeof(item), "FILE : %s", cu.op_label[cu.dst_op_selected].outstr());
+
+        char label[32];
+        snprintf(label, sizeof(label), "##%d", i);
+        if (ImGui::BeginCombo(label, item, ImGuiComboFlags_WidthFitPreview))
+        {
+            for (int n = 0; n < cu.dst_op_count; n++)
+            {
+                if (cu.dst_op_start)
+                    snprintf(item, sizeof(item), "%03d : %s", cu.dst_op_start + n, cu.op_label[n].outstr());
+                else
+                    snprintf(item, sizeof(item), "FILE : %s", cu.op_label[n].outstr());
+
+                const bool is_selected = (cu.dst_op_selected == n);
+                if (ImGui::Selectable(item, is_selected))
+                    cu.dst_op_selected = n;
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+    }
+    
+    ImGui::End();
+    return 0;
+}
+
+int WORKSPACE::drawPreview() {
+    //static SDL_Texture* preview_tex;
+    static PDIRECT3DTEXTURE9 preview_tex;
+    
+    char title[260];
+    snprintf(title, sizeof(title), "Preview##%d", num);
+
+    static bool playing = false;
+
+    LR2SEDrawLoop(&g, previewScreen, skinSizeX, skinSizeY);
+    
+    ImGui::Begin(title, &wPreview, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::SliderFloat("zoom##zoom", &zoom, 0.25f, 4.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+    ImVec2 p = ImGui::GetCursorScreenPos();
+    //TODO init zoom value
+    //TODO support HD skins
+    
+    // LoadTextureFromRawMemory(GetImageAddressSoftImage(previewScreen), &preview_tex, skinSizeX, skinSizeY, 4);
+    //LoadTextureFromMemory(GetImageAddressSoftImage(previewScreen), NULL, &preview_tex, &skinSizeX, &skinSizeY);
+    //preview_tex = (PDIRECT3DTEXTURE9)GetGraphIDirect3DTexture9(previewScreen);
+    preview_tex = (PDIRECT3DTEXTURE9)GetGraphIDirect3DTexture9(g.skstruct.GrHandle[0]);
+    //Q1 : draws on screen success?
+    //Q2 : texture is well drawn? how to test it?
+    ImGui::Image(preview_tex, { (float)skinSizeX / zoom, (float)skinSizeY / zoom }, { 0, 0 }, { 1, 1 });
+
+    if (ImGui::Button("MainStart")) {
+        LoadSceneSE();
+        LR2SESceneInit(&g, meta.type);
+        playing = true;
+    }
+    if(playing)
+        LR2SESceneProc(&g, meta.type);
+
+    if (ImGui::BeginCombo("##Timer",timerName(timerSelected))) {
+        for (int timer = 0; timer < 200; timer++) {
+            ImGui::PushID(timer);
+            const bool is_selected = (timerSelected == timer);
+            char timerNameBuf[64];
+            sprintf(timerNameBuf, "%03d:%s", timer, timerName(timer));
+            if (ImGui::Selectable(timerNameBuf, is_selected))
+                timerSelected = timer;
+
+            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+            
+
+            ImGui::PopID();
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Start")) {
+        SetTimeLapse(timerSelected, &g.timer1);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Reset")) {
+        ResetTimeLapse(timerSelected, &g.timer1);
+    }
+
+    
+
+    //D_IDirect3DSurface9* d9 = (D_IDirect3DSurface9*)GetUseDirect3D9BackBufferSurface();
+    //d9->GetDC()
+
+    //test draw square on preview
+    ImVec2 srcposLU = { p.x + preview_selected_obj.x - 1, p.y + preview_selected_obj.y - 1 };
+    ImVec2 srcposRB = { p.x + preview_selected_obj.x + preview_selected_obj.w + 1, p.y + preview_selected_obj.y + preview_selected_obj.h + 1 };
+
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+    bool flicking = ((int)GetTimeLapse(1, &g.timer1) % 200 > 100);
+    ImColor color = flicking ? 0xff0080ff : 0x000000;
+    draw_list->AddRect(srcposLU, srcposRB, color, 0.0f, ImDrawFlags_Closed, 1.0f);
+    //test draw square on preview
+
+    //test objects on cursor
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+        ImGuiIO& io = ImGui::GetIO();
+        clickPos = { io.MousePos.x,io.MousePos.y };
+        drawRightClick = true;
+    }
+    else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+        drawRightClick = false;
+    }
+    if(drawRightClick){
+        ImGui::PushID(num);
+        if (ImGui::BeginPopupContextWindow()) {
+            for (int i = 0; i < arr_DST.count; i++) {
+                DST& dst = ((DST*)arr_DST.data)[i];
+                DST_ANIMATION& dstd = ((DST_ANIMATION*)dst.arr_animation.data)[dst.arr_animation.count - 1];
+                ImVec2 dstposLU = { (float)p.x + dstd.x, (float)p.y + dstd.y };
+                ImVec2 dstposRB = { (float)p.x + dstd.x + dstd.w, (float)p.y + dstd.y + dstd.h };
+                
+                if (dstposLU.x <= clickPos.x && clickPos.x <= dstposRB.x && dstposLU.y <= clickPos.y && clickPos.y <= dstposRB.y) {
+                    ImGui::Text("%d", i);
+                    //printSrcImg(((SRC*)arr_SRC.data)[dst.src],1);
+                    ImGui::SameLine();
+                    printSrcImgEx(((SRC*)arr_SRC.data)[dst.src], 90, 60);
+                }
+            }
+
+            ImGui::EndPopup();
+        }
+        ImGui::PopID();
+    }
+    
+
+    ImGui::End();
+
+    if (!wPreview) SetWindowVisibleFlag(0);
+    return 0;
+}
+
+int WORKSPACE::drawTextEdit() {
+    char title[260];
+    snprintf(title, sizeof(title), "TextEdit##%d", num);
+
+    ImGui::Begin(title, &wTextEdit, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+    if (ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("Hide")) {
+
+            ImGui::MenuItem("Blank", NULL, &hideBlank);
+            ImGui::MenuItem("Comment", NULL, &hideComment);
+
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+
+    //vertical scroll & skip hidden //todo only mouse on
+    if(ImGui::IsWindowHovered()) {
+        ImGuiIO& io = ImGui::GetIO();
+        textCursor -= io.MouseWheel;
+        if (textCursor < 0) textCursor = 0;
+        SKINFILELINEREAD* read1 = &((SKINFILELINEREAD*)skinfileLines.data)[textCursor];
+        while ((hideBlank && *read1->line.atPos(0) == '\0') || (hideComment && read1->isComment)) {
+            if (io.MouseWheel < 0) textCursor++;
+            else textCursor--;
+
+            if (textCursor < 0) {
+                textCursor = 0;
+                read1 = &((SKINFILELINEREAD*)skinfileLines.data)[textCursor];
+                while ((hideBlank && *read1->line.atPos(0) == '\0') || (hideComment && read1->isComment)) {
+                    textCursor++;
+                    read1 = &((SKINFILELINEREAD*)skinfileLines.data)[textCursor];
+                }
+            }
+            read1 = &((SKINFILELINEREAD*)skinfileLines.data)[textCursor];
+        }
+        if (textCursor < 0) textCursor = 0;
+        if (textCursor >= skinfileLines.count) textCursor = skinfileLines.count - 1;
+    }
+    
+    
+    //print every line
+    int printed = 0;
+    for (int n = textCursor; n < skinfileLines.count && printed < 30; n++) {
+        SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[n];
+
+        ImVec4 color;
+        color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+        if ((hideBlank && *read.line.atPos(0) == '\0') || (hideComment && read.isComment)) {
+            continue;
+        }
+        /*char itemname[260];
+        snprintf(itemname, sizeof(itemname), "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());*/
+
+        //ImGui::PushID(n);
+        //ImGui::Button(" ");
+        ///*if (ImGui::BeginItemTooltip())
+        //{
+        //    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        //    ImGui::Text("%d", read.ifgroup);
+        //    ImGui::EndTooltip();
+        //}*/
+
+        //ImGui::PopID();
+
+        //ImGui::SameLine();
+
+        IFUNIT& ifs = ((IFUNIT*)arr_ifunit.data)[read.ifgroup];
+        bool head = read.isIfGroupHead || read.isGroupHead;//(read.numTotal == ifs.declare);
+        bool isHide = ifs.hide;
+        int parIFCursor = ifs.parentID;
+        for (int i = 0; i < ifs.depth; i++) {
+            isHide |= ((IFUNIT*)arr_ifunit.data)[parIFCursor].hide;
+            parIFCursor = ((IFUNIT*)arr_ifunit.data)[parIFCursor].parentID;
+        }
+        if (isHide && !head) continue;
+
+        ImGui::PushID(n);
+        ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV((head + isHide) / 3.0f, 0.6f, 0.6f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV((head + isHide) / 3.0f, 0.7f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV((head + isHide) / 3.0f, 0.8f, 0.8f));
+        if (ImGui::Button(" ")) {
+            if (head){//read.numTotal == ifs.declare) {
+                ifs.hide ^= 1;
+            }
+        }
+
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Right), 1) {
+            if (ImGui::BeginPopupContextItem()) {
+                ImGui::Text("selected : %d", n);
+                ImGui::MenuItem("move");
+                if (ImGui::MenuItem("insert")) {
+                    InsertLine(n);
+                }
+                ImGui::MenuItem("group");
+                if (ImGui::MenuItem("delete")) {
+                    DeleteLine(n);
+                }
+                ImGui::EndPopup();
+            }
+        }
+
+        ImGui::PopStyleColor(3);
+        ImGui::PopID();
+        ImGui::SameLine();
+
+
+        ImGui::Text("%d ", read.ifgroup);
+        
+        ImGui::SameLine();
+        
+        if (read.isComment) {
+            ImGui::TextDisabled("%04d:%04d: ", read.numTotal, read.num);
+
+            //ImGui::SameLine();
+            //ImGui::PushID(n);
+            //ImGui::Button(" ");
+            //
+            ///*if (ImGui::BeginItemTooltip())
+            //{
+            //    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            //    ImGui::Text("%d", read.ifgroup);
+            //    ImGui::EndTooltip();
+            //}*/
+
+            //ImGui::PopID();
+
+            ImGui::SameLine();
+            //ImGui::TextDisabled("%s", read.line.outstr());
+            ImGui::PushID(n);
+            ImGui::InputText("", read.line.outstr(), 260);
+
+            static CSTR tmp;
+            if (ImGui::IsItemActivated()) {
+                tmp.assign(read.line.outstr());
+            }
+            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                HISTORY* hs = (HISTORY*)arr_history.Get_new();
+                hs->op = overwriteLine;
+                hs->target = n;
+                CsvToLine(n);
+                hs->older.line.assign(tmp);
+                hs->newer.line.assign(read.line.outstr());
+            }
+            ImGui::PopID();
+            //ImGui::TextColored(color, "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());
+
+
+        }
+        else {
+            //ImGui::TextColored(color, "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());
+
+            for (int depth = 0; depth < ((IFUNIT*)(arr_ifunit.data))[read.ifgroup].depth; depth++) {
+                ImGui::TextColored(color, "_");
+                ImGui::SameLine();
+            }
+            ImGui::TextColored(color, "%04d:%04d: ", read.numTotal, read.num);
+
+            ImGui::SameLine();
+
+            char tablename[260];
+            snprintf(tablename, sizeof(tablename), "##w%d_text", num);
+            if (ImGui::BeginTable(tablename, 22, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_NoPadInnerX , {4000,18},3999))
+            {
+                ImGui::PushItemWidth(FLT_MAX);
+                ImGui::TableNextRow();
+
+                //color
+                ImU32 row_bg_color = ImGui::GetColorU32(ImVec4(0.3f, 0.3f, 0.7f, 0.65f));
+                if(read.isSRC)
+                    row_bg_color = ImGui::GetColorU32(ImVec4(0.3f, 0.7f, 0.3f, 0.65f)); 
+                else if (read.isDST)
+                    row_bg_color = ImGui::GetColorU32(ImVec4(0.7f, 0.3f, 0.3f, 0.65f));
+                else if (read.isOther)
+                    row_bg_color = ImGui::GetColorU32(ImVec4(0.3f, 0.3f, 0.7f, 0.65f));
+                ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, row_bg_color);
+
+                for (int column = 0; column < 22; column++)
+                {
+                    ImGui::TableSetColumnIndex(column);
+                    if (read.csv.str[column].atPos(0) == nullptr) {
+                        ImGui::TextDisabled("%s", read.csv.str[column].outstr());
+                    }
+                    else {
+                        //ImGui::Text("%s", read.csv.str[column]);
+                        char inputname[260];
+                        sprintf(inputname, "##%d_%d_cell", read.numTotal, column);
+                        ImGui::SetNextItemWidth(-FLT_MIN);
+
+                        
+                        if (GetCommandHelp(read.csv.str[0].outstr(), column).left(5).isSame("$type")) {
+                            if (ImGui::BeginCombo(inputname, SKINTYPESTR[read.csv.val[column]], ImGuiComboFlags_None)) {
+                                for (int op = 0; op < 21; op++) {
+                                    ImGui::PushID(op);
+                                    const bool is_selected = (read.csv.val[column] == op);
+                                    char opname[64];
+                                    sprintf(opname, "%03d:%s", op, SKINTYPESTR[op]);
+
+                                    if (ImGui::Selectable(opname, is_selected)) {
+                                        //read.csv.val[column] = op;
+                                        EditValue(n, column, op);
+                                    }
+
+                                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                    if (is_selected)
+                                        ImGui::SetItemDefaultFocus();
+
+                                    ImGui::PopID();
+                                }
+                                ImGui::EndCombo();
+                            }
+                        }
+                        else if (GetCommandHelp(read.csv.str[0].outstr(), column).left(3).isSame("$op")) {
+                            if (ImGui::BeginCombo(inputname, dstName(read.csv.val[column]), ImGuiComboFlags_None)) {
+                                for (int op = 0; op < 1000; op++) {
+                                    ImGui::PushID(op);
+                                    const bool is_selected = (read.csv.val[column] == op);
+                                    char opname[64];
+                                    sprintf(opname, "%03d:%s", op, dstName(op));
+
+                                    if (ImGui::Selectable(opname, is_selected)) {
+                                        //read.csv.val[column] = op;
+                                        EditValue(n, column, op);
+                                    }
+                                        
+                                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                    if (is_selected)
+                                        ImGui::SetItemDefaultFocus();
+
+                                    ImGui::PopID();
+                                }
+                                ImGui::EndCombo();
+                            }
+                        }
+                        else if (GetCommandHelp(read.csv.str[0].outstr(), column).left(3).isSame("$st")) {
+                            if (ImGui::BeginCombo(inputname, textName(read.csv.val[column]), ImGuiComboFlags_None)) {
+                                for (int op = 0; op < 200; op++) {
+                                    ImGui::PushID(op);
+                                    const bool is_selected = (read.csv.val[column] == op);
+                                    char opname[64];
+                                    sprintf(opname, "%03d:%s", op, textName(op));
+
+                                    if (ImGui::Selectable(opname, is_selected)) {
+                                        //read.csv.val[column] = op;
+                                        EditValue(n, column, op);
+                                    }
+                                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                    if (is_selected)
+                                        ImGui::SetItemDefaultFocus();
+
+                                    ImGui::PopID();
+                                }
+                                ImGui::EndCombo();
+                            }
+                        }
+                        else {
+                            static CSTR tmp;
+                            ImGui::InputText(inputname, read.csv.str[column], 260, ImGuiInputTextFlags_AutoSelectAll);
+                            if (ImGui::IsItemActivated()) {
+                                tmp.assign(read.line.outstr());
+                            }
+                            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                                HISTORY* hs = (HISTORY*)arr_history.Get_new();
+                                hs->op = overwriteLine;
+                                hs->target = n;
+                                CsvToLine(n);
+                                hs->older.line.assign(tmp);
+                                hs->newer.line.assign(read.line.outstr());
+                            }
+                        }
+                            
+                        
+                    }
+
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
+                    {
+                        //ImGui::Text("%d",ifs.grCount);
+                        ImGui::Text("%s", GetCommandHelp(read.csv.str[0].outstr(), column).outstr());
+                        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                        ImGui::TextUnformatted(read.csv.str[column]);
+                        if (read.csv.str[0].isSame("#SRC_IMAGE")) {
+
+                            int handle = read.csv.val[2];
+                            
+                            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[handle];
+
+                            int iX = read.csv.val[3];
+                            int iY = read.csv.val[4];
+                            int iW = read.csv.val[5] == -1 ? img.sizeX - iX : read.csv.val[5];
+                            int iH = read.csv.val[6] == -1 ? img.sizeY - iY : read.csv.val[6];
+
+                            if (img.texture != NULL) {
+                                ImVec2 display_min = ImVec2(iX / (float)img.sizeX, iY / (float)img.sizeY);
+                                ImVec2 display_max = ImVec2((iX + iW) / (float)img.sizeX, (iY + iH) / (float)img.sizeY);
+                                ImVec2 display_size = ImVec2(iW, iH);
+
+                                ImGui::Image(img.texture, display_size, display_min, display_max);;
+                            }
+                            //printSrcImg(((SRC*)arr_SRC.data)[handle]);
+                        }
+                        ImGui::PopTextWrapPos();
+                        ImGui::EndTooltip();
+                    }
+                }
+                ImGui::EndTable();
+            }
+        }
+        
+        printed++;
+        /*if (ImGui::BeginChild(ImGuiChildFlags_FrameStyle))
+        {
+            for (int n = 0; n < skinfileLines.count; n++){
+                SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[n];
+
+                const bool is_selected = 0;
+                char itemname[260];
+                snprintf(itemname, sizeof(itemname), "%04d:%04d: %s", read.numTotal, read.num, read.line.outstr());
+                ImGui::Selectable(itemname, is_selected);
+            }
+        }
+        ImGui::EndChild();*/
+
+
+    }
+
+    ImGui::End();
+    return 0;
+}
+
+//deprecated
+int WORKSPACE::loadSRC() {
+
+    for (int n = 0; n < arr_SRCGR.count; n++) {
+        CSTR& path = ((SRCGR*)arr_SRCGR.data)[n].path;
+        SRCGR& img = ((SRCGR*)arr_SRCGR.data)[n];
+
+        bool isLoaded = LoadTextureFromFile(path.outstr(), &img.texture, &img.sizeX, &img.sizeY);
+    }
+    return 0;
+}
+
+
+int WORKSPACE::printSrcImg(SRC src, bool button) {
+    SRCGR &img = ((SRCGR*)arr_SRCGR.data)[src.gr];
+    if (img.texture != NULL) {
+        int sizeX = src.sizeX == -1 ? img.sizeX - src.x : src.sizeX;
+        int sizeY = src.sizeY == -1 ? img.sizeY - src.y : src.sizeY;
+        ImVec2 display_min = ImVec2(src.x / (float)img.sizeX, src.y / (float)img.sizeY);
+        ImVec2 display_max = ImVec2((src.x + sizeX) / (float)img.sizeX, (src.y + sizeY) / (float)img.sizeY);
+        ImVec2 display_size = ImVec2(sizeX, sizeY);
+
+        if (src.cycle && (src.div_x >= 1 || src.div_y >= 1)) {
+            if (src.div_x == 0) src.div_x = 1;
+            if (src.div_y == 0) src.div_y = 1;
+            ImVec2 chopsize = { src.sizeX / (float)src.div_x , src.sizeY / (float)src.div_y };
+
+            int units = src.div_x * src.div_y;
+            int tick = src.cycle / units;
+            int ani = ((int)GetTimeLapse(0, &(g.timer1)) % src.cycle) / tick;
+
+            int ax = ani % src.div_x;
+            int ay = ani / src.div_x;
+
+            ImVec2 chopstart = { (src.x + chopsize.x * ax) / (float)img.sizeX ,
+                                (src.y + chopsize.y * ay) / (float)img.sizeY };
+
+            ImVec2 chopend = { (src.x - 1 + chopsize.x * (ax + 1)) / (float)img.sizeX ,
+                                (src.y - 1 + chopsize.y * (ay + 1)) / (float)img.sizeY };
+
+            if (button) ImGui::ImageButton("aaaa", img.texture, { (float)150,(float)100 }, chopstart, chopend);
+            else ImGui::Image(img.texture, chopsize, chopstart, chopend);
+            
+        }
+        else {
+            if (button) ImGui::ImageButton("aaaa", img.texture, { (float)150,(float)100 }, display_min, display_max);
+            else ImGui::Image(img.texture, display_size, display_min, display_max);;
+        }
+    }
+    return 0;
+}
+
+int WORKSPACE::printSrcImgButton(SRC src, int num, int w, int h) {
+    
+    SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src.gr];
+    ImGui::PushID(num);
+    if (img.texture != NULL) {
+        int sizeX = src.sizeX == -1 ? img.sizeX - src.x : src.sizeX;
+        int sizeY = src.sizeY == -1 ? img.sizeY - src.y : src.sizeY;
+        ImVec2 display_min = ImVec2(src.x / (float)img.sizeX, src.y / (float)img.sizeY);
+        ImVec2 display_max = ImVec2((src.x + sizeX) / (float)img.sizeX, (src.y + sizeY) / (float)img.sizeY);
+        ImVec2 display_size = ImVec2(sizeX, sizeY);
+
+        if (src.cycle && (src.div_x >= 1 || src.div_y >= 1)) {
+            if (src.div_x == 0) src.div_x = 1;
+            if (src.div_y == 0) src.div_y = 1;
+            ImVec2 chopsize = { src.sizeX / (float)src.div_x , src.sizeY / (float)src.div_y };
+
+            int units = src.div_x * src.div_y;
+            int tick = src.cycle / units;
+            int ani = ((int)GetTimeLapse(0, &(g.timer1)) % src.cycle) / tick;
+
+            int ax = ani % src.div_x;
+            int ay = ani / src.div_x;
+
+            ImVec2 chopstart = { (src.x + chopsize.x * ax) / (float)img.sizeX ,
+                                (src.y + chopsize.y * ay) / (float)img.sizeY };
+
+            ImVec2 chopend = { (src.x - 1 + chopsize.x * (ax + 1)) / (float)img.sizeX ,
+                                (src.y - 1 + chopsize.y * (ay + 1)) / (float)img.sizeY };
+
+            ImGui::ImageButton("imgbutton", img.texture, { (float)w,(float)h }, chopstart, chopend);
+            //ImGui::Image(img.texture, chopsize, chopstart, chopend);
+
+        }
+        else {
+            ImGui::ImageButton("imgbutton", img.texture, { (float)w,(float)h }, display_min, display_max);
+            //ImGui::Image(img.texture, display_size, display_min, display_max);;
+        }
+    }
+    ImGui::PopID();
+    return 0;
+}
+
+int WORKSPACE::printSrcImgEx(SRC src, int w, int h) {
+
+    SRCGR& img = ((SRCGR*)arr_SRCGR.data)[src.gr];
+    ImGui::PushID(num);
+    if (img.texture != NULL) {
+        int sizeX = src.sizeX == -1 ? img.sizeX - src.x : src.sizeX;
+        int sizeY = src.sizeY == -1 ? img.sizeY - src.y : src.sizeY;
+        ImVec2 display_min = ImVec2(src.x / (float)img.sizeX, src.y / (float)img.sizeY);
+        ImVec2 display_max = ImVec2((src.x + sizeX) / (float)img.sizeX, (src.y + sizeY) / (float)img.sizeY);
+        ImVec2 display_size = ImVec2(sizeX, sizeY);
+
+        if (src.cycle && (src.div_x >= 1 || src.div_y >= 1)) {
+            if (src.div_x == 0) src.div_x = 1;
+            if (src.div_y == 0) src.div_y = 1;
+            ImVec2 chopsize = { src.sizeX / (float)src.div_x , src.sizeY / (float)src.div_y };
+
+            int units = src.div_x * src.div_y;
+            int tick = src.cycle / units;
+            int ani = ((int)GetTimeLapse(0, &(g.timer1)) % src.cycle) / tick;
+
+            int ax = ani % src.div_x;
+            int ay = ani / src.div_x;
+
+            ImVec2 chopstart = { (src.x + chopsize.x * ax) / (float)img.sizeX ,
+                                (src.y + chopsize.y * ay) / (float)img.sizeY };
+
+            ImVec2 chopend = { (src.x - 1 + chopsize.x * (ax + 1)) / (float)img.sizeX ,
+                                (src.y - 1 + chopsize.y * (ay + 1)) / (float)img.sizeY };
+
+            ImGui::Image(img.texture, { (float)w,(float)h }, chopstart, chopend);
+
+        }
+        else {
+            ImGui::Image(img.texture, { (float)w,(float)h }, display_min, display_max);;
+        }
+    }
+    ImGui::PopID();
+    return 0;
+}
+
+int WORKSPACE::drawImgManager() {
+    char title[260];
+    snprintf(title, sizeof(title), "ImageManager##%d", num);
+    ImGui::Begin(title, &wImgManager, ImGuiWindowFlags_HorizontalScrollbar);
+    
+    bool clicked = 0;
+    //tree list
+    snprintf(title, sizeof(title), "ImgTree##%d", num);
+    if (ImGui::BeginChild(title, { 250,-1 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
+
+        oldIf = -1;
+        //ImGui::TreeNodeEx("IF", ImGuiTreeNodeFlags_DrawLinesFull);
+        for (int i = 0; i < arr_SRCGR.count; i++) {
+
+            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
+           
+            if (img.isIf && img.isIf != oldIf) {
+                
+                char buf[260];
+                sprintf(buf, "#IF %03d - %s", img.isIf, dstName(((IFUNIT*)arr_ifunit.data)[img.isIf].data[0]));
+                //ImGui::PushID(img.isIf);
+                ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull);
+                oldIf = img.isIf;
+            }
+
+            if (img.isIf == oldIf) {
+
+            }
+            char buf[260];
+            sprintf(buf, "%02d:%s", img.grID, img.filename.outstr());
+            ImGui::PushID(i);
+            if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull | ((gr_selected == i) ? ImGuiTreeNodeFlags_Selected : NULL)))
+            {
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
+                {
+                    ImGui::Text("%s", img.path.outstr());
+                    ImGui::EndTooltip();
+                }
+                if (strchr(buf, '*')) {
+                    if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull)) {
+                        ImGui::TreePop();
+                    }
+                }
+
+                for (int srcID = 0; srcID < arr_SRC.count; srcID++) {
+                    SRC& src = ((SRC*)arr_SRC.data)[srcID];
+                    if (src.gr == img.grID)
+                    {
+                        sprintf(buf, "L%04d %s", src.declare, src.name.outstr());
+                        
+                        if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull | ImGuiTreeNodeFlags_Leaf)) {
+                            if (ImGui::IsItemClicked()) {
+                                if (gr_selected != i) gr_selected = i;
+                                src_selected = srcID;
+                                clicked = 1;
+                            }
+                            ImGui::TreePop();
+                        }
+
+                        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
+                        {
+                            printSrcImg(src);
+                            ImGui::EndTooltip();
+                        }
+
+                    }
+                }
+                ImGui::TreePop();
+            }
+            else {
+                SRC& src = ((SRC*)arr_SRC.data)[src_selected];
+                if (ImGui::IsItemClicked()) {
+                    gr_selected = img.grID;
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
+                {
+                    ImGui::Text("%s", img.path.outstr());
+                    ImGui::EndTooltip();
+                }
+            }
+            ImGui::PopID();
+        }
+        //ImGui::TreePop();
+    }
+    ImGui::EndChild();
+    
+    //image
+    ImGui::SameLine(0, 0);
+
+    snprintf(title, sizeof(title), "ImgWorking##%d", num);
+    if (ImGui::BeginChild(title, { -1, -1 }, ImGuiChildFlags_Borders | ImGuiChildFlags_FrameStyle, ImGuiWindowFlags_HorizontalScrollbar)) {
+        SRCGR& img = ((SRCGR*)arr_SRCGR.data)[gr_selected];
+        ImGui::Text("%s %d %d", img.path.outstr(), img.sizeX, img.sizeY);
+        ImGui::SameLine(0, 0);
+        snprintf(title, sizeof(title), "grReload##%d", num);
+        ImGui::Button(title);
+        ImGui::SameLine(0, 0);
+        ImGui::ColorEdit4("MyColor##3", (float*)&bgColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_None);
+
+        const ImVec2 pb = ImGui::GetCursorScreenPos();
+        ImGui::Image(transBackground, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { img.sizeX / (float)64.0, img.sizeY / (float)64.0});
+        ImGui::SetCursorScreenPos(pb);
+        if(img.texture)
+            ImGui::ImageWithBg(img.texture, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { 1, 1 }, bgColor);
+        
+        
+        if (img.texture != NULL) {
+            const ImVec2 p = ImGui::GetCursorScreenPos();
+            ImVec2 grpos = { p.x, p.y - img.sizeY - 4 };
+
+
+            SRC& src = ((SRC*)arr_SRC.data)[src_selected];
+            int sizeX = src.sizeX == -1 ? img.sizeX - src.x : src.sizeX;
+            int sizeY = src.sizeY == -1 ? img.sizeY - src.y : src.sizeY;
+
+            ImVec2 srcposLU = { grpos.x + src.x - 1, grpos.y + src.y - 1 };
+            ImVec2 srcposRB = { grpos.x + src.x + sizeX + 1, grpos.y + src.y + sizeY + 1 };
+
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+            bool flicking = ((int)GetTimeLapse(1, &g.timer1) % 200 > 100);
+            ImColor color = flicking ? 0xff0080ff : 0x000000;
+            draw_list->AddRect(srcposLU, srcposRB, color, 0.0f, ImDrawFlags_Closed, 1.0f);
+
+            if (clicked) {
+                ImGui::SetScrollX(src.x);
+                ImGui::SetScrollY(src.y);
+            }
+
+
+            for (int i = 0; i < arr_SRC.count; i++){
+                SRC& hoversrc = ((SRC*)arr_SRC.data)[i];
+                if (hoversrc.gr != src.gr) continue;
+                srcposLU = { (float)grpos.x + hoversrc.x, (float)grpos.y + hoversrc.y };
+                srcposRB = { (float)grpos.x + hoversrc.x + hoversrc.sizeX, (float)grpos.y + hoversrc.y + hoversrc.sizeY };
+                if (ImGui::IsMouseHoveringRect(srcposLU, srcposRB)){
+                    flicking = ((int)GetTimeLapse(1, &g.timer1) % 200 < 100);
+                    ImColor color = flicking ? 0xffff0000 : 0x000000;
+                    draw_list->AddRect(srcposLU, srcposRB, color, 0.0f, ImDrawFlags_Closed, 1.0f);
+
+                    if (ImGui::IsItemClicked()) {
+                        gr_selected = hoversrc.gr;
+                    }
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
+                    {
+                        ImGui::Text("line %d : %d %d ~ %d %d",hoversrc.declare , hoversrc.x, hoversrc.y, hoversrc.x + hoversrc.sizeX, hoversrc.y + hoversrc.sizeY);
+                        ImGui::EndTooltip();
+                    }
+                }
+            }
+
+
+        }
+    }
+    ImGui::EndChild();
+    
+
+    ImGui::End();
+    return 0;
+}
+
+int WORKSPACE::drawSrc(int iSRCGR, int iSRCID, int posX, int posY, int w, int h, bool stretch) {
+    SRCGR& img = ((SRCGR*)arr_SRCGR.data)[iSRCGR];
+
+    if (img.texture != NULL) {
+        SRC& src = ((SRC*)arr_SRC.data)[iSRCID];
+
+        int sizeX = src.sizeX == -1 ? img.sizeX - src.x : src.sizeX;
+        int sizeY = src.sizeY == -1 ? img.sizeY - src.y : src.sizeY;
+        ImVec2 display_min, display_max, display_size;
+        if (stretch) {
+            display_min = ImVec2(src.x / (float)img.sizeX, src.y / (float)img.sizeY);
+            display_max = ImVec2((src.x + sizeX) / (float)img.sizeX, (src.y + sizeY) / (float)img.sizeY);
+            display_size = ImVec2((float)w, (float)h);
+        }
+        else {
+            display_min = ImVec2(src.x / (float)img.sizeX, src.y / (float)img.sizeY);
+            display_max = ImVec2((src.x + sizeX) / (float)img.sizeX, (src.y + sizeY) / (float)img.sizeY);
+            display_size = ImVec2(sizeX, sizeY);
+        }
+
+        if (src.cycle && (src.div_x >= 1 || src.div_y >= 1)) {
+            if (src.div_x == 0) src.div_x = 1;
+            if (src.div_y == 0) src.div_y = 1;
+            ImVec2 chopsize = { src.sizeX / (float)src.div_x , src.sizeY / (float)src.div_y };
+
+            int units = src.div_x * src.div_y;
+            int tick = src.cycle / units;
+            int ani = ((int)GetTimeLapse(0, &(g.timer1)) % src.cycle) / tick;
+
+            int ax = ani % src.div_x;
+            int ay = ani / src.div_x;
+
+            ImVec2 chopstart = { (src.x + chopsize.x * ax) / (float)img.sizeX ,
+                                (src.y + chopsize.y * ay) / (float)img.sizeY };
+
+            ImVec2 chopend = { (src.x - 1 + chopsize.x * (ax + 1)) / (float)img.sizeX ,
+                                (src.y - 1 + chopsize.y * (ay + 1)) / (float)img.sizeY };
+
+            
+            //ImVec2 pb = ImGui::GetCursorScreenPos();
+            //ImVec2 pos = { (float)posX, (float)posY};
+            //ImGui::SetCursorPos(pb);
+            ImGui::Image(img.texture, chopsize, chopstart, chopend);
+            /*ImGui::SetCursorPos(pb);*/
+            /*ImGui::Dummy(pb);*/
+        }
+        else {
+            /*ImVec2 pb = ImGui::GetCursorScreenPos();
+            ImVec2 pos = { (float)posX, (float)posY};
+            ImGui::SetCursorPos(pb);*/
+            ImGui::Image(img.texture, display_size, display_min, display_max);;
+            /*ImGui::SetCursorPos(pb);*/
+            /*ImGui::Dummy(pb);*/
+        }
+    }
+    return 0;
+}
+
+int WORKSPACE::drawSrc(int iSRCGR, int iSRCID) {
+    return drawSrc(iSRCGR, iSRCID, 0, 0);
+}
+
+
+//TODO apply split
+int WORKSPACE::SaveSkinScript(char* path, bool split, bool nocomment) {
+
+    FILE* pFile;
+    pFile = fopen(path, "wb");
+    if (pFile == NULL) return -1;
+    for (int i = 0; i < skinfileLines.count; i++) {
+        CsvToLine(i);
+        if (nocomment && ((SKINFILELINEREAD*)skinfileLines.data)[i].isComment) continue;
+        fputs(((SKINFILELINEREAD*)skinfileLines.data)[i].line, pFile);
+        fputs("\n", pFile);
+    }
+    fclose(pFile);
+    return 0;
+}
+
+int WORKSPACE::drawSaveMenu() {
+    char title[260], input[32], result[32];
+    snprintf(title, sizeof(title), "SaveMenu##%d", num);
+    snprintf(input, sizeof(input), "##savePathInput%d", num);
+
+
+    if(ImGui::Begin(title, &wSaveMenu, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_Modal)) {
+
+        ImGui::Text("old path is %s ", mainpath);
+        if (newPath[0] == '\0') { //very init
+            strncpy(newPath, mainpath, sizeof(newPath));
+        }
+
+        if (ImGui::Button("BROWSE", { 0, 0 })) {
+            //TODO
+        }
+        ImGui::SameLine(0, 0);
+        ImGui::InputText(input, newPath, IM_ARRAYSIZE(newPath));
+        exist = IsFileExist(newPath) || !strcmp(mainpath, newPath); //TODO reduce cpu usage
+
+        if (exist) ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "CAUTION: OVERWRITE");
+        ImGui::SeparatorText("Script files");
+        ImGui::RadioButton("merge scripts", &split, 0);
+        ImGui::RadioButton("split scripts", &split, 1);
+        ImGui::SeparatorText("Comments");
+        ImGui::RadioButton("maintain memo", &nocomment, 0);
+        ImGui::RadioButton("delete memo", &nocomment, 1);
+        if(ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip()){
+            ImGui::Text("this will remove all group, only for Scene start speed on LR2.\nAre your sure this?");
+            ImGui::EndTooltip();
+        }
+        
+        if (ImGui::Button("SAVE", { 0, 0 })) {
+            success = (SaveSkinScript(newPath, split, nocomment) == 0);
+            if(success) snprintf(result, sizeof(result), "SaveResult##Save%d", num);
+            ImGui::OpenPopup(result);
+        }
+        
+        snprintf(result, sizeof(result), "SaveResult##Save%d", num);
+        if (ImGui::BeginPopupModal(result, NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("save success");
+            if (ImGui::Button("OK")) {
+                wSaveMenu = 0;
+                success = 0;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+        ImGui::End();
+    }
+    return 0;
+}
+//{
+//    CSTR savepath(mainpath);
+//    savepath.add("_master");
+//    SaveMaster(savepath);
+//}
+
+int WORKSPACE::drawFileManager() {
+    char title[260];
+    snprintf(title, sizeof(title), "FileManager##%d", num);
+
+    ImGui::Begin(title, &wFileManager);
+    //ImGui::Text("they are related files. %d scripts, %d images", arr_subpath.count, arr_imgpath.count);
+    ImGui::SeparatorText("Scripts");
+    for (int i = 0; i < arr_subpath.count; i++) {
+        CSTR& path = ((CSTR*)arr_subpath.data)[i];
+        ImGui::Text("%s", path.outstr());
+    }
+    ImGui::SeparatorText("Images");
+    for (int i = 0; i < arr_SRCGR.count; i++) {
+        SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
+        ImGui::Text("(%03d)%02d - %s %s", img.isIf, img.grID, img.path.outstr(), img.fromWildcard? "from *":"");
+    }
+
+    ImGui::End();
+    return 0;
+}
+
+int WORKSPACE::drawTreeView() {
+    char title[260];
+    snprintf(title, sizeof(title), "TreeView##%d", num);
+    ImGui::Begin(title, &wTreeView);
+
+    snprintf(title, sizeof(title), "Tree##%d", num);
+    
+
+    if (ImGui::BeginTable(title, 24, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody)) //ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody))
+    {
+
+    //    // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
+    //    ImGui::TableSetupColumn("Command", ImGuiTableColumnFlags_NoHide);
+    //    for (int p = 0; p < 24 - 1; p++) {
+    //        ImGui::TableSetupColumn("Params", ImGuiTableColumnFlags_WidthFixed, 12.0f);
+    //    }
+    //    ImGui::TableHeadersRow();
+
+    //    /*static int hideGroups[MAX_IFDEPTH];
+    //    for (int i = 0; i < MAX_IFDEPTH; i++) {
+    //        hideGroups[i] = -1;
+    //    }*/
+    //    
+    //    for (int l = 0; l < skinfileLines.count; l++) {
+    //        int hide = 0;
+    //        SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[l];
+    //        ImGui::TableNextRow();
+    //        ImGui::TableNextColumn();
+
+    //        if (line.isComment) continue;
+    //        CSTR& command = line.csv.str[0];
+    //        CSTR *params = line.csv.str;
+    //        bool is_head = //!(strcmp(command, "#INCLUDE")) ||
+    //                        !(strcmp(command, "#IF")) ||
+    //                        !(strcmp(command, "#ELSEIF")) ||
+    //                        !(strcmp(command, "#ELSE"));
+    //        bool is_end = !(strcmp(command, "#ELSEIF")) ||
+    //                        !(strcmp(command, "#ELSE")) ||
+    //                        !(strcmp(command, "#ENDIF"));
+
+    //        static ImGuiTreeNodeFlags tree_node_flags_base = ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_DrawLinesFull;
+    //        ImGuiTreeNodeFlags node_flags = tree_node_flags_base;
+
+
+    //        int lineID = ((SKINFILELINEREAD*)skinfileLines.data)[l].numTotal;
+    //        sprintf(title, "%s##%d", command.outstr(), lineID);
+
+    //        if (is_end) {
+    //            ImGui::TreePop();
+    //        }
+    //        if (is_head)
+    //        {   
+    //            bool open = ImGui::TreeNodeEx(title, node_flags);
+    //            
+    //            for (int p = 1; p < 24 - 1; p++) {
+    //                ImGui::TableNextColumn();
+    //                ImGui::Text("%s", params[p].outstr());
+    //            };
+    //        }
+    //        
+    //        /*else if (!hide){
+    //            ImGui::TreeNodeEx(title, node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+
+    //            for (int p = 1; p < 24 - 1; p++) {
+    //                ImGui::TableNextColumn();
+    //                ImGui::Text("%s", params[p]);
+    //            };
+    //        }*/
+
+    //    }        
+        ImGui::EndTable();
+    }
+
+    ImGui::End();
+    return 0;
+}
+
+int WORKSPACE::wildcardTOAll(char* path) {
+    WIN32_FIND_DATA FindFileData;
+    LPWIN32_FIND_DATAA lpFindFileData;
+    HANDLE hFindFile = FindFirstFileA(path, (LPWIN32_FIND_DATAA)&FindFileData);
+    if (hFindFile == (HANDLE)-1) {
+        return -1;
+    }
+
+
+
+
+    return 0;
+}
+
+int WORKSPACE::drawNewskin() {
+    char title[260];
+    snprintf(title, sizeof(title), "NewSkin##%d", num);
+    if(ImGui::Begin(title, &wNewskin)) {
+
+
+        static char buf1[32] = ""; ImGui::InputText("title", buf1, IM_ARRAYSIZE(buf1));
+        static char buf5[32] = ""; ImGui::InputText("maker", buf5, IM_ARRAYSIZE(buf5));
+        
+        static int item_selected_idx = 0;
+        const char* combo_preview_value = SKINTYPESTR[item_selected_idx];
+        snprintf(title, sizeof(title), "##NewSkin_Combo##%d", num);
+        if (ImGui::BeginCombo(title, combo_preview_value))
+        {
+            for (int n = 0; n < sizeof(SKINTYPESTR)/sizeof(char*); n++)
+            {
+                const bool is_selected = (item_selected_idx == n);
+                if (ImGui::Selectable(SKINTYPESTR[n], is_selected))
+                    item_selected_idx = n;
+
+                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        static char buf2[32] = ""; ImGui::InputText("Resolution X", buf2, IM_ARRAYSIZE(buf2), ImGuiInputTextFlags_CharsDecimal);
+        static char buf3[32] = ""; ImGui::InputText("Resolution Y", buf3, IM_ARRAYSIZE(buf3), ImGuiInputTextFlags_CharsDecimal);
+        ImGui::Text("LR2files/Theme/"); ImGui::SameLine(); static char buf4[MAX_PATH] = "NewName/New.lr2skin"; ImGui::InputText("path", buf4, IM_ARRAYSIZE(buf4));
+
+        if(ImGui::Button("make")) {
+
+        }
+        ImGui::End();
+    }
+    return 0;
+}
+
+int WORKSPACE::drawSimplePreview() {
+    char title[260];
+    snprintf(title, sizeof(title), "SimplePreview##%d", num);
+    if (ImGui::Begin(title, &wSimplePreview, ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
+        //ImDrawList* draw_list = ImGui::GetWindowDrawList();
+        //
+        //ImVec2 pb = ImGui::GetCursorScreenPos();
+        //pb.x += 400;
+        //pb.y += 400;
+        ////ImVec2 bgSize = { skinSizeX,skinSizeY };
+        //ImGui::Dummy(pb);
+        //draw_list->AddRectFilled(pb, { skinSizeX+pb.x,skinSizeY+pb.y }, 0xFF000000, 0, ImDrawFlags_None);
+        //
+        //ImGui::SetCursorScreenPos(pb);
+
+        //DST *dst = ((DST*)arr_DST.data);
+
+        ////for (int i = 0; i < arr_DST.count; i++) {
+        ////    ImGui::SetCursorScreenPos(pb);
+        ////    ImVec2 PointTopLeft = { (float)dst[i].x, (float)dst[i].y };
+        ////    ImVec2 PointBottomRight = { (float)dst[i].x + dst[i].w, (float)dst[i].y + dst[i].h };
+        ////    //ImVec4 xywh = {PointTopLeft , PointBottomRight };
+        ////    draw_list->AddRectFilled(PointTopLeft, PointBottomRight, (0xFF000000 | (0xFF0000 >> i)), 0, ImDrawFlags_None);
+
+        ////    //drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src, dst[i].x, dst[i].y);
+        ////    ImGui::Dummy({ (float)dst[i].w, (float)dst[i].h });
+        ////}
+
+        //skinSizeX;
+        //skinSizeY;
+        ////zoom in zoom out
+        //
+        //
+
+
+        //ImGui::End();
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+        ImGui::Text("dst animation");
+        ImGui::SameLine(0, 0);
+        ImGui::ColorEdit4("MyColor##3", (float*)&bgColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_None);
+        const ImVec2 pbs = ImGui::GetCursorScreenPos();
+
+        const ImVec2 pb = ImGui::GetCursorPos();
+        ImGui::SetCursorPos(pb);
+        ImGui::Image(transBackground, { (float)skinSizeX, (float)skinSizeY }, { 0,0 }, { skinSizeX / (float)32.0, skinSizeY / (float)32.0 });
+        const ImVec2 belowImage = ImGui::GetCursorPos();
+
+        draw_list->AddRectFilled(pbs, { skinSizeX + pbs.x,skinSizeY + pbs.y }, ImGui::GetColorU32(bgColor), 0, ImDrawFlags_None);
+
+        DST* dst = ((DST*)arr_DST.data);
+
+        for (int i = 0; i < arr_DST.count; i++) {
+            //ImVec2 pos = { pb.x + dst[i].x, pb.y + dst[i].y };
+
+            if (dst[i].src != -1) {
+
+                float dx, dy, dw, dh;
+                float da, dr, dg, db;
+
+                DST_ANIMATION& dstdFirst = ((DST_ANIMATION*)dst[i].arr_animation.data)[0];
+                DST_ANIMATION& dstdLast = ((DST_ANIMATION*)dst[i].arr_animation.data)[dst->arr_animation.count - 1];
+
+                int tStart = dstdFirst.time;
+                int tEnd = dstdLast.time;
+                int viewTime = (int)DstViewTime;
+                dst[i].loop;
+                int t = tEnd;
+                int ani;
+
+                if (tStart <= tEnd && tStart <= viewTime && (0 <= dst[i].loop || viewTime <= tEnd)) {
+                    if (tStart == tEnd || dst[i].loop == tEnd) {
+                        if (viewTime < t) {
+                            t = viewTime;
+                        }
+                    }
+                    else if (dst[i].loop < tEnd) {
+                        t = viewTime;
+                        if (tEnd < viewTime) {
+                            //if (dst[i].loop == -1) continue; // only for SE
+                            t = (int)(viewTime - dst[i].loop) % (tEnd - dst[i].loop) + dst[i].loop;
+                        }
+                    }
+                    else {
+                        t = 0;
+                    }
+
+                    ani = 0;
+                    for (int j = 0; j < dst->arr_animation.count; j++) {
+                        if (((DST_ANIMATION*)dst[i].arr_animation.data)[j].time <= t) {
+                            ani = j;
+                        }
+                    }
+                    DST_ANIMATION dstd1 = ((DST_ANIMATION*)dst[i].arr_animation.data)[ani];
+                    if (t != dstd1.time && ani != dst->arr_animation.count - 1) {
+                        DST_ANIMATION dstd2 = ((DST_ANIMATION*)dst[i].arr_animation.data)[ani + 1];
+                        dx = ChangeValueByTime(dstd1.x, dstd2.x, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                        dy = ChangeValueByTime(dstd1.y, dstd2.y, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                        dw = ChangeValueByTime(dstd1.w, dstd2.w, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                        dh = ChangeValueByTime(dstd1.h, dstd2.h, dstd1.time, dstd2.time, t, dstdFirst.acc);
+
+                        da = ChangeValueByTime(dstd1.a, dstd2.a, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                        dr = ChangeValueByTime(dstd1.r, dstd2.r, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                        dg = ChangeValueByTime(dstd1.g, dstd2.g, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                        db = ChangeValueByTime(dstd1.b, dstd2.b, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                    }
+                    else {
+                        dx = dstd1.x;
+                        dy = dstd1.y;
+                        dw = dstd1.w;
+                        dh = dstd1.h;
+
+                        da = dstd1.a;
+                        dr = dstd1.r;
+                        dg = dstd1.g;
+                        db = dstd1.b;
+                    }
+                    ImVec2 pos = { pb.x + dx, pb.y + dy };
+                    ImGui::SetCursorPos(pos);
+
+                    drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src, 0, 0, dw, dh, 1);
+
+                }
+            }
+
+        }
+        ImGui::End();
+    }
+
+
+    return 0;
+}
+
+int WORKSPACE::drawDstView() {
+
+    char title[260];
+    snprintf(title, sizeof(title), "dstView##%d", num);
+    if (ImGui::Begin(title, &wDstView)) {
+
+        snprintf(title, sizeof(title), "dstList##%d", num);
+        if (ImGui::BeginChild(title, { 250,-1 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
+            for (int i = 0; i < arr_DST.count; i++) {
+                ImGui::PushID(i);
+                DST& dst = ((DST*)arr_DST.data)[i];
+
+                char buf[260];
+                sprintf(buf, "%03d:%03d(%s)", dst.src, dst.timer, timerName(dst.timer));
+                if (ImGui::Selectable(buf, selected_dst == i)) {
+                    selected_dst = i;
+                    SetTimeLapse(1, &g.timer1);
+                }
+                if(ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip()) {
+                    if (dst.op1) ImGui::Text("%03d(%s)\n", dst.op1, dstName(dst.op1));
+                    if (dst.op2) ImGui::Text("%03d(%s)\n", dst.op2, dstName(dst.op2));
+                    if (dst.op3) ImGui::Text("%03d(%s)", dst.op3, dstName(dst.op3));
+                    ImGui::EndTooltip();
+                }
+                ImGui::PopID();
+            }
+        }
+        ImGui::EndChild();
+        ImGui::SameLine();
+
+        snprintf(title, sizeof(title), "dstAnimationView##%d", num);
+        if (ImGui::BeginChild(title, { -1,0 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+            ImGui::Text("dst animation");
+            ImGui::SameLine(0, 0);
+            ImGui::ColorEdit4("MyColor##3", (float*)&bgColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_None);
+            const ImVec2 pbs = ImGui::GetCursorScreenPos();
+
+            const ImVec2 pb = ImGui::GetCursorPos();
+            ImGui::SetCursorPos(pb);
+            ImGui::Image(transBackground, { (float)skinSizeX, (float)skinSizeY }, { 0,0 }, { skinSizeX / (float)32.0, skinSizeY / (float)32.0 });
+            const ImVec2 belowImage = ImGui::GetCursorPos();
+
+            draw_list->AddRectFilled(pbs, { skinSizeX + pbs.x,skinSizeY + pbs.y }, ImGui::GetColorU32(bgColor), 0, ImDrawFlags_None);
+
+            DST* dst = ((DST*)arr_DST.data);
+
+            for (int i = 0; i < arr_DST.count; i++) {
+                //ImVec2 pos = { pb.x + dst[i].x, pb.y + dst[i].y };
+                
+                if (i == selected_dst) {
+                    
+                    if (dst[i].src != -1) {
+
+                        float dx, dy, dw, dh;
+                        float da, dr, dg, db;
+
+                        DST_ANIMATION &dstdFirst = ((DST_ANIMATION*)dst[i].arr_animation.data)[0];
+                        DST_ANIMATION &dstdLast = ((DST_ANIMATION*)dst[i].arr_animation.data)[dst->arr_animation.count-1];
+
+                        int tStart = dstdFirst.time;
+                        int tEnd = dstdLast.time;
+                        int viewTime = (int)DstViewTime;
+                        dst[i].loop;
+                        int t = tEnd;
+                        int ani;
+
+                        if (tStart <= tEnd && tStart <= viewTime && (0 <= dst[i].loop || viewTime <= tEnd)) {
+                            if (tStart == tEnd || dst[i].loop == tEnd) {
+                                if (viewTime < t) {
+                                    t = viewTime;
+                                }
+                            }
+                            else if (dst[i].loop < tEnd) {
+                                t = viewTime;
+                                if (tEnd < viewTime) {
+                                    //if (dst[i].loop == -1) continue; // only for SE
+                                    t = (int)(viewTime - dst[i].loop) % (tEnd - dst[i].loop) + dst[i].loop;
+                                }
+                            }
+                            else {
+                                t = 0;
+                            }
+
+                            ani = 0;
+                            for (int j = 0; j < dst->arr_animation.count; j++) {
+                                if (((DST_ANIMATION*)dst[i].arr_animation.data)[j].time <= t) {
+                                    ani = j;
+                                }
+                            }
+                            DST_ANIMATION dstd1 = ((DST_ANIMATION*)dst[i].arr_animation.data)[ani];
+                            if (t != dstd1.time && ani != dst->arr_animation.count-1) {
+                                DST_ANIMATION dstd2 = ((DST_ANIMATION*)dst[i].arr_animation.data)[ani+1];
+                                dx = ChangeValueByTime(dstd1.x, dstd2.x, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                                dy = ChangeValueByTime(dstd1.y, dstd2.y, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                                dw = ChangeValueByTime(dstd1.w, dstd2.w, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                                dh = ChangeValueByTime(dstd1.h, dstd2.h, dstd1.time, dstd2.time, t, dstdFirst.acc);
+
+                                da = ChangeValueByTime(dstd1.a, dstd2.a, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                                dr = ChangeValueByTime(dstd1.r, dstd2.r, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                                dg = ChangeValueByTime(dstd1.g, dstd2.g, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                                db = ChangeValueByTime(dstd1.b, dstd2.b, dstd1.time, dstd2.time, t, dstdFirst.acc);
+                            }
+                            else {
+                                dx = dstd1.x;
+                                dy = dstd1.y;
+                                dw = dstd1.w;
+                                dh = dstd1.h;
+
+                                da = dstd1.a;
+                                dr = dstd1.r;
+                                dg = dstd1.g;
+                                db = dstd1.b;
+                            }
+                            ImVec2 pos = { pb.x + dx, pb.y + dy };
+                            ImGui::SetCursorPos(pos);
+
+                            drawSrc(((SRC*)arr_SRC.data)[dst[i].src].gr, dst[i].src, 0, 0, dw, dh, 1);
+                            
+                        }
+                    }
+                     
+                }
+            }
+
+            //skinSizeX;
+            //skinSizeY;
+            //zoom in zoom out
+
+            
+            ImGui::SetCursorPos(belowImage);
+            snprintf(title, sizeof(title), "dstAnimationViewTimer##%d", num);
+            if (!isDstViewTimeStop) {
+                DstViewTime = GetTimeLapse(1, &g.timer1);
+            }
+            ImGui::SliderFloat(title, &DstViewTime, 0, 240000, "%.0f", 0);// ImGuiSliderFlags_)
+            if(ImGui::Button("PLAY")) {
+                SetTimeLapse(1,&g.timer1);
+                isDstViewTimeStop = 0;
+            }
+            ImGui::SameLine(0, 0);
+            if (ImGui::Button("STOP")) {
+                ResetTimeLapse(1,&g.timer1);
+                isDstViewTimeStop = 1;
+            }
+            
+            dst = &((DST*)arr_DST.data)[selected_dst];
+            if (dst->op1) ImGui::Text("%03d(%s)\n", dst->op1, dstName(dst->op1));
+            if (dst->op2) ImGui::Text("%03d(%s)\n", dst->op2, dstName(dst->op2));
+            if (dst->op3) ImGui::Text("%03d(%s)", dst->op3, dstName(dst->op3));
+            ImGui::Text("%s %dlines", dst->name.outstr(), dst->animation);
+            for (int i = 0; i < dst->arr_animation.count; i++)
+            {
+                DST_ANIMATION dstd = ((DST_ANIMATION*)dst->arr_animation.data)[i];                
+                ImGui::Text("%d %.0f %.0f %.0f %.0f", dstd.time, dstd.x, dstd.y, dstd.w, dstd.h);
+                if (i == 0) ImGui::Text("%d", dst->loop);;
+            }
+            
+        }
+        ImGui::EndChild();
+    }
+    ImGui::End();
+    return 0;
+}
+
+//HOW TO ADD FEATURE - STEP 2 : write function
+
+int WORKSPACE::drawObjectManagerTest() {
+
+    char title[260];
+    snprintf(title, sizeof(title), "objectManagerTest##%d", num);
+
+    int objcount = 0;
+    if (ImGui::Begin(title, &wObjectManagerTest)) {
+        char buf[260];
+
+        for (int i = 0; i < g.skstruct.image.srcSize; i++) {
+            SRCstruct& src = g.skstruct.image.src[i];
+            DSTstruct& dst = g.skstruct.image.dst[i];
+            sprintf(buf, "$OBJ_IMAGE%03d: %s %s %s %s %s %s %s %s", i, timerName(src.timer,1), dstName(src.op1,1), dstName(src.op2,1), dstName(src.op3,1), timerName(dst.timer,1), dstName(dst.op1,1), dstName(dst.op2,1), dstName(dst.op3,1));
+            if (ImGui::Selectable(buf)) {
+                preview_selected_obj = { dst.draw[dst.dstCount-1].x, dst.draw[dst.dstCount - 1].y, dst.draw[dst.dstCount - 1].w, dst.draw[dst.dstCount - 1].h};
+                selectedObjectTest = objcount;
+            }
+            objcount++;
+            //ImGui::Text("#SRC_IMAGE%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            //ImGui::Text("#DST_IMAGE%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+        for (int i = 0; i < g.skstruct.otherObject[0].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[0].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[0].dst[i];
+            sprintf(buf, "$OBJ_TEXT%03d: %s %s %s %s %s %s %s %s", i, textName(src.st), dstName(src.op1, 1), dstName(src.op2, 1), dstName(src.op3, 1), timerName(dst.timer, 1), dstName(dst.op1, 1), dstName(dst.op2, 1), dstName(dst.op3, 1));
+            if (ImGui::Selectable(buf)) {
+                preview_selected_obj = { dst.draw[dst.dstCount - 1].x, dst.draw[dst.dstCount - 1].y, dst.draw[dst.dstCount - 1].w, dst.draw[dst.dstCount - 1].h };
+                selectedObjectTest = objcount;
+            }
+            objcount++;
+        }
+        for (int i = 0; i < g.skstruct.otherObject[1].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[1].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[1].dst[i];
+            ImGui::Text("#SRC_BUTTON%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_BUTTON%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+        for (int i = 0; i < g.skstruct.otherObject[2].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[2].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[2].dst[i];
+            ImGui::Text("#SRC_SLIDER%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_SLIDER%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+        for (int i = 0; i < g.skstruct.otherObject[3].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[3].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[3].dst[i];
+            ImGui::Text("#SRC_ONMOUSET%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_ONMOUSE%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+        for (int i = 0; i < g.skstruct.otherObject[4].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[4].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[4].dst[i];
+            ImGui::Text("#SRC_BGA%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_BGA%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+        for (int i = 0; i < g.skstruct.otherObject[5].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[5].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[5].dst[i];
+            ImGui::Text("#SRC_BARGRAPH%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_BARGRAPH%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+        for (int i = 0; i < g.skstruct.otherObject[6].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[6].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[6].dst[i];
+            sprintf(buf, "$OBJ_NUMBER%03d: %s %s %s %s %s %s", i, timerName(src.timer,1), numberName(src.op1), timerName(dst.timer,1), dstName(dst.op1,1), dstName(dst.op2,1), dstName(dst.op3,1));
+            if (ImGui::Selectable(buf)) {
+                preview_selected_obj = { dst.draw[dst.dstCount - 1].x, dst.draw[dst.dstCount - 1].y, dst.draw[dst.dstCount - 1].w, dst.draw[dst.dstCount - 1].h };
+            }
+        }
+        for (int i = 0; i < g.skstruct.otherObject[7].srcSize; i++) {
+            SRCstruct& src = g.skstruct.otherObject[7].src[i];
+            DSTstruct& dst = g.skstruct.otherObject[7].dst[i];
+            ImGui::Text("#SRC_MASK%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_MASK%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+
+        //select
+
+        //
+        if(true){
+            SRCstruct& src = g.skstruct.src_MOUSECURSOR;
+            DSTstruct& dst = g.skstruct.dst_MOUSECURSOR;
+            ImGui::Text("#SRC_MOUSECURSOR: %s %s %s %s", timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+            ImGui::Text("#DST_MOUSECURSOR: %s %s %s %s", timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+        }
+
+        for(int i = 0 ; i < 20 ; i++){
+            SRCstruct& src = g.skstruct.src_NOTE[i];
+            ImGui::Text("#SRC_NOTE%02d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
+        }
+
+    }
+    if (ImGui::BeginPopupContextWindow()){
+        ImGui::Text("selected : %d", selectedObjectTest);
+        ImGui::Separator();
+        ImGui::MenuItem("move");
+        ImGui::MenuItem("delete");
+        ImGui::EndPopup();
+    }
+    ImGui::End();
+    return 0;
+}
+
+//TODO - iftree, *wildcardtree, insert, delete, group, dst thing
+//group should have both if / endif
+// new file to "skin wizard", which makes mockup and create texture template
+
+int WORKSPACE::drawObjectManager() {
+
+    char title[260];
+    snprintf(title, sizeof(title), "objectManager##%d", num);
+    if (ImGui::Begin(title, &wObjectManager)) {
+
+        snprintf(title, sizeof(title), "objList##%d", num);
+        if (ImGui::BeginChild(title, { 250,-1 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
+            for (int i = 0; i < arr_seobj.count; i++) {
+                ImGui::PushID(i);
+                SEOBJ& seobj = ((SEOBJ*)arr_seobj.data)[i];
+
+                SRC& src = ((SRC*)arr_SRC.data)[((SEOBJ*)arr_seobj.data)[i].src];
+                DST& dst = ((DST*)arr_DST.data)[((SEOBJ*)arr_seobj.data)[i].dst];
+                
+
+                SKINFILELINEREAD& readS = ((SKINFILELINEREAD*)skinfileLines.data)[src.declare];
+                SKINFILELINEREAD& readD = ((SKINFILELINEREAD*)skinfileLines.data)[dst.declare];
+                
+
+                char buf[260];
+                if (readS.ifgroup == readD.ifgroup) {
+                    sprintf(buf, "%02d_", readS.ifgroup);
+                    for (int k = 0; k < ((IFUNIT*)arr_ifunit.data)[readS.ifgroup].depth; k++)
+                        sprintf(buf, "%s_", buf);
+                    sprintf(buf, "%s%03d(%s)", buf, seobj.ID, seobj.name.outstr());
+                }
+                else {
+                    sprintf(buf, "%03d(%s)", seobj.ID, seobj.name.outstr());
+                }
+
+                sprintf(buf, "%s %02d:%02d", buf, src.objType, src.objID);
+               
+                if (ImGui::Selectable(buf, selected_obj == i)) {
+                    selected_obj = i;
+                }
+                ImGui::PopID();
+            }
+        }
+        ImGui::EndChild();
+        ImGui::SameLine();
+
+        SRC& src = ((SRC*)arr_SRC.data)[((SEOBJ*)arr_seobj.data)[selected_obj].src];
+        DST& dst = ((DST*)arr_DST.data)[((SEOBJ*)arr_seobj.data)[selected_obj].dst];
+
+        SKINFILELINEREAD* srcline = &((SKINFILELINEREAD*)skinfileLines.data)[src.declare];
+        SKINFILELINEREAD* dstline = &((SKINFILELINEREAD*)skinfileLines.data)[dst.declare];
+            
+        snprintf(title, sizeof(title), "objProperty##%d", num);
+        if (ImGui::BeginChild(title, { 400,-1 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
+            ImGui::PushID(selected_obj);
+            ImGui::Text(dst.name.outstr());
+            
+            ImGui::Text("%s", srcline->line);
+            for (int d = 0; d < dst.arr_animation.count; d++) {
+                ImGui::Text("%s", (dstline+d)->line);
+            }
+
+
+            ImGui::PopID();
+        }
+        ImGui::EndChild();
+
+
+
+    }
+    ImGui::End();
+
+    return 0;
+}
+
+int WORKSPACE::drawHistory() {
+
+
+    ImGui::PushID(num);
+    if (ImGui::Begin("History", &wHistory)) {
+
+        int item_selected_idx = 0;
+    
+        for (int n = 0; n < arr_history.count; n++){
+            ImGui::PushID(n);
+            const bool is_selected = (item_selected_idx == n);
+            char itemname[260];
+            
+            HISTORY& hs = ((HISTORY*)arr_history.data)[n];
+            sprintf(itemname, "%d %d\n%s \n%s", hs.op, hs.target, hs.older.line.outstr(), hs.newer.line.outstr());
+            if (ImGui::Selectable(itemname, is_selected)) {
+                item_selected_idx = n;
+            }
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+
+            ImGui::PopID();
+        }
+
+    }
+    ImGui::End();
+    ImGui::PopID();
+
+    return 0;
+}
+
+
+int WORKSPACE::InsertLine(int pos) {
+    
+    SKINFILELINEREAD* line = (SKINFILELINEREAD*)skinfileLines.Get_newAt(pos);
+    line->line.assign("newline");
+    line->isComment = true;
+    line->num = pos;
+
+    HISTORY* hs = (HISTORY*)arr_history.Get_new();
+    hs->op = insertLine;
+    hs->target = pos;
+
+    return 0;
+}
+int WORKSPACE::DeleteLine(int pos) {
+    
+    skinfileLines.DeleteAt(pos);
+
+    HISTORY* hs = (HISTORY*)arr_history.Get_new();
+    hs->op = removeLine;;
+    hs->target = pos;
+
+    return 0;
+}
+int WORKSPACE::EditLine(int pos,CSTR oldlinebody, CSTR newlinebody) {
+
+
+    SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
+    line.line.assign(newlinebody);
+
+    line.isComment = (*line.line.atPos(0) != '#');
+    line.isSEcomment = (*line.line.atPos(0) == '$');
+
+    if (!line.isComment) SplitCSV(line.line, &line.csv, ",");
+
+    HISTORY* hs = (HISTORY*)arr_history.Get_new();
+    hs->op = overwriteLine;
+    hs->target = pos;
+    CsvToLine(pos);
+    hs->older.line.assign(oldlinebody);
+    hs->newer.line.assign(newlinebody);
+
+    return 0;
+}
+
+int WORKSPACE::EditValue(int pos, int column, const char* newVal) {
+
+    SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
+    CSTR oldLine(line.line);
+
+    line.csv.str[column].assign(newVal);
+    line.csv.val[column] = atol(newVal);
+    CsvToLine(pos);
+
+    HISTORY* hs = (HISTORY*)arr_history.Get_new();
+    hs->op = overwriteLine;
+    hs->target = pos;
+    hs->older.line.assign(oldLine);
+    hs->newer.line.assign(line.line);
+
+    return 0;
+}
+int WORKSPACE::EditValue(int pos, int column, int newVal) {
+
+    SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
+    CSTR oldLine(line.line);
+    line.csv.str[column].resize(12);
+    ltoa(newVal,line.csv.str[column],10);
+    line.csv.val[column] = newVal;
+    CsvToLine(pos);
+
+    HISTORY* hs = (HISTORY*)arr_history.Get_new();
+    hs->op = overwriteLine;
+    hs->target = pos;
+    hs->older.line.assign(oldLine);
+    hs->newer.line.assign(line.line);
+
+    return 0;
+}
+
+int WORKSPACE::CsvToLine(int pos) {
+    SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
+
+    line.isComment = (*line.line.atPos(0) != '#');
+    line.isSEcomment = (*line.line.atPos(0) == '$');
+
+    if (line.isComment || line.isSEcomment) {
+        return 0;
+    }
+
+    //TODO : truncate ','
+    CSTR buf("");
+    
+    cstrSprintf(&buf, "%s", line.csv.str[0]);
+    for (int i = 1; i < 25; i++) {
+        cstrSprintf(&buf, "%s,%s", buf, (line.csv.str[i].body == NULL)? "":line.csv.str[i].outstr());
+    }
+
+    line.line.assign(buf);
+    return 0;
+}
+
+// 
+// [file ---> (line, csv) ---> LR2]
+// file ---> line, csv ---> current SE
+// csv -> line -> file
+
+// file -> csv -> file
+
+
+//utf-8 shift-jis problem
+
+
+
+
+ARR workspaceList;
