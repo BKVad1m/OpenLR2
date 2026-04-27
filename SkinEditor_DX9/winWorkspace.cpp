@@ -2603,7 +2603,7 @@ int WORKSPACE::drawImgManager() {
         ImGui::ColorEdit4("MyColor##3", (float*)&bgColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_None);
 
         const ImVec2 pb = ImGui::GetCursorScreenPos();
-        ImGui::Image(transBackground, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { img.sizeX / (float)64.0, img.sizeY / (float)64.0});
+        ImGui::Image(transBackground, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { img.sizeX / (float)32, img.sizeY / (float)32});
         ImGui::SetCursorScreenPos(pb);
         if(img.texture)
             ImGui::ImageWithBg(img.texture, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { 1, 1 }, bgColor);

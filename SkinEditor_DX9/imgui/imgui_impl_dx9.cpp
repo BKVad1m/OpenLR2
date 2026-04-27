@@ -145,8 +145,8 @@ static void ImGui_ImplDX9_SetupRenderState(ImDrawData* draw_data)
     device->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
     device->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
     device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-    device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
-    device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+    device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP); //D3DTADDRESS_CLAMP D3DTADDRESS_WRAP
+    device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP); //D3DTADDRESS_CLAMP
 
     // Setup orthographic projection matrix
     // Our visible imgui space lies from draw_data->DisplayPos (top left) to draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0) for single viewport apps.
