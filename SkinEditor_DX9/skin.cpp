@@ -424,13 +424,15 @@ int LR2SEDrawLoop(game* g, int gHandle, int sizeX, int sizeY) {
 		}
 
 		//capture here
-		//GetDrawScreenSoftImage(0, 0, sizeX, sizeY, gHandle); //for SDL3
 		SetDrawScreen(DX_SCREEN_BACK);
-		GetDrawScreenGraph(0, 0, sizeX, sizeY, gHandle);
+		GetDrawScreenSoftImage(0, 0, sizeX, sizeY, gHandle); //for SDL3
+		//GetDrawScreenGraph(0, 0, sizeX, sizeY, gHandle); //for DX9?
+		SetDrawScreen(DX_SCREEN_BACK);
+		
 
 		ScreenFlip();
 		GetTimeWrap();
-		
+
 		GetTimeWrap();
 		clsDx();
 		CalcFPS(&g->timer1);

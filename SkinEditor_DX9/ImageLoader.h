@@ -13,3 +13,5 @@ extern LPDIRECT3DDEVICE9 g_pd3dDevice;
 bool LoadTextureFromFile(const char* filename, PDIRECT3DTEXTURE9* out_texture, int* out_width, int* out_height);
 bool LoadTextureFromFile(const char* filename, D3Image* d3);
 bool LoadTextureFromMemory(void* data, size_t size, PDIRECT3DTEXTURE9* out_texture, int* out_width, int* out_height);
+bool LoadTextureFromRawMemory(void* data, size_t size, int width, int height, PDIRECT3DTEXTURE9* out_texture);
+bool RefreshTextureByRawMemory(void* data, size_t size, PDIRECT3DTEXTURE9* out_texture);

@@ -937,9 +937,10 @@ int WORKSPACE::LoadSkin(char* path) {
 
     
     DeleteGraph(previewScreen);
-    previewScreen = MakeGraph(skinSizeX, skinSizeY);
+    //previewScreen = LoadGraph("ex.bmp");
+    //previewScreen = MakeGraph(skinSizeX, skinSizeY); //MakeScreen vs MakeGraph
     //SetDrawScreen(previewScreen);
-    //previewScreen = MakeSoftImage(640, 480);
+    previewScreen = MakeSoftImage(skinSizeX, skinSizeY);
     //previewScreen = MakeARGB8ColorSoftImage(skinSizeX, skinSizeY); //for SDL3
 
     wPreview = 1;
@@ -1926,7 +1927,7 @@ int WORKSPACE::drawCustomize() {
 
 int WORKSPACE::drawPreview() {
     //static SDL_Texture* preview_tex;
-    static PDIRECT3DTEXTURE9 preview_tex;
+    static PDIRECT3DTEXTURE9 preview_tex = NULL;
     
     char title[260];
     snprintf(title, sizeof(title), "Preview##%d", num);
@@ -1941,12 +1942,14 @@ int WORKSPACE::drawPreview() {
     //TODO init zoom value
     //TODO support HD skins
     
-    // LoadTextureFromRawMemory(GetImageAddressSoftImage(previewScreen), &preview_tex, skinSizeX, skinSizeY, 4);
-    //LoadTextureFromMemory(GetImageAddressSoftImage(previewScreen), NULL, &preview_tex, &skinSizeX, &skinSizeY);
-    //preview_tex = (PDIRECT3DTEXTURE9)GetGraphIDirect3DTexture9(previewScreen);
-    preview_tex = (PDIRECT3DTEXTURE9)GetGraphIDirect3DTexture9(g.skstruct.GrHandle[0]);
-    //Q1 : draws on screen success?
-    //Q2 : texture is well drawn? how to test it?
+    if (!preview_tex) {
+        LoadTextureFromRawMemory(GetImageAddressSoftImage(previewScreen), skinSizeX * skinSizeY * 4, skinSizeX, skinSizeY, &preview_tex);
+    }
+    else
+    {
+        RefreshTextureByRawMemory(GetImageAddressSoftImage(previewScreen), skinSizeX * skinSizeY * 4, &preview_tex);
+    }
+
     ImGui::Image(preview_tex, { (float)skinSizeX / zoom, (float)skinSizeY / zoom }, { 0, 0 }, { 1, 1 });
 
     if (ImGui::Button("MainStart")) {
