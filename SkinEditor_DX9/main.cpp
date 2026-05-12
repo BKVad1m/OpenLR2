@@ -19,7 +19,9 @@
 #include <WinSock2.h>
 #include <Windows.h>
 #include <DxLib/DxLib.h>
+
 #include "winWorkspace.h"
+#include "seHelper.h"
 
 
 // Data
@@ -126,6 +128,7 @@ int WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
     DxLib_Init();
 
     //SE init
+    LoadCommandHelp("skinHelper.txt");
     makeTransBackground();
     workspaceList.Alloc(sizeof(WORKSPACE), 1);
 

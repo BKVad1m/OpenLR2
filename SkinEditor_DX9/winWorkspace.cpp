@@ -4,6 +4,7 @@
 #include "../LR2/LR2_skinmanage.h"
 #include "../LR2/LR2_skinload.h"
 #include "../LR2/LR2_skindraw.h"
+#include "../LR2/LR2_skinobject.h"
 #include "../LR2/LR2_configsave.h"
 #include "../LR2/En_fileutil.h"
 #include "../LR2/Scene07_Skinselect.h"
@@ -85,6 +86,7 @@ int WORKSPACE::draw() {
             }
             if (loaded) {
                 ImGui::MenuItem("Save as", NULL, &wSaveMenu);
+                ImGui::MenuItem("Export", NULL, &wSaveMenu); //todo
             }
             ImGui::EndMenu();
         }
@@ -103,6 +105,8 @@ int WORKSPACE::draw() {
                 ImGui::MenuItem("dstView", NULL, &wDstView);
                 ImGui::MenuItem("objectManager", NULL, &wObjectManager);
                 ImGui::MenuItem("objectManagerTest", NULL, &wObjectManagerTest);
+                ImGui::MenuItem("objectProperty", NULL, &wProperty);
+                ImGui::MenuItem("OpList", NULL, &wOpList);
                 ImGui::MenuItem("history", NULL, &wHistory);
                 ImGui::EndMenu();
             }
@@ -110,7 +114,77 @@ int WORKSPACE::draw() {
         ImGui::EndMenuBar();
     }
 
-    ImGui::Text("%s", loaded? "" : "no skin loaded");
+    if (loaded) {
+        char tempTitle[260];
+
+        snprintf(tempTitle, sizeof(tempTitle), "objList##%d", num);
+        if (ImGui::BeginChild(tempTitle, { 230,400 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
+            for (int i = 0; i < arr_seobj.count; i++) {
+                ImGui::PushID(i);
+                SEOBJ& seobj = ((SEOBJ*)arr_seobj.data)[i];
+
+                char buf[260];
+                sprintf(buf, "%03d(%s)", i, seobj.name.outstr());
+
+                if (ImGui::Selectable(buf, selected_obj == i)) {
+                    selected_obj = i;
+                }
+                ImGui::PopID();
+            }
+        }
+        ImGui::EndChild();
+        
+        //ImGui::SameLine();
+        //preview
+
+        ImGui::Separator();
+        SEOBJ& seobj = ((SEOBJ*)arr_seobj.data)[selected_obj];
+        snprintf(tempTitle, sizeof(tempTitle), "objProperty##%d", num);
+        if (ImGui::BeginChild(tempTitle, { 400,-1 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
+            ImGui::PushID(selected_obj);
+
+            for (int b = 0; b < seobj.body.count; b++) {
+                ImGui::Text("%s", ((CSTR*)seobj.body.data)[b]);
+            }
+
+            if (seobj.type2 == 0) {
+                if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_None))
+                {
+                    if (ImGui::BeginTabItem("SRC"))
+                    {
+                        ImGui::SeparatorText("basic");
+                        ImGui::InputText("gr", ((CSVbuf*)seobj.bodyCSV.data)[0].str[2], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[2].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("x", ((CSVbuf*)seobj.bodyCSV.data)[0].str[3], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[3].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("y", ((CSVbuf*)seobj.bodyCSV.data)[0].str[4], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[4].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("w", ((CSVbuf*)seobj.bodyCSV.data)[0].str[5], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[5].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("h", ((CSVbuf*)seobj.bodyCSV.data)[0].str[6], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[6].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::SeparatorText("animation");
+                        ImGui::InputText("div_x", ((CSVbuf*)seobj.bodyCSV.data)[0].str[7], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[7].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("div_y", ((CSVbuf*)seobj.bodyCSV.data)[0].str[8], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[8].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("cycle", ((CSVbuf*)seobj.bodyCSV.data)[0].str[9], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[9].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("timer", ((CSVbuf*)seobj.bodyCSV.data)[0].str[10], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[10].outstr()), ImGuiInputTextFlags_CharsDecimal);
+
+
+
+                        ImGui::EndTabItem();
+                    }
+                    if (ImGui::BeginTabItem("DST"))
+                    {
+                        ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
+                        ImGui::EndTabItem();
+                    }
+                    ImGui::EndTabBar();
+                }
+            }
+
+            ImGui::PopID();
+        }
+        ImGui::EndChild();
+    }
+    else {
+        ImGui::Text("%s", "no skin loaded");
+    }
+    
 
     ImGui::End();
 
@@ -122,6 +196,7 @@ int WORKSPACE::draw() {
     if (wSaveMenu) drawSaveMenu();
 
     if (wTextEdit) drawTextEdit();
+
     if (wPreview) drawPreview();
     if (wCustomize) drawCustomize();
     if (wImgManager) drawImgManager();
@@ -131,6 +206,8 @@ int WORKSPACE::draw() {
     if (wDstView) drawDstView();
     if (wObjectManager) drawObjectManager();
     if (wObjectManagerTest) drawObjectManagerTest();
+    if (wProperty) drawProperty();
+    if (wOpList) drawOpList();
     if (wHistory) drawHistory();
 
 
@@ -199,6 +276,8 @@ int WORKSPACE::drawSkinList() {
         
     }
 
+    ImGui::SameLine(0, 3);
+    ImGui::Button("LOAD(TEXTMODE)", { 0, 0 });
     ImGui::SameLine(0, 3);
     ImGui::Button("CLONE", { 0, 0 });
     ImGui::SameLine(0, 3);
@@ -282,23 +361,69 @@ int WORKSPACE::ParseSkin() {
 
     int srcNow = -1;
     int srcOld = -1;
+    int objNow = -1;
 
     int objTypeCount[100] = { 0, };
-
+    
+    //obj groups
     for (int i = 0; i < skinfileLines.count; i++) {
         SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[i];
+        SEOBJ* obj = NULL;
         if (read.csv.str[0].left(4).isSame("#SRC")) {
             read.isSRC = true;
+            read.objID = ++objNow;
+            
+            obj = (SEOBJ*)arr_seobj.Get_new();
+            obj->type2 = 0;
+            obj->name.assign(read.csv.str[0]);
+            obj->body.Alloc(sizeof(CSTR),2);
+            obj->bodyCSV.Alloc(sizeof(CSVbuf), 2);
+
+            CSTR* bodyline = (CSTR*)obj->body.Get_new();
+            CSVbuf* bodyCSV = (CSVbuf*)obj->bodyCSV.Get_new();
+            bodyline->assign(read.line);
+            SplitCSV(*bodyline, bodyCSV, ",");
+
+            //get all IMG presets fromSRC here
+            if (read.csv.str[0].isDiff("#SRC_TEXT")){
+                //check duplicated
+                if (FindIMG(atol(read.csv.str[2]),atol(read.csv.str[3]),atol(read.csv.str[4]),atol(read.csv.str[5]),atol(read.csv.str[6])) == arr_IMG.count) {
+                    IMG* img = (IMG*)arr_IMG.Get_new();
+                    img->name.assign(read.csv.str[0].outstr());
+                    img->gr = atol(read.csv.str[2]);
+                    img->x = atol(read.csv.str[3]);
+                    img->y = atol(read.csv.str[4]);
+                    img->w = atol(read.csv.str[5]);
+                    img->h = atol(read.csv.str[6]);
+                }
+            }
         }
         else if (read.csv.str[0].left(4).isSame("#DST")) {
             read.isDST = true;
+            read.objID = objNow;
+
+            obj = (SEOBJ*)arr_seobj.Get_last();
+
+            CSTR* bodyline = (CSTR*)obj->body.Get_new();
+            CSVbuf* bodyCSV = (CSVbuf*)obj->bodyCSV.Get_new();
+            bodyline->assign(read.line);
+            SplitCSV(*bodyline, bodyCSV, ",");
         }
-        else {
+        else if(read.csv.str[0].left(1).isSame("#") ){
             read.isOther = true;
+            read.objID = -1;
+            
+            obj = (SEOBJ*)arr_seobj.Get_new(); 
+            obj->type2 = -1;
+            obj->name.assign(read.csv.str[0]); 
+            obj->body.Alloc(sizeof(CSTR), 1);
+
+            CSTR* bodyline = (CSTR*)obj->body.Get_new();
+            bodyline->assign(read.line);
         }
     }
 
-
+    //parse skin
     for (int i = 0; i < skinfileLines.count; i++) {
         SKINFILELINEREAD& read = ((SKINFILELINEREAD*)skinfileLines.data)[i];
         bool isif = false;
@@ -893,6 +1018,8 @@ int WORKSPACE::LoadSkin(char* path) {
     for (int i = 0; i < arr_DST.count; i++)
         ((DST*)arr_DST.data)[i].arr_animation.Alloc(sizeof(DST_ANIMATION), 1);
 
+    arr_IMG.Free();
+    arr_IMG.Alloc(sizeof(IMG),400);
     arr_seobj.Free();
     arr_seobj.Alloc(sizeof(SEOBJ),400);
 
@@ -926,7 +1053,7 @@ int WORKSPACE::LoadSkin(char* path) {
     LR2SEInit(&g);
     LoadSceneSE();
 
-    MakeObjects();
+    //MakeObjects();
     
 
 
@@ -1840,6 +1967,7 @@ int WORKSPACE::ReadSkinSE() {
     return tSkin_num;
 }
 
+//deprecated
 int WORKSPACE::MakeObjects() {
 
     for (int i = 0; i < arr_DST.count; i++) {
@@ -2319,6 +2447,7 @@ int WORKSPACE::drawTextEdit() {
 
                     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
                     {
+                        ImGui::Text("%d", read.objID);;
                         //ImGui::Text("%d",ifs.grCount);
                         ImGui::Text("%s", GetCommandHelp(read.csv.str[0].outstr(), column).outstr());
                         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
@@ -2511,115 +2640,96 @@ int WORKSPACE::drawImgManager() {
     snprintf(title, sizeof(title), "ImageManager##%d", num);
     ImGui::Begin(title, &wImgManager, ImGuiWindowFlags_HorizontalScrollbar);
     
+    static bool newSquare = 0;
     bool clicked = 0;
-    //tree list
-    snprintf(title, sizeof(title), "ImgTree##%d", num);
-    if (ImGui::BeginChild(title, { 250,-1 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
 
-        oldIf = -1;
-        //ImGui::TreeNodeEx("IF", ImGuiTreeNodeFlags_DrawLinesFull);
-        for (int i = 0; i < arr_SRCGR.count; i++) {
+    //testing new img list
+    ImGui::BeginGroup();
+    ImGui::SameLine();
+    snprintf(title, sizeof(title), "ImgList##%d", num);
+    if (ImGui::BeginChild(title, { 250,-150 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
 
-            SRCGR& img = ((SRCGR*)arr_SRCGR.data)[i];
-           
-            if (img.isIf && img.isIf != oldIf) {
-                
-                char buf[260];
-                sprintf(buf, "#IF %03d - %s", img.isIf, dstName(((IFUNIT*)arr_ifunit.data)[img.isIf].data[0]));
-                //ImGui::PushID(img.isIf);
-                ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull);
-                oldIf = img.isIf;
-            }
-
-            if (img.isIf == oldIf) {
-
-            }
+        for (int i = 0; i < arr_IMG.count; i++) {
+            IMG& img = ((IMG*)arr_IMG.data)[i];
             char buf[260];
-            sprintf(buf, "%02d:%s", img.grID, img.filename.outstr());
+            sprintf(buf, "%03d %02d:%s", i, img.gr, img.name.outstr());
             ImGui::PushID(i);
-            if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull | ((gr_selected == i) ? ImGuiTreeNodeFlags_Selected : NULL)))
-            {
-                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
-                {
-                    ImGui::Text("%s", img.path.outstr());
-                    ImGui::EndTooltip();
-                }
-                if (strchr(buf, '*')) {
-                    if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull)) {
-                        ImGui::TreePop();
-                    }
-                }
-
-                for (int srcID = 0; srcID < arr_SRC.count; srcID++) {
-                    SRC& src = ((SRC*)arr_SRC.data)[srcID];
-                    if (src.gr == img.grID)
-                    {
-                        sprintf(buf, "L%04d %s", src.declare, src.name.outstr());
-                        
-                        if (ImGui::TreeNodeEx(buf, ImGuiTreeNodeFlags_DrawLinesFull | ImGuiTreeNodeFlags_Leaf)) {
-                            if (ImGui::IsItemClicked()) {
-                                if (gr_selected != i) gr_selected = i;
-                                src_selected = srcID;
-                                clicked = 1;
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
-                        {
-                            printSrcImg(src);
-                            ImGui::EndTooltip();
-                        }
-
-                    }
-                }
-                ImGui::TreePop();
+            if (ImGui::Selectable(buf, i == src_selected)) {
+                src_selected = i;
+                gr_selected = img.gr;
             }
-            else {
-                SRC& src = ((SRC*)arr_SRC.data)[src_selected];
-                if (ImGui::IsItemClicked()) {
-                    gr_selected = img.grID;
-                }
-                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
-                {
-                    ImGui::Text("%s", img.path.outstr());
-                    ImGui::EndTooltip();
-                }
-            }
+            
             ImGui::PopID();
         }
-        //ImGui::TreePop();
+        IMG& img = ((IMG*)arr_IMG.data)[src_selected];
+        if (ImGui::BeginPopupContextWindow()) {
+            ImGui::Text("selected : %03d", src_selected);
+            
+            ImGui::Separator();
+            if (ImGui::MenuItem("Delete")) {
+                DeleteIMG(src_selected);
+            }
+            ImGui::Separator();
+            if(ImGui::MenuItem("New")) {
+                //mosue drag
+                newSquare = 1;
+            }
+            ImGui::EndPopup();
+        }
+        
     }
     ImGui::EndChild();
-    
-    //image
+    //left bottom
+    ImGui::Separator();
+    snprintf(title, sizeof(title), "ImgEdit##%d", num);
+    if (ImGui::BeginChild(title, { 250,150 }, ImGuiChildFlags_ResizeX | ImGuiChildFlags_FrameStyle)) {
+        IMG& img = ((IMG*)arr_IMG.data)[src_selected];
+        
+        char buf[64];
+        strncpy(buf, img.name.outstr(), sizeof(buf));
+        ImGui::InputText("##name", buf, sizeof(buf));
+        img.name.assign(buf);
+
+        ImGui::InputInt("gr", &img.gr);
+        ImGui::InputInt("x", &img.x);
+        ImGui::InputInt("y", &img.y);
+        ImGui::InputInt("w", &img.w);
+        ImGui::InputInt("h", &img.h);
+
+        //ModifyIMG(src_selected,, , , , );
+    }
+    ImGui::EndChild();
+    ImGui::EndGroup();
+    // test new image view
     ImGui::SameLine(0, 0);
+
+    ImGui::BeginGroup();
+
+    SRCGR& img = ((SRCGR*)arr_SRCGR.data)[gr_selected];
+    ImGui::Text("%s %d %d", img.path.outstr(), img.sizeX, img.sizeY);
+    ImGui::SameLine(0, 0);
+    snprintf(title, sizeof(title), "grReload##%d", num);
+    ImGui::Button(title);
+    ImGui::SameLine(0, 0);
+    ImGui::ColorEdit4("MyColor##3", (float*)&bgColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_None);
 
     snprintf(title, sizeof(title), "ImgWorking##%d", num);
     if (ImGui::BeginChild(title, { -1, -1 }, ImGuiChildFlags_Borders | ImGuiChildFlags_FrameStyle, ImGuiWindowFlags_HorizontalScrollbar)) {
-        SRCGR& img = ((SRCGR*)arr_SRCGR.data)[gr_selected];
-        ImGui::Text("%s %d %d", img.path.outstr(), img.sizeX, img.sizeY);
-        ImGui::SameLine(0, 0);
-        snprintf(title, sizeof(title), "grReload##%d", num);
-        ImGui::Button(title);
-        ImGui::SameLine(0, 0);
-        ImGui::ColorEdit4("MyColor##3", (float*)&bgColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_None);
-
+        
         const ImVec2 pb = ImGui::GetCursorScreenPos();
-        ImGui::Image(transBackground, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { img.sizeX / (float)32, img.sizeY / (float)32});
+        ImGui::Image(transBackground, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { img.sizeX / (float)32, img.sizeY / (float)32 });
         ImGui::SetCursorScreenPos(pb);
-        if(img.texture)
+        if (img.texture)
             ImGui::ImageWithBg(img.texture, { (float)img.sizeX, (float)img.sizeY }, { 0,0 }, { 1, 1 }, bgColor);
-        
-        
+
+
         if (img.texture != NULL) {
             const ImVec2 p = ImGui::GetCursorScreenPos();
             ImVec2 grpos = { p.x, p.y - img.sizeY - 4 };
 
-
-            SRC& src = ((SRC*)arr_SRC.data)[src_selected];
-            int sizeX = src.sizeX == -1 ? img.sizeX - src.x : src.sizeX;
-            int sizeY = src.sizeY == -1 ? img.sizeY - src.y : src.sizeY;
+            IMG& src = ((IMG*)arr_IMG.data)[src_selected];
+            int sizeX = src.w == -1 ? img.sizeX - src.x : src.w;
+            int sizeY = src.h == -1 ? img.sizeY - src.y : src.h;
 
             ImVec2 srcposLU = { grpos.x + src.x - 1, grpos.y + src.y - 1 };
             ImVec2 srcposRB = { grpos.x + src.x + sizeX + 1, grpos.y + src.y + sizeY + 1 };
@@ -2636,34 +2746,106 @@ int WORKSPACE::drawImgManager() {
             }
 
 
-            for (int i = 0; i < arr_SRC.count; i++){
-                SRC& hoversrc = ((SRC*)arr_SRC.data)[i];
+            for (int i = 0; i < arr_IMG.count; i++) {
+                IMG& hoversrc = ((IMG*)arr_IMG.data)[i];
                 if (hoversrc.gr != src.gr) continue;
                 srcposLU = { (float)grpos.x + hoversrc.x, (float)grpos.y + hoversrc.y };
-                srcposRB = { (float)grpos.x + hoversrc.x + hoversrc.sizeX, (float)grpos.y + hoversrc.y + hoversrc.sizeY };
-                if (ImGui::IsMouseHoveringRect(srcposLU, srcposRB)){
+                srcposRB = { (float)grpos.x + hoversrc.x + hoversrc.w, (float)grpos.y + hoversrc.y + hoversrc.h };
+                if (ImGui::IsMouseHoveringRect(srcposLU, srcposRB)) {
                     flicking = ((int)GetTimeLapse(1, &g.timer1) % 200 < 100);
                     ImColor color = flicking ? 0xffff0000 : 0x000000;
                     draw_list->AddRect(srcposLU, srcposRB, color, 0.0f, ImDrawFlags_Closed, 1.0f);
 
                     if (ImGui::IsItemClicked()) {
-                        gr_selected = hoversrc.gr;
+                        src_selected = i;
                     }
                     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
                     {
-                        ImGui::Text("line %d : %d %d ~ %d %d",hoversrc.declare , hoversrc.x, hoversrc.y, hoversrc.x + hoversrc.sizeX, hoversrc.y + hoversrc.sizeY);
+                        ImGui::Text("%03d : %d %d ~ %d %d", i, hoversrc.x, hoversrc.y, hoversrc.x + hoversrc.w, hoversrc.y + hoversrc.h);
+                        ImGui::Text("Size %d %d", hoversrc.w, hoversrc.h);
                         ImGui::EndTooltip();
                     }
+                    
                 }
             }
 
+            if (newSquare) {
+                ImGui::BeginTooltip();
+                ImGui::Text("click any image");
+                ImGui::EndTooltip();
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                    ImGuiIO& io = ImGui::GetIO();
+                    clickPos = { io.MousePos.x - grpos.x,io.MousePos.y - grpos.y };
+                    
+                    int x = clickPos.x, y = clickPos.y, w, h;
+                    AutoSRCObjectPos( &((SRCGR*)arr_SRCGR.data)[gr_selected], &x,&y,&w,&h);
+                    NewIMG(gr_selected, x,y,w,h);
 
+                    newSquare = 0;
+                }
+            }
         }
+        
+
+        
     }
     ImGui::EndChild();
-    
+    ImGui::EndGroup();
 
     ImGui::End();
+    return 0;
+}
+
+//stretch find
+int AutoSRCObjectPos(SRCGR* gr, int* x, int* y, int* w, int* h) {
+
+    D3DLOCKED_RECT lockedRect;
+
+    HRESULT hr = gr->texture->LockRect(0, &lockedRect, NULL, D3DLOCK_READONLY);
+
+    if (SUCCEEDED(hr)) {
+        DWORD* pPixelData = (DWORD*)lockedRect.pBits;
+
+        int xCur = *x, yCur = *y;
+        int wCur = 1, hCur = 1;
+
+        while (1) {
+            bool xDone = true, yDone = true;
+
+            //TODO expand x
+            for (int cur = yCur; cur < yCur + hCur; cur++) {
+                while (pPixelData[cur * (lockedRect.Pitch / 4) + xCur - 1] & 0xFF000000) {
+                    xCur--;
+                    xDone = false;
+                }
+                while (pPixelData[cur * (lockedRect.Pitch / 4) + xCur + wCur] & 0xFF000000) {
+                    wCur++;
+                    xDone = false;
+                }
+            }
+            
+            //TODO expand y
+            for (int cur = xCur; cur < xCur + wCur; cur++) {
+                while (pPixelData[(yCur - 1) * (lockedRect.Pitch / 4) + cur] & 0xFF000000) {
+                    yCur--;
+                    yDone = false;
+                }
+                while (pPixelData[(yCur + hCur) * (lockedRect.Pitch / 4) + cur] & 0xFF000000) {
+                    hCur++;
+                    yDone = false;
+                }
+            }
+            //check
+            if (xDone && yDone) break;
+        }
+
+        *x = xCur;
+        *y = yCur;
+        *w = wCur;
+        *h = hCur;
+        
+        gr->texture->UnlockRect(0);
+    }
     return 0;
 }
 
@@ -2741,6 +2923,26 @@ int WORKSPACE::SaveSkinScript(char* path, bool split, bool nocomment) {
         if (nocomment && ((SKINFILELINEREAD*)skinfileLines.data)[i].isComment) continue;
         fputs(((SKINFILELINEREAD*)skinfileLines.data)[i].line, pFile);
         fputs("\n", pFile);
+    }
+    fclose(pFile);
+    return 0;
+}
+
+//save for object mode
+int WORKSPACE::SaveSkinScript2(char* path, bool split, bool nocomment) {
+
+    FILE* pFile;
+    pFile = fopen(path, "wb");
+    if (pFile == NULL) return -1;
+    for (int i = 0; i < arr_seobj.count; i++) {
+        SEOBJ& seobj = ((SEOBJ*)arr_seobj.data)[i];
+        for (int k = 0; k < seobj.bodyCSV.count; k++) {
+            CSVbuf& csv = ((CSVbuf*)seobj.bodyCSV.data)[k];
+            CSTR buf("");
+            CsvToCSTR(csv, buf);
+            fputs(buf, pFile);
+            fputs("\n", pFile);
+        }
     }
     fclose(pFile);
     return 0;
@@ -3280,7 +3482,7 @@ int WORKSPACE::drawObjectManagerTest() {
         for (int i = 0; i < g.skstruct.otherObject[0].srcSize; i++) {
             SRCstruct& src = g.skstruct.otherObject[0].src[i];
             DSTstruct& dst = g.skstruct.otherObject[0].dst[i];
-            sprintf(buf, "$OBJ_TEXT%03d: %s %s %s %s %s %s %s %s", i, textName(src.st), dstName(src.op1, 1), dstName(src.op2, 1), dstName(src.op3, 1), timerName(dst.timer, 1), dstName(dst.op1, 1), dstName(dst.op2, 1), dstName(dst.op3, 1));
+            sprintf(buf, "$OBJ_TEXT%03d: %s %s %s %s %s", i, textName(src.st), timerName(dst.timer, 1), dstName(dst.op1, 1), dstName(dst.op2, 1), dstName(dst.op3, 1));
             if (ImGui::Selectable(buf)) {
                 preview_selected_obj = { dst.draw[dst.dstCount - 1].x, dst.draw[dst.dstCount - 1].y, dst.draw[dst.dstCount - 1].w, dst.draw[dst.dstCount - 1].h };
                 selectedObjectTest = objcount;
@@ -3290,8 +3492,11 @@ int WORKSPACE::drawObjectManagerTest() {
         for (int i = 0; i < g.skstruct.otherObject[1].srcSize; i++) {
             SRCstruct& src = g.skstruct.otherObject[1].src[i];
             DSTstruct& dst = g.skstruct.otherObject[1].dst[i];
-            ImGui::Text("#SRC_BUTTON%03d: %s %s %s %s", i, timerName(src.timer), src.op1 ? dstName(src.op1) : "", src.op2 ? dstName(src.op2) : "", src.op3 ? dstName(src.op3) : "");
-            ImGui::Text("#DST_BUTTON%03d: %s %s %s %s", i, timerName(dst.timer), dst.op1 ? dstName(dst.op1) : "", dst.op2 ? dstName(dst.op2) : "", dst.op3 ? dstName(dst.op3) : "");
+            sprintf(buf, "$OBJ_BUTTON%03d: %s %s %s panel:%d %s %s %s %s", i, timerName(src.timer, 1), buttonName(src.op1),src.op2? "":"disabled", src.op3, timerName(dst.timer, 1), dstName(dst.op1, 1), dstName(dst.op2, 1), dstName(dst.op3, 1));
+            if (ImGui::Selectable(buf)) {
+                preview_selected_obj = { dst.draw[dst.dstCount - 1].x, dst.draw[dst.dstCount - 1].y, dst.draw[dst.dstCount - 1].w, dst.draw[dst.dstCount - 1].h };
+                selectedObjectTest = objcount;
+            }
         }
         for (int i = 0; i < g.skstruct.otherObject[2].srcSize; i++) {
             SRCstruct& src = g.skstruct.otherObject[2].src[i];
@@ -3384,18 +3589,19 @@ int WORKSPACE::drawObjectManager() {
                 
 
                 char buf[260];
-                if (readS.ifgroup == readD.ifgroup) {
-                    sprintf(buf, "%02d_", readS.ifgroup);
-                    for (int k = 0; k < ((IFUNIT*)arr_ifunit.data)[readS.ifgroup].depth; k++)
-                        sprintf(buf, "%s_", buf);
-                    sprintf(buf, "%s%03d(%s)", buf, seobj.ID, seobj.name.outstr());
-                }
-                else {
-                    sprintf(buf, "%03d(%s)", seobj.ID, seobj.name.outstr());
-                }
+                //if (readS.ifgroup == readD.ifgroup) {
+                //    sprintf(buf, "%02d_", readS.ifgroup);
+                //    for (int k = 0; k < ((IFUNIT*)arr_ifunit.data)[readS.ifgroup].depth; k++)
+                //        sprintf(buf, "%s_", buf);
+                //    sprintf(buf, "%s%03d(%s)", buf, seobj.ID, seobj.name.outstr());
+                //}
+                //else {
+                //    sprintf(buf, "%03d(%s)", seobj.ID, seobj.name.outstr());
+                //}
 
-                sprintf(buf, "%s %02d:%02d", buf, src.objType, src.objID);
-               
+                //sprintf(buf, "%s %02d:%02d", buf, src.objType, src.objID);
+                sprintf(buf, "%03d(%s)", i, seobj.name.outstr());
+
                 if (ImGui::Selectable(buf, selected_obj == i)) {
                     selected_obj = i;
                 }
@@ -3405,6 +3611,7 @@ int WORKSPACE::drawObjectManager() {
         ImGui::EndChild();
         ImGui::SameLine();
 
+        SEOBJ& seobj = ((SEOBJ*)arr_seobj.data)[selected_obj];
         SRC& src = ((SRC*)arr_SRC.data)[((SEOBJ*)arr_seobj.data)[selected_obj].src];
         DST& dst = ((DST*)arr_DST.data)[((SEOBJ*)arr_seobj.data)[selected_obj].dst];
 
@@ -3416,11 +3623,91 @@ int WORKSPACE::drawObjectManager() {
             ImGui::PushID(selected_obj);
             ImGui::Text(dst.name.outstr());
             
-            ImGui::Text("%s", srcline->line);
+            for (int b = 0; b < seobj.body.count; b++) {
+                ImGui::Text("%s", ((CSTR*)seobj.body.data)[b]);
+            }
+            /*ImGui::Text("%s", srcline->line);
             for (int d = 0; d < dst.arr_animation.count; d++) {
                 ImGui::Text("%s", (dstline+d)->line);
-            }
+                
+            }*/
+            if (seobj.type2 == 0) {
+                if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_None))
+                {
+                    if (ImGui::BeginTabItem("SRC"))
+                    {
+                        ImGui::SeparatorText("basic");
+                        int k = FindIMG(atol(((CSVbuf*)seobj.bodyCSV.data)[0].str[2])
+                            , atol(((CSVbuf*)seobj.bodyCSV.data)[0].str[3])
+                            , atol(((CSVbuf*)seobj.bodyCSV.data)[0].str[4])
+                            , atol(((CSVbuf*)seobj.bodyCSV.data)[0].str[5])
+                            , atol(((CSVbuf*)seobj.bodyCSV.data)[0].str[6]));
+                        
+                        if (ImGui::BeginCombo("##IMGs", ((IMG*)arr_IMG.data)[k].name,ImGuiComboFlags_None)) {
+                            for (int n = 0; n < arr_IMG.count; n++) {
+                                ImGui::PushID(n);
+                                if (ImGui::Selectable(((IMG*)arr_IMG.data)[n].name, n == k, ImGuiSelectableFlags_None, { 0,0 })) {
+                                    ltoa(((IMG*)arr_IMG.data)[n].gr, ((CSVbuf*)seobj.bodyCSV.data)[0].str[2], 10);
+                                    ltoa(((IMG*)arr_IMG.data)[n].x, ((CSVbuf*)seobj.bodyCSV.data)[0].str[3], 10);
+                                    ltoa(((IMG*)arr_IMG.data)[n].y, ((CSVbuf*)seobj.bodyCSV.data)[0].str[4], 10);
+                                    ltoa(((IMG*)arr_IMG.data)[n].w, ((CSVbuf*)seobj.bodyCSV.data)[0].str[5], 10);
+                                    ltoa(((IMG*)arr_IMG.data)[n].h, ((CSVbuf*)seobj.bodyCSV.data)[0].str[6], 10);
 
+                                }
+                                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip())
+                                {
+                                    IMG imgg = ((IMG*)arr_IMG.data)[n];
+                                    int handle = imgg.gr;
+
+                                    SRCGR& img = ((SRCGR*)arr_SRCGR.data)[handle];
+
+                                    int iX = imgg.x;
+                                    int iY = imgg.y;
+                                    int iW = imgg.w == -1 ? img.sizeX - iX : imgg.w;
+                                    int iH = imgg.h == -1 ? img.sizeY - iY : imgg.h;
+
+                                    if (img.texture != NULL) {
+                                        ImVec2 display_min = ImVec2(iX / (float)img.sizeX, iY / (float)img.sizeY);
+                                        ImVec2 display_max = ImVec2((iX + iW) / (float)img.sizeX, (iY + iH) / (float)img.sizeY);
+                                        ImVec2 display_size = ImVec2(iW, iH);
+
+                                        ImGui::Image(img.texture, display_size, display_min, display_max);;
+                                    }
+                                    //printSrcImg(((SRC*)arr_SRC.data)[handle]);
+                                    
+                                    
+                                    ImGui::EndTooltip();
+                                }
+                                ImGui::PopID();
+                            }
+                            ImGui::EndCombo();
+                        }
+                        
+                        ImGui::InputText("gr", ((CSVbuf*)seobj.bodyCSV.data)[0].str[2], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[2].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("x", ((CSVbuf*)seobj.bodyCSV.data)[0].str[3], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[3].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("y", ((CSVbuf*)seobj.bodyCSV.data)[0].str[4], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[4].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("w", ((CSVbuf*)seobj.bodyCSV.data)[0].str[5], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[5].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("h", ((CSVbuf*)seobj.bodyCSV.data)[0].str[6], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[6].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        
+
+                        ImGui::SeparatorText("animation");
+                        ImGui::InputText("div_x", ((CSVbuf*)seobj.bodyCSV.data)[0].str[7], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[7].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("div_y", ((CSVbuf*)seobj.bodyCSV.data)[0].str[8], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[8].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("cycle", ((CSVbuf*)seobj.bodyCSV.data)[0].str[9], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[9].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("timer", ((CSVbuf*)seobj.bodyCSV.data)[0].str[10], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[10].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        
+
+
+                        ImGui::EndTabItem();
+                    }
+                    if (ImGui::BeginTabItem("DST"))
+                    {
+                        ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
+                        ImGui::EndTabItem();
+                    }
+                    ImGui::EndTabBar();
+                }
+            }
 
             ImGui::PopID();
         }
@@ -3431,6 +3718,40 @@ int WORKSPACE::drawObjectManager() {
     }
     ImGui::End();
 
+    return 0;
+}
+
+int WORKSPACE::drawProperty() {
+
+    char title[260];
+    snprintf(title, sizeof(title), "objectProperty##%d", num);
+    if (ImGui::Begin(title, &wProperty)) {
+        selectedObjectTest;
+
+    }
+    ImGui::End();
+    return 0;
+}
+
+
+int WORKSPACE::drawOpList() {
+
+    char title[260];
+    snprintf(title, sizeof(title), "OpList##%d", num);
+    if (ImGui::Begin(title, &wOpList)) {
+        //init ops
+        for (int i = 0; i < 1000; i++) {
+            op[i] = GetOptionFlag_dst(&g, i);
+        }
+        for (int i = 0; i < 1000; i++) {
+            ImGui::PushID(i);
+            ImGui::Text("%03d", i);
+            ImGui::SameLine();
+            ImGui::Checkbox(dstName(i), &op[i]);
+            ImGui::PopID();
+        }
+    }
+    ImGui::End();
     return 0;
 }
 
@@ -3465,6 +3786,61 @@ int WORKSPACE::drawHistory() {
     return 0;
 }
 
+int WORKSPACE::NewIMG(int gr, int x, int y, int w, int h) {
+    IMG* img = (IMG*)arr_IMG.Get_new();
+    img->name = "noname";
+    img->gr = gr;
+    img->x = x;
+    img->y = y;
+    img->w = w;
+    img->h = h;
+
+    //TODO:history here
+
+    return 0;
+}
+
+int WORKSPACE::DeleteIMG(int pos) {
+    arr_IMG.DeleteAt(pos);
+
+    //TODO:history here
+
+    return 0;
+}
+
+int WORKSPACE::ModifyIMG(int pos, int gr, int x, int y, int w, int h) {
+    
+    IMG& img = ((IMG*)arr_IMG.data)[pos];
+
+    img.gr = gr;
+    img.x = x;
+    img.y = y;
+    img.w = w;
+    img.h = h;
+    //TODO:history here
+
+    return 0;
+}
+
+int WORKSPACE::FindIMG(int gr, int x, int y, int w, int h) {
+    //check duplicated
+    int j = 0;
+    for (j = 0; j < arr_IMG.count; j++) {
+        IMG imgCompare = ((IMG*)arr_IMG.data)[j];
+        if (imgCompare.gr == gr
+            && imgCompare.x == x
+            && imgCompare.y == y
+            && imgCompare.w == w
+            && imgCompare.h == h)
+            break;
+    }
+    return j;
+}
+
+//int WORKSPACE::MoveObject() {
+//    
+//    return 0;
+//}
 
 int WORKSPACE::InsertLine(int pos) {
     
@@ -3567,12 +3943,25 @@ int WORKSPACE::CsvToLine(int pos) {
     return 0;
 }
 
+int CsvToCSTR(CSVbuf& csv, CSTR& line) {
+    CSTR buf("");
+    cstrSprintf(&buf, "%s", csv.str[0]);
+    for (int i = 1; i < 25; i++) {
+        cstrSprintf(&buf, "%s,%s", buf, (csv.str[i].body == NULL) ? "" : csv.str[i].outstr());
+    }
+
+    line.assign(buf);
+    return 0;
+}
+
 // 
 // [file ---> (line, csv) ---> LR2]
 // file ---> line, csv ---> current SE
 // csv -> line -> file
 
-// file -> csv -> file
+// file -> csv -> file : this is textedit
+// we need objedit
+// csv -> obj(multi line) -> csv
 
 
 //utf-8 shift-jis problem

@@ -78,3 +78,8 @@ int ARR::DeleteAt(int at) {
     count--;
     return 0;
 }
+
+
+void* ARR::Get_last() {
+    return (void*)((int)data + unitSize * (count-1));
+}

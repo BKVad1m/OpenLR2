@@ -426,7 +426,7 @@ int LR2SEDrawLoop(game* g, int gHandle, int sizeX, int sizeY) {
 		//capture here
 		SetDrawScreen(DX_SCREEN_BACK);
 		GetDrawScreenSoftImage(0, 0, sizeX, sizeY, gHandle); //for SDL3
-		//GetDrawScreenGraph(0, 0, sizeX, sizeY, gHandle); //for DX9?
+		//GetDrawScreenGraph(0, 0, sizeX, sizeY, gHandle); //for DX9? << not works
 		SetDrawScreen(DX_SCREEN_BACK);
 		
 

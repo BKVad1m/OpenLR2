@@ -26,6 +26,7 @@ typedef struct SKINFILELINEREAD {
     bool isObjectHead = false;
     bool isObjectEnd = false;
 
+    int objID;
     int objType;
     int objInTypeID;
 
@@ -48,10 +49,7 @@ typedef struct IFUNIT {
 
 typedef struct IMG {
     CSTR name;
-    void* data = NULL;
-    int sizeX;
-    int sizeY;
-    int parent;
+    int gr, x, y, w, h;
 }IMG;
 
 typedef struct SRCGR {
@@ -130,6 +128,12 @@ typedef struct SKINUNIT {
     int src;
     int dst;
 
+    ARR body; //CSTR
+    ARR bodyCSV; //CSV
+    SRC srcc;
+    DST dstt;
+    int type2; //-1:non-group 0:group
+
     int ifGroup;
 
     int igType;
@@ -179,6 +183,7 @@ typedef struct WORKSPACE {
     ARR arr_SRC; //SRC
     ARR arr_DST; //DST
 
+    ARR arr_IMG; //IMG
     ARR arr_seobj; //SKINUNIT, SEOBJ
 
     ARR arr_history; //HISTORY
@@ -217,7 +222,7 @@ typedef struct WORKSPACE {
     int ParseSkin2();
 
     int SaveSkinScript(char* path, bool split, bool nocomment);
-
+    int SaveSkinScript2(char* path, bool split, bool nocomment);
 
     bool wSaveMenu;
     int drawSaveMenu();
@@ -300,7 +305,18 @@ typedef struct WORKSPACE {
 
     bool wHistory;
     int drawHistory();
+
+    bool wProperty;
+    int drawProperty();
+
+    bool wOpList;
+    int drawOpList();
+    bool op[1000];
     
+    int NewIMG(int gr, int x, int y, int w, int h);
+    int DeleteIMG(int pos);
+    int ModifyIMG(int pos, int gr, int x, int y, int w, int h);
+    int FindIMG(int gr, int x, int y, int w, int h);
 
     int InsertLine(int pos);
     int DeleteLine(int pos);
@@ -321,3 +337,5 @@ typedef struct WORKSPACE {
 extern ARR workspaceList;
 
 int makeTransBackground();
+int AutoSRCObjectPos(SRCGR* gr, int* x, int* y, int* w, int* h);
+int CsvToCSTR(CSVbuf& csv, CSTR& line);

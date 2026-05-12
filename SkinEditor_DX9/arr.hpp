@@ -19,4 +19,6 @@ typedef struct ARR {
     int InsertAt(int at, void* newdata);
     void* Get_newAt(int at);
     int DeleteAt(int at);
+
+    void* Get_last();
 }ARR;
