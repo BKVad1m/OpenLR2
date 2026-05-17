@@ -175,6 +175,8 @@ typedef struct WORKSPACE {
     byte* filedata = NULL;
     unsigned int filedatasize = 0;
 
+    bool isTextmode = false;
+
     int skinSizeX = 640 , skinSizeY = 480;
 
     ARR arr_subpath; //CSTR

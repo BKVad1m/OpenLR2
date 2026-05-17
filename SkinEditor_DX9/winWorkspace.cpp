@@ -277,7 +277,17 @@ int WORKSPACE::drawSkinList() {
     }
 
     ImGui::SameLine(0, 3);
-    ImGui::Button("LOAD(TEXTMODE)", { 0, 0 });
+    if (ImGui::Button("LOAD(TEXT)", { 0, 0 })) {
+        meta = g.skinData.Data[m];
+        snprintf(title, 260, "%s -%s", meta.title.outstr(), SKINTYPESTR[meta.type]);
+
+        strncpy(mainpath, g.skinData.Data[m].skinFile.outstr(), MAX_PATH);
+        LoadSkin(mainpath);
+        wSkinList = false;
+        loaded = true;
+        isTextmode = true;
+
+    }
     ImGui::SameLine(0, 3);
     ImGui::Button("CLONE", { 0, 0 });
     ImGui::SameLine(0, 3);
