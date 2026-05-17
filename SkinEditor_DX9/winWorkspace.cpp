@@ -2657,6 +2657,7 @@ int WORKSPACE::drawImgManager() {
             if (ImGui::Selectable(buf, i == src_selected)) {
                 src_selected = i;
                 gr_selected = img.gr;
+                grID_selected = img.gr;
             }
             
             ImGui::PopID();
@@ -2705,7 +2706,38 @@ int WORKSPACE::drawImgManager() {
 
     ImGui::BeginGroup();
 
+    static int gr_type;
+    char buf[260] = "temp";
+    if (((SRCGR*)arr_SRCGR.data)[gr_selected].grID != grID_selected) {
+        for (int i = 0; i < arr_SRCGR.count; i++) {
+            SRCGR& gr = ((SRCGR*)arr_SRCGR.data)[i];
+            if (gr.grID == grID_selected) {
+                gr_selected = i;
+                sprintf(buf, "%03d %02d : %s", i, gr.grID, gr.filename.outstr());
+            }
+        }
+    }
+    
+    if (ImGui::BeginCombo("##grSelect", buf)) {
+        for (int i = 0; i < arr_SRCGR.count; i++) {
+            SRCGR& gr = ((SRCGR*)arr_SRCGR.data)[i];
+            char buf[260];
+            sprintf(buf, "%03d %02d : %s", i, gr.grID, gr.filename.outstr());
+            if (gr.grID != grID_selected) continue;
+            ImGui::PushID(i);
+            if (ImGui::Selectable(buf, i == gr_selected)) {
+                gr_selected = i;
+            }
+
+            ImGui::PopID();
+        }
+        ImGui::EndCombo();
+    }
+
     SRCGR& img = ((SRCGR*)arr_SRCGR.data)[gr_selected];
+    ImGui::Text("%03d_%d ", gr_selected, img.grID);
+    
+    ImGui::SameLine(0, 0);
     ImGui::Text("%s %d %d", img.path.outstr(), img.sizeX, img.sizeY);
     ImGui::SameLine(0, 0);
     snprintf(title, sizeof(title), "grReload##%d", num);
@@ -2744,7 +2776,6 @@ int WORKSPACE::drawImgManager() {
                 ImGui::SetScrollX(src.x);
                 ImGui::SetScrollY(src.y);
             }
-
 
             for (int i = 0; i < arr_IMG.count; i++) {
                 IMG& hoversrc = ((IMG*)arr_IMG.data)[i];
@@ -2812,7 +2843,7 @@ int AutoSRCObjectPos(SRCGR* gr, int* x, int* y, int* w, int* h) {
         while (1) {
             bool xDone = true, yDone = true;
 
-            //TODO expand x
+            //expand x
             for (int cur = yCur; cur < yCur + hCur; cur++) {
                 while (pPixelData[cur * (lockedRect.Pitch / 4) + xCur - 1] & 0xFF000000) {
                     xCur--;
@@ -2824,7 +2855,7 @@ int AutoSRCObjectPos(SRCGR* gr, int* x, int* y, int* w, int* h) {
                 }
             }
             
-            //TODO expand y
+            //expand y
             for (int cur = xCur; cur < xCur + wCur; cur++) {
                 while (pPixelData[(yCur - 1) * (lockedRect.Pitch / 4) + cur] & 0xFF000000) {
                     yCur--;

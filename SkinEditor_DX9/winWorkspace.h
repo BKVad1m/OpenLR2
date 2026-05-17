@@ -67,6 +67,9 @@ typedef struct SRCGR {
     int grID;
     int isIf;
 
+    int LR2ID;
+    int SEID;
+
     bool wildcard = false;
     bool fromWildcard = false;
     ARR arr_wildcard; //CSTR
@@ -250,6 +253,7 @@ typedef struct WORKSPACE {
     //ImgManager
     bool wImgManager;
     int drawImgManager();
+    int grID_selected = 0;
     int gr_selected = 0;
     int src_selected = 0;
     int loadSRC();
