@@ -94,20 +94,26 @@ int WORKSPACE::draw() {
             
             if (ImGui::BeginMenu("Windows")) {
                 //HOW TO ADD FEATURE - STEP 3 : add menu and flag here
-                ImGui::MenuItem("Text Editor", NULL, &wTextEdit);
-                ImGui::MenuItem("Preview", NULL, &wPreview);
-                ImGui::MenuItem("Customize", NULL, &wCustomize);
-                ImGui::MenuItem("ImgManager", NULL, &wImgManager);
-                //if (ImGui::MenuItem("ImgManager", NULL, &wImgManager)) { loadSRC(); };
-                ImGui::MenuItem("fileManager", NULL, &wFileManager);
-                ImGui::MenuItem("treeView", NULL, &wTreeView);
-                ImGui::MenuItem("SimplePreview", NULL, &wSimplePreview);
-                ImGui::MenuItem("dstView", NULL, &wDstView);
-                ImGui::MenuItem("objectManager", NULL, &wObjectManager);
-                ImGui::MenuItem("objectManagerTest", NULL, &wObjectManagerTest);
-                ImGui::MenuItem("objectProperty", NULL, &wProperty);
-                ImGui::MenuItem("OpList", NULL, &wOpList);
-                ImGui::MenuItem("history", NULL, &wHistory);
+                if (isTextmode) {
+                    ImGui::MenuItem("Text Editor", NULL, &wTextEdit);
+                    ImGui::MenuItem("Preview", NULL, &wPreview);
+                    ImGui::MenuItem("history", NULL, &wHistory);
+                }
+                else {
+                    ImGui::MenuItem("Preview", NULL, &wPreview);
+                    ImGui::MenuItem("Customize", NULL, &wCustomize);
+                    ImGui::MenuItem("ImgManager", NULL, &wImgManager);
+                    //if (ImGui::MenuItem("ImgManager", NULL, &wImgManager)) { loadSRC(); };
+                    ImGui::MenuItem("fileManager", NULL, &wFileManager);
+                    ImGui::MenuItem("treeView", NULL, &wTreeView);
+                    ImGui::MenuItem("SimplePreview", NULL, &wSimplePreview);
+                    ImGui::MenuItem("dstView", NULL, &wDstView);
+                    ImGui::MenuItem("objectManager", NULL, &wObjectManager);
+                    ImGui::MenuItem("objectManagerTest", NULL, &wObjectManagerTest);
+                    ImGui::MenuItem("objectProperty", NULL, &wProperty);
+                    ImGui::MenuItem("OpList", NULL, &wOpList);
+                    ImGui::MenuItem("history", NULL, &wHistory);
+                }
                 ImGui::EndMenu();
             }
         }
