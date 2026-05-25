@@ -192,6 +192,8 @@
     <ClCompile Include="seHelper.cpp" />
     <ClCompile Include="skin.cpp" />
     <ClCompile Include="winWorkspace.cpp" />
+    <ClCompile Include="winWorkspace2.cpp" />
+    <ClCompile Include="winWorkspace_save.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\LR2\dbgtool.h" />

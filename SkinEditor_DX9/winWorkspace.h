@@ -231,6 +231,8 @@ typedef struct WORKSPACE {
 
     bool wSaveMenu;
     int drawSaveMenu();
+    bool wSaveMenu2;
+    int drawSaveMenu2();
 
     //TextEdit
     bool wTextEdit;

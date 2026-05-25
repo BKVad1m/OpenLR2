@@ -86,7 +86,7 @@ int WORKSPACE::draw() {
             }
             if (loaded) {
                 ImGui::MenuItem("Save as", NULL, &wSaveMenu);
-                ImGui::MenuItem("Export", NULL, &wSaveMenu); //todo
+                ImGui::MenuItem("Export", NULL, &wSaveMenu2); //todo
             }
             ImGui::EndMenu();
         }
@@ -200,6 +200,7 @@ int WORKSPACE::draw() {
     if (wNewskin) drawNewskin();
 
     if (wSaveMenu) drawSaveMenu();
+    if (wSaveMenu2) drawSaveMenu2();
 
     if (wTextEdit) drawTextEdit();
 
@@ -433,9 +434,12 @@ int WORKSPACE::ParseSkin() {
             obj->type2 = -1;
             obj->name.assign(read.csv.str[0]); 
             obj->body.Alloc(sizeof(CSTR), 1);
+            obj->bodyCSV.Alloc(sizeof(CSVbuf), 1);
 
             CSTR* bodyline = (CSTR*)obj->body.Get_new();
+            CSVbuf* bodyCSV = (CSVbuf*)obj->bodyCSV.Get_new();
             bodyline->assign(read.line);
+            SplitCSV(*bodyline, bodyCSV, ",");
         }
     }
 
@@ -2442,6 +2446,27 @@ int WORKSPACE::drawTextEdit() {
                                 ImGui::EndCombo();
                             }
                         }
+                        else if (GetCommandHelp(read.csv.str[0].outstr(), column).left(4).isSame("$num")) {
+                            if (ImGui::BeginCombo(inputname, numberName(read.csv.val[column]), ImGuiComboFlags_None)) {
+                                for (int op = 0; op < 300; op++) {
+                                    ImGui::PushID(op);
+                                    const bool is_selected = (read.csv.val[column] == op);
+                                    char opname[64];
+                                    sprintf(opname, "%03d:%s", op, numberName(op));
+
+                                    if (ImGui::Selectable(opname, is_selected)) {
+                                        //read.csv.val[column] = op;
+                                        EditValue(n, column, op);
+                                    }
+                                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                    if (is_selected)
+                                        ImGui::SetItemDefaultFocus();
+
+                                    ImGui::PopID();
+                                }
+                                ImGui::EndCombo();
+                            }
+                        }
                         else {
                             static CSTR tmp;
                             ImGui::InputText(inputname, read.csv.str[column], 260, ImGuiInputTextFlags_AutoSelectAll);
@@ -2959,41 +2984,7 @@ int WORKSPACE::drawSrc(int iSRCGR, int iSRCID) {
 }
 
 
-//TODO apply split
-int WORKSPACE::SaveSkinScript(char* path, bool split, bool nocomment) {
 
-    FILE* pFile;
-    pFile = fopen(path, "wb");
-    if (pFile == NULL) return -1;
-    for (int i = 0; i < skinfileLines.count; i++) {
-        CsvToLine(i);
-        if (nocomment && ((SKINFILELINEREAD*)skinfileLines.data)[i].isComment) continue;
-        fputs(((SKINFILELINEREAD*)skinfileLines.data)[i].line, pFile);
-        fputs("\n", pFile);
-    }
-    fclose(pFile);
-    return 0;
-}
-
-//save for object mode
-int WORKSPACE::SaveSkinScript2(char* path, bool split, bool nocomment) {
-
-    FILE* pFile;
-    pFile = fopen(path, "wb");
-    if (pFile == NULL) return -1;
-    for (int i = 0; i < arr_seobj.count; i++) {
-        SEOBJ& seobj = ((SEOBJ*)arr_seobj.data)[i];
-        for (int k = 0; k < seobj.bodyCSV.count; k++) {
-            CSVbuf& csv = ((CSVbuf*)seobj.bodyCSV.data)[k];
-            CSTR buf("");
-            CsvToCSTR(csv, buf);
-            fputs(buf, pFile);
-            fputs("\n", pFile);
-        }
-    }
-    fclose(pFile);
-    return 0;
-}
 
 int WORKSPACE::drawSaveMenu() {
     char title[260], input[32], result[32];
@@ -3052,6 +3043,59 @@ int WORKSPACE::drawSaveMenu() {
 //    savepath.add("_master");
 //    SaveMaster(savepath);
 //}
+
+int WORKSPACE::drawSaveMenu2() {
+    char title[260], input[32], result[32];
+    snprintf(title, sizeof(title), "SaveMenu##%d", num);
+    snprintf(input, sizeof(input), "##savePathInput%d", num);
+
+
+    if (ImGui::Begin(title, &wSaveMenu2, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_Modal)) {
+
+        ImGui::Text("old path is %s ", mainpath);
+        if (newPath[0] == '\0') { //very init
+            strncpy(newPath, mainpath, sizeof(newPath));
+        }
+
+        if (ImGui::Button("BROWSE", { 0, 0 })) {
+            //TODO
+        }
+        ImGui::SameLine(0, 0);
+        ImGui::InputText(input, newPath, IM_ARRAYSIZE(newPath));
+        exist = IsFileExist(newPath) || !strcmp(mainpath, newPath); //TODO reduce cpu usage
+
+        if (exist) ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "CAUTION: OVERWRITE");
+        ImGui::SeparatorText("Script files");
+        ImGui::RadioButton("merge scripts", &split, 0);
+        ImGui::RadioButton("split scripts", &split, 1);
+        ImGui::SeparatorText("Comments");
+        ImGui::RadioButton("maintain memo", &nocomment, 0);
+        ImGui::RadioButton("delete memo", &nocomment, 1);
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNone) && ImGui::BeginTooltip()) {
+            ImGui::Text("this will remove all group, only for Scene start speed on LR2.\nAre your sure this?");
+            ImGui::EndTooltip();
+        }
+
+        if (ImGui::Button("SAVE", { 0, 0 })) {
+            success = (SaveSkinScript2(newPath, split, nocomment) == 0);
+            if (success) snprintf(result, sizeof(result), "SaveResult##Save%d", num);
+            ImGui::OpenPopup(result);
+        }
+
+        snprintf(result, sizeof(result), "SaveResult##Save%d", num);
+        if (ImGui::BeginPopupModal(result, NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("save success");
+            if (ImGui::Button("OK")) {
+                wSaveMenu2 = 0;
+                success = 0;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+        ImGui::End();
+    }
+    return 0;
+}
 
 int WORKSPACE::drawFileManager() {
     char title[260];
@@ -3729,27 +3773,78 @@ int WORKSPACE::drawObjectManager() {
                             }
                             ImGui::EndCombo();
                         }
+                        CSVbuf* csv = (CSVbuf*)seobj.bodyCSV.data;
                         
-                        ImGui::InputText("gr", ((CSVbuf*)seobj.bodyCSV.data)[0].str[2], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[2].outstr()), ImGuiInputTextFlags_CharsDecimal);
-                        ImGui::InputText("x", ((CSVbuf*)seobj.bodyCSV.data)[0].str[3], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[3].outstr()), ImGuiInputTextFlags_CharsDecimal);
-                        ImGui::InputText("y", ((CSVbuf*)seobj.bodyCSV.data)[0].str[4], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[4].outstr()), ImGuiInputTextFlags_CharsDecimal);
-                        ImGui::InputText("w", ((CSVbuf*)seobj.bodyCSV.data)[0].str[5], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[5].outstr()), ImGuiInputTextFlags_CharsDecimal);
-                        ImGui::InputText("h", ((CSVbuf*)seobj.bodyCSV.data)[0].str[6], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[6].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::PushItemWidth(45);
+                        ImGui::InputText("gr", csv[0].str[2], IM_COUNTOF(csv[0].str[2].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("x", csv[0].str[3], IM_COUNTOF(csv[0].str[3].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("y", csv[0].str[4], IM_COUNTOF(csv[0].str[4].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("w", csv[0].str[5], IM_COUNTOF(csv[0].str[5].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("h", csv[0].str[6], IM_COUNTOF(csv[0].str[6].outstr()), ImGuiInputTextFlags_CharsDecimal);
                         
 
                         ImGui::SeparatorText("animation");
-                        ImGui::InputText("div_x", ((CSVbuf*)seobj.bodyCSV.data)[0].str[7], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[7].outstr()), ImGuiInputTextFlags_CharsDecimal);
-                        ImGui::InputText("div_y", ((CSVbuf*)seobj.bodyCSV.data)[0].str[8], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[8].outstr()), ImGuiInputTextFlags_CharsDecimal);
-                        ImGui::InputText("cycle", ((CSVbuf*)seobj.bodyCSV.data)[0].str[9], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[9].outstr()), ImGuiInputTextFlags_CharsDecimal);
-                        ImGui::InputText("timer", ((CSVbuf*)seobj.bodyCSV.data)[0].str[10], IM_COUNTOF(((CSVbuf*)seobj.bodyCSV.data)[0].str[10].outstr()), ImGuiInputTextFlags_CharsDecimal);
-                        
+                        ImGui::InputText("div_x", csv[0].str[7], IM_COUNTOF(csv[0].str[7].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("div_y", csv[0].str[8], IM_COUNTOF(csv[0].str[8].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("cycle", csv[0].str[9], IM_COUNTOF(csv[0].str[9].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("timer", csv[0].str[10], IM_COUNTOF(csv[0].str[10].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::PopItemWidth();
 
 
                         ImGui::EndTabItem();
                     }
                     if (ImGui::BeginTabItem("DST"))
                     {
-                        ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
+                        CSVbuf* csv = (CSVbuf*)seobj.bodyCSV.data;
+                        ImGui::PushItemWidth(45);
+                        ImGui::SeparatorText("basic");
+                        ImGui::InputText("op1", csv[1].str[18], IM_COUNTOF(csv[1].str[18].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("op2", csv[1].str[19], IM_COUNTOF(csv[1].str[19].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("op3", csv[1].str[20], IM_COUNTOF(csv[1].str[20].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("timer", csv[1].str[17], IM_COUNTOF(csv[1].str[17].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputText("loop", csv[1].str[16], IM_COUNTOF(csv[1].str[16].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        //ImGui::InputInt("loop", &csv[1].val[16],0,0);
+
+                        ImGui::SeparatorText("animation");
+                        ImGui::BeginGroup();
+                        ImGui::Text("time");
+                        ImGui::Text("x");
+                        ImGui::Text("y");
+                        ImGui::Text("w");
+                        ImGui::Text("h");
+                        ImGui::Text("acc");
+                        ImGui::Text("a");
+                        ImGui::Text("r");
+                        ImGui::Text("g");
+                        ImGui::Text("b");
+                        ImGui::Text("blend");
+                        ImGui::Text("filter");
+                        ImGui::Text("angle");
+                        ImGui::Text("center");
+                        ImGui::EndGroup();
+                        for (int i = 1; i < seobj.bodyCSV.count; i++) {
+                            ImGui::SameLine();
+
+                            ImGui::PushID(i);
+                            ImGui::BeginGroup();
+                            ImGui::InputText("##time", csv[i].str[2], IM_COUNTOF(csv[i].str[2].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::InputText("##x", csv[i].str[3], IM_COUNTOF(csv[i].str[3].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::InputText("##y", csv[i].str[4], IM_COUNTOF(csv[i].str[4].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::InputText("##w", csv[i].str[5], IM_COUNTOF(csv[i].str[5].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::InputText("##h", csv[i].str[6], IM_COUNTOF(csv[i].str[6].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::InputText("##acc", csv[i].str[7], IM_COUNTOF(csv[i].str[7].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::InputText("##a", csv[i].str[8], IM_COUNTOF(csv[i].str[8].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::InputText("##r", csv[i].str[9], IM_COUNTOF(csv[i].str[9].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::InputText("##g", csv[i].str[10], IM_COUNTOF(csv[i].str[10].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::InputText("##b", csv[i].str[11], IM_COUNTOF(csv[i].str[11].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::InputText("##blend", csv[i].str[12], IM_COUNTOF(csv[i].str[12].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::InputText("##filter", csv[i].str[13], IM_COUNTOF(csv[i].str[13].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::InputText("##angle", csv[i].str[14], IM_COUNTOF(csv[i].str[14].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::InputText("##center", csv[i].str[15], IM_COUNTOF(csv[i].str[15].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                            ImGui::EndGroup();
+                            ImGui::PopID();
+                        }
+                        ImGui::PopItemWidth();
                         ImGui::EndTabItem();
                     }
                     ImGui::EndTabBar();
@@ -3833,173 +3928,7 @@ int WORKSPACE::drawHistory() {
     return 0;
 }
 
-int WORKSPACE::NewIMG(int gr, int x, int y, int w, int h) {
-    IMG* img = (IMG*)arr_IMG.Get_new();
-    img->name = "noname";
-    img->gr = gr;
-    img->x = x;
-    img->y = y;
-    img->w = w;
-    img->h = h;
 
-    //TODO:history here
-
-    return 0;
-}
-
-int WORKSPACE::DeleteIMG(int pos) {
-    arr_IMG.DeleteAt(pos);
-
-    //TODO:history here
-
-    return 0;
-}
-
-int WORKSPACE::ModifyIMG(int pos, int gr, int x, int y, int w, int h) {
-    
-    IMG& img = ((IMG*)arr_IMG.data)[pos];
-
-    img.gr = gr;
-    img.x = x;
-    img.y = y;
-    img.w = w;
-    img.h = h;
-    //TODO:history here
-
-    return 0;
-}
-
-int WORKSPACE::FindIMG(int gr, int x, int y, int w, int h) {
-    //check duplicated
-    int j = 0;
-    for (j = 0; j < arr_IMG.count; j++) {
-        IMG imgCompare = ((IMG*)arr_IMG.data)[j];
-        if (imgCompare.gr == gr
-            && imgCompare.x == x
-            && imgCompare.y == y
-            && imgCompare.w == w
-            && imgCompare.h == h)
-            break;
-    }
-    return j;
-}
-
-//int WORKSPACE::MoveObject() {
-//    
-//    return 0;
-//}
-
-int WORKSPACE::InsertLine(int pos) {
-    
-    SKINFILELINEREAD* line = (SKINFILELINEREAD*)skinfileLines.Get_newAt(pos);
-    line->line.assign("newline");
-    line->isComment = true;
-    line->num = pos;
-
-    HISTORY* hs = (HISTORY*)arr_history.Get_new();
-    hs->op = insertLine;
-    hs->target = pos;
-
-    return 0;
-}
-int WORKSPACE::DeleteLine(int pos) {
-    
-    skinfileLines.DeleteAt(pos);
-
-    HISTORY* hs = (HISTORY*)arr_history.Get_new();
-    hs->op = removeLine;;
-    hs->target = pos;
-
-    return 0;
-}
-int WORKSPACE::EditLine(int pos,CSTR oldlinebody, CSTR newlinebody) {
-
-
-    SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
-    line.line.assign(newlinebody);
-
-    line.isComment = (*line.line.atPos(0) != '#');
-    line.isSEcomment = (*line.line.atPos(0) == '$');
-
-    if (!line.isComment) SplitCSV(line.line, &line.csv, ",");
-
-    HISTORY* hs = (HISTORY*)arr_history.Get_new();
-    hs->op = overwriteLine;
-    hs->target = pos;
-    CsvToLine(pos);
-    hs->older.line.assign(oldlinebody);
-    hs->newer.line.assign(newlinebody);
-
-    return 0;
-}
-
-int WORKSPACE::EditValue(int pos, int column, const char* newVal) {
-
-    SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
-    CSTR oldLine(line.line);
-
-    line.csv.str[column].assign(newVal);
-    line.csv.val[column] = atol(newVal);
-    CsvToLine(pos);
-
-    HISTORY* hs = (HISTORY*)arr_history.Get_new();
-    hs->op = overwriteLine;
-    hs->target = pos;
-    hs->older.line.assign(oldLine);
-    hs->newer.line.assign(line.line);
-
-    return 0;
-}
-int WORKSPACE::EditValue(int pos, int column, int newVal) {
-
-    SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
-    CSTR oldLine(line.line);
-    line.csv.str[column].resize(12);
-    ltoa(newVal,line.csv.str[column],10);
-    line.csv.val[column] = newVal;
-    CsvToLine(pos);
-
-    HISTORY* hs = (HISTORY*)arr_history.Get_new();
-    hs->op = overwriteLine;
-    hs->target = pos;
-    hs->older.line.assign(oldLine);
-    hs->newer.line.assign(line.line);
-
-    return 0;
-}
-
-int WORKSPACE::CsvToLine(int pos) {
-    SKINFILELINEREAD& line = ((SKINFILELINEREAD*)skinfileLines.data)[pos];
-
-    line.isComment = (*line.line.atPos(0) != '#');
-    line.isSEcomment = (*line.line.atPos(0) == '$');
-
-    if (line.isComment || line.isSEcomment) {
-        return 0;
-    }
-
-    //TODO : truncate ','
-    CSTR buf("");
-    
-    cstrSprintf(&buf, "%s", line.csv.str[0]);
-    for (int i = 1; i < 25; i++) {
-        cstrSprintf(&buf, "%s,%s", buf, (line.csv.str[i].body == NULL)? "":line.csv.str[i].outstr());
-    }
-
-    line.line.assign(buf);
-    return 0;
-}
-
-int CsvToCSTR(CSVbuf& csv, CSTR& line) {
-    CSTR buf("");
-    cstrSprintf(&buf, "%s", csv.str[0]);
-    for (int i = 1; i < 25; i++) {
-        cstrSprintf(&buf, "%s,%s", buf, (csv.str[i].body == NULL) ? "" : csv.str[i].outstr());
-    }
-
-    line.assign(buf);
-    return 0;
-}
 
 // 
 // [file ---> (line, csv) ---> LR2]

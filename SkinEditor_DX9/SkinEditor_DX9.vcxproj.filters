@@ -195,6 +195,12 @@
     <ClCompile Include="skin.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="winWorkspace2.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="winWorkspace_save.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imgui.h">
