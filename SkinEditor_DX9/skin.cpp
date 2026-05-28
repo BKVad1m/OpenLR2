@@ -450,7 +450,7 @@ int LR2SEDrawLoop(game* g, int gHandle, int sizeX, int sizeY) {
 
 int LR2SESceneInit(game *g, int type) {
 	
-	g->skstruct.GrHandle[GrH_Stage] = LoadGraph("LR2files\\Config\\title.bmp", 0);
+	//g->skstruct.GrHandle[GrH_Stage] = LoadGraph("LR2files\\Config\\title.bmp", 0);
 
 	InitGameplay(&g->gameplay, &g->config.play);
 	
@@ -576,7 +576,8 @@ int LR2SESceneInit(game *g, int type) {
 		break;
 
 	case SKINTYPE_RESULT:
-		ProcS_Result(g);
+		//LoadScene(&g->skstruct, );
+		//ProcS_Result(g);
 		break;
 	case SKINTYPE_KEYCONFIG:
 		g->KeyInput.config_keymode = 0;
@@ -658,7 +659,7 @@ int LR2SESceneProc(game* g, int type) {
 	case SKINTYPE_7KEYSBATTLE:
 	case SKINTYPE_5KEYSBATTLE:
 	case SKINTYPE_9KEYSBATTLE:
-		//LR2SE_I_Play(g);
+		LR2SE_I_Play(g);
 		break;
 
 	case SKINTYPE_RESULT:

@@ -406,7 +406,7 @@ int WORKSPACE::ParseSkin() {
                 //check duplicated
                 if (FindIMG(atol(read.csv.str[2]),atol(read.csv.str[3]),atol(read.csv.str[4]),atol(read.csv.str[5]),atol(read.csv.str[6])) == arr_IMG.count) {
                     IMG* img = (IMG*)arr_IMG.Get_new();
-                    img->name.assign(read.csv.str[0].outstr());
+                    cstrSprintf(&img->name,"%s", read.csv.str[0].outstr());
                     img->gr = atol(read.csv.str[2]);
                     img->x = atol(read.csv.str[3]);
                     img->y = atol(read.csv.str[4]);
@@ -1227,8 +1227,8 @@ int WORKSPACE::ReadSkinSE() {
 
         if (IFCOUNT > 0) {
             if (IFSWITCH[IFCOUNT] > 1) {
-                *fBuf.atPos(0) = '\0';
-                continue;
+                /**fBuf.atPos(0) = '\0';
+                continue;*/
             }
         }
 
@@ -1908,18 +1908,18 @@ int WORKSPACE::ReadSkinSE() {
                 sk->scratchside_2 = csv.val[2];
             }
             else if (fBuf.left(8).isSame("#INCLUDE")) {
-                //SplitCSV(fBuf, &csv, ",");
-                //for (int i = 0; i < sk->customfile_count; i++) {
-                //    if (sk->customfileRANDOM[i].isSame(csv.str[1].left(sk->customfileRANDOM[i].length()))
-                //        && sk->customfile[i].isDiff("RANDOM") && sk->customfile[i].isDiff("ERROR")
-                //        && (sk->customfile[i].length() > 0)) {
+                /*SplitCSV(fBuf, &csv, ",");
+                for (int i = 0; i < sk->customfile_count; i++) {
+                    if (sk->customfileRANDOM[i].isSame(csv.str[1].left(sk->customfileRANDOM[i].length()))
+                        && sk->customfile[i].isDiff("RANDOM") && sk->customfile[i].isDiff("ERROR")
+                        && (sk->customfile[i].length() > 0)) {
 
-                //        csv.str[1].replace("*", sk->customfile[i]);
-                //        break;
-                //    }
-                //}
-                //if (tSkin_num == 0) tSkin_num = 1;
-                //tSkin_num += ReadSkinSE(sk, GetRandomFileNoError(csv.str[1], dir), unused, tSkin_num, sku, flag_skipFont);
+                        csv.str[1].replace("*", sk->customfile[i]);
+                        break;
+                    }
+                }
+                if (tSkin_num == 0) tSkin_num = 1;
+                tSkin_num += ReadSkinSE(sk, GetRandomFileNoError(csv.str[1], dir), unused, tSkin_num, sku, flag_skipFont);*/
             }
             else if (fBuf.left(13).isSame("#CUSTOMOPTION")) {
                 sk->customfile_count++;
@@ -2467,6 +2467,27 @@ int WORKSPACE::drawTextEdit() {
                                 ImGui::EndCombo();
                             }
                         }
+                        else if (GetCommandHelp(read.csv.str[0].outstr(), column).left(6).isSame("$timer")) {
+                            if (ImGui::BeginCombo(inputname, timerName(read.csv.val[column]), ImGuiComboFlags_None)) {
+                                for (int op = 0; op < 200; op++) {
+                                    ImGui::PushID(op);
+                                    const bool is_selected = (read.csv.val[column] == op);
+                                    char opname[64];
+                                    sprintf(opname, "%03d:%s", op, timerName(op));
+
+                                    if (ImGui::Selectable(opname, is_selected)) {
+                                        //read.csv.val[column] = op;
+                                        EditValue(n, column, op);
+                                    }
+                                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                    if (is_selected)
+                                        ImGui::SetItemDefaultFocus();
+
+                                    ImGui::PopID();
+                                }
+                                ImGui::EndCombo();
+                            }
+                        }
                         else {
                             static CSTR tmp;
                             ImGui::InputText(inputname, read.csv.str[column], 260, ImGuiInputTextFlags_AutoSelectAll);
@@ -2983,7 +3004,10 @@ int WORKSPACE::drawSrc(int iSRCGR, int iSRCID) {
     return drawSrc(iSRCGR, iSRCID, 0, 0);
 }
 
-
+//int WORKSPACE::drawSrc(IMG img) {
+//
+//    return 0;
+//}
 
 
 int WORKSPACE::drawSaveMenu() {
@@ -3733,11 +3757,14 @@ int WORKSPACE::drawObjectManager() {
                             , atol(((CSVbuf*)seobj.bodyCSV.data)[0].str[4])
                             , atol(((CSVbuf*)seobj.bodyCSV.data)[0].str[5])
                             , atol(((CSVbuf*)seobj.bodyCSV.data)[0].str[6]));
-                        
-                        if (ImGui::BeginCombo("##IMGs", ((IMG*)arr_IMG.data)[k].name,ImGuiComboFlags_None)) {
+
+                        char buf[64];
+                        sprintf(buf, "%d:%s", k, ((IMG*)arr_IMG.data)[k].name);
+                        if (ImGui::BeginCombo("##IMGs", buf,ImGuiComboFlags_None)) {
                             for (int n = 0; n < arr_IMG.count; n++) {
                                 ImGui::PushID(n);
-                                if (ImGui::Selectable(((IMG*)arr_IMG.data)[n].name, n == k, ImGuiSelectableFlags_None, { 0,0 })) {
+                                sprintf(buf, "%d:%s", n, ((IMG*)arr_IMG.data)[n].name);
+                                if (ImGui::Selectable(buf, n == k, ImGuiSelectableFlags_None, { 0,0 })) {
                                     ltoa(((IMG*)arr_IMG.data)[n].gr, ((CSVbuf*)seobj.bodyCSV.data)[0].str[2], 10);
                                     ltoa(((IMG*)arr_IMG.data)[n].x, ((CSVbuf*)seobj.bodyCSV.data)[0].str[3], 10);
                                     ltoa(((IMG*)arr_IMG.data)[n].y, ((CSVbuf*)seobj.bodyCSV.data)[0].str[4], 10);
@@ -3787,7 +3814,28 @@ int WORKSPACE::drawObjectManager() {
                         ImGui::InputText("div_x", csv[0].str[7], IM_COUNTOF(csv[0].str[7].outstr()), ImGuiInputTextFlags_CharsDecimal);
                         ImGui::InputText("div_y", csv[0].str[8], IM_COUNTOF(csv[0].str[8].outstr()), ImGuiInputTextFlags_CharsDecimal);
                         ImGui::InputText("cycle", csv[0].str[9], IM_COUNTOF(csv[0].str[9].outstr()), ImGuiInputTextFlags_CharsDecimal);
-                        ImGui::InputText("timer", csv[0].str[10], IM_COUNTOF(csv[0].str[10].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        //ImGui::InputText("timer", csv[0].str[10], IM_COUNTOF(csv[0].str[10].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        if (ImGui::BeginCombo("timer",csv[0].str[10], ImGuiComboFlags_None)) {
+                            for (int op = 0; op < 200; op++) {
+                                ImGui::PushID(op);
+                                const bool is_selected = (atol(csv[0].str[10]) == op);
+                                char opname[64];
+                                sprintf(opname, "%03d:%s", op, timerName(op));
+
+                                if (ImGui::Selectable(opname, is_selected)) {
+                                    csv[0].val[10] = op;
+                                    ltoa(op, csv[0].str[10],10);
+                                    //EditValue(n, column, op);
+                                }
+                                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                if (is_selected)
+                                    ImGui::SetItemDefaultFocus();
+
+                                ImGui::PopID();
+                            }
+                            ImGui::EndCombo();
+                        }
+
                         ImGui::PopItemWidth();
 
 
@@ -3798,28 +3846,118 @@ int WORKSPACE::drawObjectManager() {
                         CSVbuf* csv = (CSVbuf*)seobj.bodyCSV.data;
                         ImGui::PushItemWidth(45);
                         ImGui::SeparatorText("basic");
-                        ImGui::InputText("op1", csv[1].str[18], IM_COUNTOF(csv[1].str[18].outstr()), ImGuiInputTextFlags_CharsDecimal);
-                        ImGui::InputText("op2", csv[1].str[19], IM_COUNTOF(csv[1].str[19].outstr()), ImGuiInputTextFlags_CharsDecimal);
-                        ImGui::InputText("op3", csv[1].str[20], IM_COUNTOF(csv[1].str[20].outstr()), ImGuiInputTextFlags_CharsDecimal);
-                        ImGui::InputText("timer", csv[1].str[17], IM_COUNTOF(csv[1].str[17].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        //ImGui::InputText("op1", csv[1].str[18], IM_COUNTOF(csv[1].str[18].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        if (ImGui::BeginCombo("op1", csv[1].str[18], ImGuiComboFlags_None)) {
+                            for (int op = 0; op < 200; op++) {
+                                ImGui::PushID(op);
+                                const bool is_selected = (atol(csv[1].str[18]) == op);
+                                char opname[64];
+                                sprintf(opname, "%03d:%s", op, dstName(op));
+
+                                if (ImGui::Selectable(opname, is_selected)) {
+                                    csv[1].val[18] = op;
+                                    ltoa(op, csv[1].str[18], 10);
+                                }
+                                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                if (is_selected)
+                                    ImGui::SetItemDefaultFocus();
+
+                                ImGui::PopID();
+                            }
+                            ImGui::EndCombo();
+                        }
+                        //ImGui::InputText("op2", csv[1].str[19], IM_COUNTOF(csv[1].str[19].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        if (ImGui::BeginCombo("op2", csv[1].str[19], ImGuiComboFlags_None)) {
+                            for (int op = 0; op < 200; op++) {
+                                ImGui::PushID(op);
+                                const bool is_selected = (atol(csv[1].str[19]) == op);
+                                char opname[64];
+                                sprintf(opname, "%03d:%s", op, dstName(op));
+
+                                if (ImGui::Selectable(opname, is_selected)) {
+                                    csv[1].val[19] = op;
+                                    ltoa(op, csv[1].str[19], 10);
+                                }
+                                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                if (is_selected)
+                                    ImGui::SetItemDefaultFocus();
+
+                                ImGui::PopID();
+                            }
+                            ImGui::EndCombo();
+                        }
+                        //ImGui::InputText("op3", csv[1].str[20], IM_COUNTOF(csv[1].str[20].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        if (ImGui::BeginCombo("op3", csv[1].str[20], ImGuiComboFlags_None)) {
+                            for (int op = 0; op < 200; op++) {
+                                ImGui::PushID(op);
+                                const bool is_selected = (atol(csv[1].str[20]) == op);
+                                char opname[64];
+                                sprintf(opname, "%03d:%s", op, dstName(op));
+
+                                if (ImGui::Selectable(opname, is_selected)) {
+                                    csv[1].val[20] = op;
+                                    ltoa(op, csv[1].str[20], 10);
+                                }
+                                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                if (is_selected)
+                                    ImGui::SetItemDefaultFocus();
+
+                                ImGui::PopID();
+                            }
+                            ImGui::EndCombo();
+                        }
+                        //ImGui::InputText("timer", csv[1].str[17], IM_COUNTOF(csv[1].str[17].outstr()), ImGuiInputTextFlags_CharsDecimal);
+                        if (ImGui::BeginCombo("timer", csv[1].str[17], ImGuiComboFlags_None)) {
+                            for (int op = 0; op < 200; op++) {
+                                ImGui::PushID(op);
+                                const bool is_selected = (atol(csv[1].str[17]) == op);
+                                char opname[64];
+                                sprintf(opname, "%03d:%s", op, timerName(op));
+
+                                if (ImGui::Selectable(opname, is_selected)) {
+                                    csv[1].val[17] = op;
+                                    ltoa(op, csv[1].str[17], 10);
+                                }
+                                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                                if (is_selected)
+                                    ImGui::SetItemDefaultFocus();
+
+                                ImGui::PopID();
+                            }
+                            ImGui::EndCombo();
+                        }
                         ImGui::InputText("loop", csv[1].str[16], IM_COUNTOF(csv[1].str[16].outstr()), ImGuiInputTextFlags_CharsDecimal);
                         //ImGui::InputInt("loop", &csv[1].val[16],0,0);
 
                         ImGui::SeparatorText("animation");
                         ImGui::BeginGroup();
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("time");
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("x");
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("y");
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("w");
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("h");
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("acc");
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("a");
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("r");
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("g");
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("b");
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("blend");
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("filter");
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("angle");
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text("center");
                         ImGui::EndGroup();
                         for (int i = 1; i < seobj.bodyCSV.count; i++) {

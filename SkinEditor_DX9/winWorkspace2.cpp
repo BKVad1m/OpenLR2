@@ -55,8 +55,8 @@ int WORKSPACE::ModifyIMG(int pos, int gr, int x, int y, int w, int h) {
     return 0;
 }
 
+//check duplicated
 int WORKSPACE::FindIMG(int gr, int x, int y, int w, int h) {
-    //check duplicated
     int j = 0;
     for (j = 0; j < arr_IMG.count; j++) {
         IMG imgCompare = ((IMG*)arr_IMG.data)[j];
@@ -69,6 +69,7 @@ int WORKSPACE::FindIMG(int gr, int x, int y, int w, int h) {
     }
     return j;
 }
+
 
 //int WORKSPACE::MoveObject() {
 //    
