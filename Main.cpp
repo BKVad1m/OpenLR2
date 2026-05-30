@@ -262,7 +262,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SetUseFPUPreserveFlag(1);
 	//SetUseDirectInputFlag(1); //DXLIBVER: not in original, but we need it to make same reaction.
 	//SetUseDirect3DVersion(DX_DIRECT3D_9); //DXLIBVER: if not set, it's DX11 (over 3.13e)
-	if (DxLib_Init() != -1) return 0;
+	if (DxLib_Init() == -1) return 0;
 
 	ChangeFont("", 0);
 	SetLogFontSize(14); //DXLIBVER: change this for further dxlib version
