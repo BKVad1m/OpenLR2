@@ -14745,6 +14745,7 @@ CSTR GetRandomFile(CSTR path, char fOnlyName) {
 		count++;
 	} while (FindNextFileA(hFindFile, (LPWIN32_FIND_DATAA)&FindFileData));
 	if (count < 1) return CSTR("ERROR");
+	FindClose(hFindFile);
 
 	count = GetRand(count - 1);
 
