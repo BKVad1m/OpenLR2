@@ -1883,17 +1883,17 @@ int main(int argc, char** argv) {
 		if (gs.flag_showFPS) {
 			printfDx("FPS %d\n", (int)gs.timer1.FPS);
 			//TEST
-			printfDx("occured %d\n", gs.timer1.GAPcount);
 			printfDx("maxGAP %.3f\n", gs.timer1.maxGAP);
 			printfDx("avgGAP %.3f\n", gs.timer1.avgOnlyGAP);
+			printfDx("GAPS %d\n", gs.timer1.GAPcount);
 			printfDx("game total tick %d\n", gs.timer1.GAPtick);
 			//TEST END
 			//TEST2
 			int dx, dy;
 #ifdef _WIN32
-			printfDx("is DX9 %d\n", GetUseDirect3DVersion()); //none:0 DX_DIRECT3D_9:1 9EX:2 11:3 default 2? //DEBUG
+			printfDx("%s ", GetUseDirect3DVersion() == 3? "DX11" : "DX9"); //none:0 DX_DIRECT3D_9:1 9EX:2 11:3 default 2? //DEBUG
 #endif // _WIN32
-			printfDx("screen mode %d\n", gs.config.system.screenmode);
+			printfDx("%s\n", gs.config.system.screenmode? "windowed":"fullscreen");
 			GetDrawScreenSize(&dx, &dy);
 			printfDx("skinsize %d %d \n", dx, dy);
 			GetWindowSize(&screenSizeX, &screenSizeY);
