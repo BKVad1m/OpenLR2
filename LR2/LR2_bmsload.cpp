@@ -484,9 +484,9 @@ int LoadBmsResource(gameplay *gp, CSTR /*BMSfilepath*/, AUDIO *aud, ConfigStruct
 
 	std::unique_lock l{gp->criticalSection};
 
-	std::vector<int> keysoundLoadQueue;
+	std::vector<unsigned int> keysoundLoadQueue;
 	std::vector<std::jthread> keysoundsLoadWorkers;
-	std::atomic<int> keysoundsLoaded = 0;
+	std::atomic<unsigned int> keysoundsLoaded = 0;
 	std::atomic<bool> keysoundsLoadAbort = false;
 	keysoundLoadQueue.reserve(SLOTS);
 	for (int i = 0; i < SLOTS; i++) {
@@ -494,13 +494,15 @@ int LoadBmsResource(gameplay *gp, CSTR /*BMSfilepath*/, AUDIO *aud, ConfigStruct
 			keysoundLoadQueue.push_back(i);
 		}
 	}
-	for (auto i : std::views::iota(0u, std::max(2u, cfg->system.coreCount / 2) + 1)) {
+	const auto workerCount = std::max(2u, cfg->system.coreCount / 2);
+	keysoundsLoadWorkers.reserve(workerCount);
+	for (auto _ : std::views::iota(0u, workerCount + 1)) {
 		keysoundsLoadWorkers.emplace_back([&]() {
 			while (!keysoundsLoadAbort) {
-				int queue_i = keysoundsLoaded++;
+				unsigned int queue_i = keysoundsLoaded++;
 				if (queue_i >= keysoundLoadQueue.size())
 					break;
-				int i = keysoundLoadQueue[queue_i];
+				unsigned int i = keysoundLoadQueue[queue_i];
 				LoadSound(aud, &gp->keysound[i], gp->keysound_filename[i], 0, cfg->sound.disabledsp, (gp->isPreviewLoad != 0));
 				if (gp->keysound[i].length > 60000 && gp->keysound[i].load) gp->flag_longsound = 1;
 				gp->loadObject_loaded++;
@@ -936,7 +938,7 @@ int DPsplit(LaneStruct *lane, int start, CHARTCONVERTER *cc) {
 void MakeExtraChart(gameplay *gp, CHARTCONVERTER *cc) {  //test completed
 
 	int notecount = 0;
-	double endtime;
+	double endtime{};
 	qsort(gp->bmsobj.notes, gp->bmsobj.count, sizeof(NoteStruct), CMP_NotesByRealTimingOp);
 
 	for (int i = 0; i < gp->bmsobj.count; i++) {
@@ -1320,7 +1322,7 @@ void PMStoSP(gameplay *gp) { //test&fix completed
 	int mingap;
 	char laneA[10], laneB[10], laneC[10];
 	int newLane, measureLaneCount;
-	int emptyLane, emptyLaneL, emptyLaneR;
+	int emptyLane{}, emptyLaneL{}, emptyLaneR{};
 	int countLaneA;
 	int left, right;
 
@@ -1809,7 +1811,7 @@ unsigned char channelConvert[] = { 0x00, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3
 									0x00, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x31, 0x32, 0x33, 0x34,
 									0x00, 0x3c, 0x35, 0x36, 0x37, 0x38, 0x39, 0x00, 0x3a, 0x3b };
 int ParseBmsFile(gameplay *gp, CSTR filename, AUDIO *aud, ConfigStruct* cfg, BMSMETA *meta, int bgaFlag, int scratchSide) {
-	ErrorLogFmtAdd("ParseBmsFile(%s)\n", filename);
+	ErrorLogFmtAdd("ParseBmsFile(%s)\n", filename.c_str());
 
 	std::unordered_map<double, int> notesPerBpm{};
 	double avgBPM_bpmsum{};
@@ -3451,7 +3453,7 @@ int ParseBmsFile(gameplay *gp, CSTR filename, AUDIO *aud, ConfigStruct* cfg, BMS
 				if (cfg->play.random[0] >= 3 && gp->bmsobj.notes[i].op < 20) assist = (cfg->play.randSC[0] != 0);
 				else if (cfg->play.random[1] >= 3 && gp->bmsobj.notes[i].op >= 20) assist = (cfg->play.randSC[1] != 0);
 
-				int randLanes;
+				int randLanes{};
 				switch (meta->keymode) {
 					case 5:
 					case 10:

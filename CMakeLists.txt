@@ -112,6 +112,16 @@ set_target_properties(OpenLR2 PROPERTIES CXX_STANDARD 23)
 target_link_libraries(OpenLR2 PUBLIC OpenLR2Lib)
 
 if(WIN32)
+    # 4GB patch for 32-bit
+    if(MSVC)
+        target_link_options(OpenLR2 PUBLIC /LARGEADDRESSAWARE)
+    else()
+        # untested
+        # target_link_options(OpenLR2 PUBLIC -Wl,--large-address-aware)
+    endif()
+endif()
+
+if(WIN32)
     # FIXME: SkinEditor manifest
     add_executable(
         SkinEditor

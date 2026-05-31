@@ -875,6 +875,7 @@ CSTR GetRandomFile(CSTR path, char fOnlyName) {
 	do {
 		count++;
 	} while (FindNextFileW(hFindFile, &FindFileData));
+	FindClose(hFindFile);
 	if (count < 1) return CSTR("ERROR");
 
 	count = GetRand(count - 1);
